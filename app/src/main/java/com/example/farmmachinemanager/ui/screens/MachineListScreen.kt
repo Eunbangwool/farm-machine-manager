@@ -99,7 +99,10 @@ fun MachineListScreen(
             null to "전체",
             MachineType.TRACTOR to "트랙터",
             MachineType.COMBINE to "콤바인",
-            MachineType.RICE_TRANSPLANTER to "이앙기"
+            MachineType.RICE_TRANSPLANTER to "이앙기",
+            MachineType.CULTIVATOR to "관리기",
+            MachineType.VEHICLE to "차량",
+            MachineType.OTHER to "기타"
         ).map { (type, label) ->
             type to FilterOption(
                 label = label,
