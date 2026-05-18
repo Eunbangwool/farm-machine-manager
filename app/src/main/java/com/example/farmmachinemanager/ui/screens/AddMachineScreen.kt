@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -62,6 +63,8 @@ fun AddMachineScreen(
     onCancel: () -> Unit,
     onSaveComplete: () -> Unit
 ) {
+    BackHandler { onCancel() }
+
     val coroutineScope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf("") }

@@ -1,5 +1,6 @@
 package com.example.farmmachinemanager.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,6 +62,8 @@ fun EditMachineScreen(
     onCancel: () -> Unit,
     onSaveComplete: () -> Unit
 ) {
+    BackHandler { onCancel() }
+
     val coroutineScope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf(machine.name) }

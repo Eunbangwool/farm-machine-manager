@@ -41,6 +41,9 @@ jobs:
       - name: APK 빌드 (병렬 + 캐시 + 린트 스킵)
         run: ./gradlew assembleDebug --parallel --build-cache -x lint
 
+      - name: APK 이름 변경 (app-debug.apk → FarmManager.apk)
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FarmManager.apk
+
       - name: 빌드 정보 수집
         id: info
         run: |
@@ -56,14 +59,15 @@ jobs:
             **자동 빌드된 디버그 APK**
 
             ## 📲 폰에서 직접 설치
-            아래 Assets의 `app-debug.apk` 탭하여 다운로드.
+            아래 Assets의 `FarmManager.apk` 탭하여 다운로드.
 
             ## 🔖 빌드 정보
             - 일시: `${{ steps.info.outputs.date }} UTC`
             - 커밋: `${{ steps.info.outputs.sha }}`
+            - 빌드 번호: `${{ github.run_number }}`
 
             ## 🔗 폰 북마크용 직접 설치 URL
-            https://github.com/${{ github.repository }}/releases/latest/download/app-debug.apk
-          files: app/build/outputs/apk/debug/app-debug.apk
+            https://github.com/${{ github.repository }}/releases/latest/download/FarmManager.apk
+          files: app/build/outputs/apk/debug/FarmManager.apk
           prerelease: false
           make_latest: "true"

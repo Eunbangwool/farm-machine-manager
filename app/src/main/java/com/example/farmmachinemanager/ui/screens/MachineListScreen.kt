@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -86,6 +87,12 @@ fun MachineListScreen(
     // 검색 모드 토글 + 검색어
     var isSearchMode by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+
+    // 검색 모드일 때 뒤로가기 → 검색 모드 종료. 평상시 뒤로가기는 시스템 기본(앱 종료) 동작.
+    BackHandler(enabled = isSearchMode) {
+        isSearchMode = false
+        searchQuery = ""
+    }
 
     val filterOptions = remember(machines) {
         listOf(
@@ -160,11 +167,42 @@ fun MachineListScreen(
                 item {
                     UpdateHoursReminderCard(onClick = onUpdateHoursClick)
                 }
-                items(visibleMachines, key = { it.id }) { machine ->
-                    MachineCard(
-                        machine = machine,
-                        onClick = { onMachineClick(machine) }
+
+                // 전체 필터 + 검색 미사용일 때만 종류별 그룹 헤더 표시.
+                // 필터/검색 모드에서는 평면 리스트 (헤더 불필요).
+                val showGrouped = selectedFilter == null && searchQuery.isBlank()
+
+                if (showGrouped) {
+                    val groupOrder = listOf(
+                        MachineType.TRACTOR,
+                        MachineType.COMBINE,
+                        MachineType.RICE_TRANSPLANTER,
+                        MachineType.CULTIVATOR,
+                        MachineType.VEHICLE,
+                        MachineType.OTHER
                     )
+                    val grouped = visibleMachines.groupBy { it.type }
+                    groupOrder.forEach { type ->
+                        val list = grouped[type] ?: emptyList()
+                        if (list.isNotEmpty()) {
+                            item(key = "header_${type.name}") {
+                                GroupHeader(label = type.displayName, count = list.size)
+                            }
+                            items(list, key = { it.id }) { machine ->
+                                MachineCard(
+                                    machine = machine,
+                                    onClick = { onMachineClick(machine) }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(visibleMachines, key = { it.id }) { machine ->
+                        MachineCard(
+                            machine = machine,
+                            onClick = { onMachineClick(machine) }
+                        )
+                    }
                 }
             }
         }
@@ -207,6 +245,33 @@ private fun AddMachineFab(
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = SurfacePrimary
+        )
+    }
+}
+
+/**
+ * 종류별 섹션 헤더 (트랙터/콤바인/이앙기 등).
+ * "전체" 필터 + 검색 비활성일 때만 표시.
+ */
+@Composable
+private fun GroupHeader(label: String, count: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextPrimary
+        )
+        Text(
+            text = "${count}대",
+            fontSize = 11.sp,
+            color = TextTertiary
         )
     }
 }
