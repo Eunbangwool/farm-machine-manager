@@ -115,7 +115,8 @@ private fun categoryIcon(category: ConsumableCategory): ImageVector = when (cate
     ConsumableCategory.COOLANT -> Icons.Outlined.WaterDrop
     ConsumableCategory.ENGINE_OIL_FILTER,
     ConsumableCategory.TRANSMISSION_OIL_FILTER,
-    ConsumableCategory.FUEL_FILTER -> Icons.Outlined.FilterAlt
+    ConsumableCategory.FUEL_FILTER,
+    ConsumableCategory.DEF_FILTER -> Icons.Outlined.FilterAlt
     ConsumableCategory.AIR_FILTER -> Icons.Outlined.Air
     ConsumableCategory.HOSE -> Icons.Default.SettingsInputComponent
     ConsumableCategory.BELT -> Icons.Outlined.Sync
