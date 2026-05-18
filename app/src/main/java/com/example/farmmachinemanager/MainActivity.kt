@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,7 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.farmmachinemanager.data.Machine
+import com.example.farmmachinemanager.ui.screens.AddMachineScreen
 import com.example.farmmachinemanager.ui.screens.AddMaintenanceRecordScreen
+import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
+import com.example.farmmachinemanager.ui.screens.EditMachineScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
 import com.example.farmmachinemanager.ui.screens.UpdateOperatingHoursScreen
@@ -22,8 +28,9 @@ import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
 /**
  * 앱 진입점.
  *
- * 현재는 상태 기반의 단순한 네비게이션 (List → Detail → AddMaintenance).
- * 화면이 더 늘어나면 androidx.navigation:navigation-compose 로 전환.
+ * 갤럭시 호환성: enableEdgeToEdge() + windowInsetsPadding(systemBars)
+ * → 상태바/네비게이션 바 영역과 콘텐츠가 겹치지 않도록 안전하게 패딩 적용.
+ *   (One UI의 다양한 노치/펀치홀/제스처 영역에서도 안전)
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +38,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FarmMachineTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                ) {
                     AppRoot()
                 }
             }
@@ -39,12 +50,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** 어느 화면을 보여줄지 나타내는 상태 */
 private sealed interface AppScreen {
     data object List : AppScreen
     data class Detail(val machine: Machine) : AppScreen
     data class AddMaintenance(val machine: Machine) : AppScreen
     data object UpdateHours : AppScreen
+    data object AddMachine : AppScreen
+    data class EditMachine(val machine: Machine) : AppScreen
+    data class DailyInspection(val machine: Machine) : AppScreen
 }
 
 @Composable
@@ -53,21 +66,17 @@ private fun AppRoot() {
 
     when (val current = screen) {
         is AppScreen.List -> MachineListScreen(
-            onMachineClick = { machine ->
-                screen = AppScreen.Detail(machine)
-            },
-            onUpdateHoursClick = {
-                screen = AppScreen.UpdateHours
-            }
+            onMachineClick = { machine -> screen = AppScreen.Detail(machine) },
+            onUpdateHoursClick = { screen = AppScreen.UpdateHours },
+            onAddMachineClick = { screen = AppScreen.AddMachine }
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
             onBackClick = { screen = AppScreen.List },
-            onEditClick = { /* TODO: 다음 단계에서 기계 정보 수정 화면 */ },
-            onAddMaintenanceClick = {
-                screen = AppScreen.AddMaintenance(current.machine)
-            },
-            onMarkRepairComplete = { /* TODO: 다음 단계에서 수리 완료 처리 */ }
+            onEditClick = { screen = AppScreen.EditMachine(current.machine) },
+            onAddMaintenanceClick = { screen = AppScreen.AddMaintenance(current.machine) },
+            onMarkRepairComplete = { screen = AppScreen.List },
+            onDailyInspectionClick = { screen = AppScreen.DailyInspection(current.machine) }
         )
         is AppScreen.AddMaintenance -> AddMaintenanceRecordScreen(
             machine = current.machine,
@@ -77,6 +86,20 @@ private fun AppRoot() {
         is AppScreen.UpdateHours -> UpdateOperatingHoursScreen(
             onCancel = { screen = AppScreen.List },
             onSaveComplete = { screen = AppScreen.List }
+        )
+        is AppScreen.AddMachine -> AddMachineScreen(
+            onCancel = { screen = AppScreen.List },
+            onSaveComplete = { screen = AppScreen.List }
+        )
+        is AppScreen.EditMachine -> EditMachineScreen(
+            machine = current.machine,
+            onCancel = { screen = AppScreen.Detail(current.machine) },
+            onSaveComplete = { screen = AppScreen.List }
+        )
+        is AppScreen.DailyInspection -> DailyInspectionScreen(
+            machine = current.machine,
+            onCancel = { screen = AppScreen.Detail(current.machine) },
+            onSaveComplete = { screen = AppScreen.Detail(current.machine) }
         )
     }
 }

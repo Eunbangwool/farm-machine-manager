@@ -1,6 +1,11 @@
 package com.example.farmmachinemanager.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
@@ -43,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -100,6 +107,28 @@ fun AddMaintenanceRecordScreen(
     var isInProgress by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var datePickerOpen by remember { mutableStateOf(false) }
+    var photoUris by remember { mutableStateOf(emptyList<String>()) }
+
+    // 시스템 사진 선택기 (API 33+ 네이티브, 그 이하는 자동 폴백). 권한 불필요.
+    val context = LocalContext.current
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            // 앱 재시작 후에도 URI에 접근하기 위해 영속 권한 획득 시도
+            uris.forEach { uri ->
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (_: SecurityException) {
+                    // 일부 URI는 영속 권한 불가 - 무시
+                }
+            }
+            photoUris = photoUris + uris.map { it.toString() }
+        }
+    }
 
     val isValid = title.isNotBlank() && !isSaving
 
@@ -122,7 +151,8 @@ fun AddMaintenanceRecordScreen(
                 shopName = shopName.trim().ifBlank { null },
                 operatingHoursAtMaintenance = hoursAtMaintenance,
                 replacedConsumableIds = selectedConsumableIds.toList(),
-                isInProgress = isInProgress
+                isInProgress = isInProgress,
+                photoUrls = photoUris.toList()
             )
 
             AppContainer.maintenanceRepository.addMaintenance(record)
@@ -264,6 +294,20 @@ fun AddMaintenanceRecordScreen(
                         .fillMaxWidth()
                         .height(100.dp),
                     maxLines = 4
+                )
+            }
+
+            FormSection(label = "사진 첨부 (선택, 최대 5장)") {
+                PhotoAttachmentSection(
+                    photoCount = photoUris.size,
+                    onPickPhotos = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    onClearAll = { photoUris = emptyList() }
                 )
             }
 
@@ -558,6 +602,72 @@ private fun SaveBar(
                 fontWeight = FontWeight.Medium,
                 color = SurfacePrimary
             )
+        }
+    }
+}
+
+/**
+ * 사진 첨부 섹션. "사진 추가" 버튼 + 선택된 장수 표시 + 전체 삭제.
+ * 실제 썸네일 표시는 별도 이미지 라이브러리(Coil 등)가 필요해 일단 카운트 + 상태만 보여줌.
+ */
+@Composable
+private fun PhotoAttachmentSection(
+    photoCount: Int,
+    onPickPhotos: () -> Unit,
+    onClearAll: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(SurfaceSecondary)
+                .clickable(onClick = onPickPhotos),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.AddPhotoAlternate,
+                contentDescription = "사진 추가",
+                tint = TextPrimary,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (photoCount == 0) "사진 없음" else "사진 ${photoCount}장 추가됨",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+            Text(
+                text = "왼쪽 아이콘을 탭하여 사진을 선택하세요",
+                fontSize = 11.sp,
+                color = TextSecondary
+            )
+        }
+        if (photoCount > 0) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(onClick = onClearAll)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "전체 삭제",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextSecondary
+                )
+            }
         }
     }
 }

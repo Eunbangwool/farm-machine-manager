@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.FactCheck
 import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Divider
@@ -35,22 +36,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.AppContainer
+import com.example.farmmachinemanager.R
 import com.example.farmmachinemanager.data.Consumable
 import com.example.farmmachinemanager.data.ConsumableStatus
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MachineStatus
 import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.data.MaintenanceRecord
+import com.example.farmmachinemanager.data.MaintenanceType
 import com.example.farmmachinemanager.data.SampleData
 import com.example.farmmachinemanager.ui.components.ConsumableRow
 import com.example.farmmachinemanager.ui.components.MaintenanceRecordRow
@@ -86,6 +91,7 @@ import com.example.farmmachinemanager.ui.theme.VehicleIconBg
 import com.example.farmmachinemanager.ui.theme.VehicleIconTint
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 /**
  * 기계 상세 화면.
@@ -107,11 +113,14 @@ fun MachineDetailScreen(
     onEditClick: () -> Unit = {},
     onAddMaintenanceClick: () -> Unit = {},
     onMarkRepairComplete: () -> Unit = {},
+    onDailyInspectionClick: () -> Unit = {},
     onViewAllConsumables: () -> Unit = {},
     onViewAllMaintenance: () -> Unit = {}
 ) {
     // 하드웨어 뒤로가기 버튼 처리 (앱이 꺼지지 않고 목록으로 돌아감)
     BackHandler { onBackClick() }
+
+    val coroutineScope = rememberCoroutineScope()
 
     // Repository에서 실시간으로 데이터 읽기.
     // 정비 기록 추가 화면에서 저장한 새 데이터가 자동으로 여기 반영됨.
@@ -168,7 +177,28 @@ fun MachineDetailScreen(
                 item {
                     RepairAlertBanner(
                         statusNote = machine.statusNote,
-                        onMarkComplete = onMarkRepairComplete,
+                        onMarkComplete = {
+                            coroutineScope.launch {
+                                // 1) 기계 상태를 NORMAL로 갱신
+                                AppContainer.machineRepository.saveMachine(
+                                    machine.copy(
+                                        status = MachineStatus.NORMAL,
+                                        statusNote = null
+                                    )
+                                )
+                                // 2) 진행 중이던 수리 정비기록을 완료로 표시
+                                maintenanceRecords
+                                    .firstOrNull {
+                                        it.type == MaintenanceType.REPAIR && it.isInProgress
+                                    }
+                                    ?.let { record ->
+                                        AppContainer.maintenanceRepository
+                                            .updateMaintenance(record.copy(isInProgress = false))
+                                    }
+                                // 3) 목록으로 복귀 (machine 스냅샷이 stale이므로)
+                                onMarkRepairComplete()
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
@@ -193,7 +223,28 @@ fun MachineDetailScreen(
                                 ConsumableRow(
                                     consumable = consumable,
                                     currentHours = machine.operatingHours,
-                                    today = today
+                                    today = today,
+                                    onQuickReplaceClick = {
+                                        coroutineScope.launch {
+                                            // 1) 소모품 갱신 - 교체 시점 기록
+                                            val updated = consumable.copy(
+                                                lastReplacedDate = today,
+                                                lastReplacedHours = machine.operatingHours
+                                            )
+                                            AppContainer.consumableRepository.saveConsumable(updated)
+                                            // 2) 정비기록 자동 생성
+                                            val record = MaintenanceRecord(
+                                                id = "record_${System.currentTimeMillis()}",
+                                                machineId = machine.id,
+                                                date = today,
+                                                type = MaintenanceType.CONSUMABLE_REPLACE,
+                                                title = "${consumable.name} 교체",
+                                                operatingHoursAtMaintenance = machine.operatingHours,
+                                                replacedConsumableIds = listOf(consumable.id)
+                                            )
+                                            AppContainer.maintenanceRepository.addMaintenance(record)
+                                        }
+                                    }
                                 )
                                 if (index < topConsumables.lastIndex) {
                                     Divider(
@@ -246,7 +297,10 @@ fun MachineDetailScreen(
             }
         }
 
-        BottomActionBar(onClick = onAddMaintenanceClick)
+        BottomActionBar(
+            onInspectionClick = onDailyInspectionClick,
+            onAddMaintenanceClick = onAddMaintenanceClick
+        )
     }
 }
 
@@ -515,19 +569,49 @@ private fun BasicInfoCard(machine: Machine) {
 }
 
 @Composable
-private fun BottomActionBar(onClick: () -> Unit) {
-    Column(
+private fun BottomActionBar(
+    onInspectionClick: () -> Unit,
+    onAddMaintenanceClick: () -> Unit
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(SurfacePrimary)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // 점검표 버튼 (좌측 보조)
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .weight(1f)
+                .clip(RoundedCornerShape(12.dp))
+                .background(SurfaceSecondary)
+                .clickable(onClick = onInspectionClick)
+                .padding(vertical = 14.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FactCheck,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.size(6.dp))
+            Text(
+                text = "점검표",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+        }
+        // 정비기록 추가 (우측 주력)
+        Row(
+            modifier = Modifier
+                .weight(1.4f)
                 .clip(RoundedCornerShape(12.dp))
                 .background(TextPrimary)
-                .clickable(onClick = onClick)
+                .clickable(onClick = onAddMaintenanceClick)
                 .padding(vertical = 14.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -538,7 +622,7 @@ private fun BottomActionBar(onClick: () -> Unit) {
                 tint = SurfacePrimary,
                 modifier = Modifier.size(18.dp)
             )
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(6.dp))
             Text(
                 text = "정비 기록 추가",
                 fontSize = 14.sp,
@@ -559,13 +643,18 @@ private fun heroIconColor(type: MachineType): Pair<Color, Color> = when (type) {
     MachineType.CULTIVATOR, MachineType.OTHER -> OtherIconBg to OtherIconTint
 }
 
+@Composable
 private fun heroIcon(type: MachineType): ImageVector = when (type) {
-    MachineType.TRACTOR,
-    MachineType.COMBINE,
-    MachineType.CULTIVATOR -> androidx.compose.material.icons.Icons.Default.Agriculture
-    MachineType.RICE_TRANSPLANTER -> androidx.compose.material.icons.Icons.Default.Grass
-    MachineType.VEHICLE -> androidx.compose.material.icons.Icons.Default.DirectionsCar
-    MachineType.OTHER -> androidx.compose.material.icons.Icons.Default.Build
+    MachineType.TRACTOR, MachineType.CULTIVATOR ->
+        androidx.compose.material.icons.Icons.Default.Agriculture
+    MachineType.COMBINE ->
+        ImageVector.vectorResource(R.drawable.ic_combine)
+    MachineType.RICE_TRANSPLANTER ->
+        ImageVector.vectorResource(R.drawable.ic_transplanter)
+    MachineType.VEHICLE ->
+        androidx.compose.material.icons.Icons.Default.DirectionsCar
+    MachineType.OTHER ->
+        androidx.compose.material.icons.Icons.Default.Build
 }
 
 // ============ Preview ============

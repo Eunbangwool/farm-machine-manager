@@ -1,6 +1,7 @@
 package com.example.farmmachinemanager.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material.icons.outlined.Air
 import androidx.compose.material.icons.outlined.BatteryFull
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.DonutLarge
 import androidx.compose.material.icons.outlined.FilterAlt
@@ -38,6 +40,7 @@ import com.example.farmmachinemanager.ui.theme.StatusNormalBg
 import com.example.farmmachinemanager.ui.theme.StatusNormalText
 import com.example.farmmachinemanager.ui.theme.StatusRepairBg
 import com.example.farmmachinemanager.ui.theme.StatusRepairText
+import com.example.farmmachinemanager.ui.theme.SurfacePrimary
 import com.example.farmmachinemanager.ui.theme.TextPrimary
 import com.example.farmmachinemanager.ui.theme.TextSecondary
 import com.example.farmmachinemanager.ui.theme.TextTertiary
@@ -48,6 +51,7 @@ fun ConsumableRow(
     consumable: Consumable,
     currentHours: Double,
     today: LocalDate = LocalDate.now(),
+    onQuickReplaceClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val status = consumable.status(currentHours, today)
@@ -103,6 +107,32 @@ fun ConsumableRow(
                 fontSize = 10.sp,
                 color = TextTertiary
             )
+        }
+
+        // 빠른 교체 버튼 (콜백이 제공된 경우만 표시)
+        if (onQuickReplaceClick != null) {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(SurfacePrimary)
+                    .clickable(onClick = onQuickReplaceClick)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = TextPrimary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = "교체",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary
+                )
+            }
         }
     }
 }

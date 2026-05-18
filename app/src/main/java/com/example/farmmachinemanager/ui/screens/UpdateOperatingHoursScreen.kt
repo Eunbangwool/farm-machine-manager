@@ -44,11 +44,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.AppContainer
+import com.example.farmmachinemanager.R
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.ui.theme.BorderColor
@@ -521,11 +523,11 @@ private fun iconColorFor(type: MachineType): Pair<Color, Color> = when (type) {
     MachineType.CULTIVATOR, MachineType.OTHER -> OtherIconBg to OtherIconTint
 }
 
+@Composable
 private fun iconFor(type: MachineType): ImageVector = when (type) {
-    MachineType.TRACTOR,
-    MachineType.COMBINE,
-    MachineType.CULTIVATOR -> Icons.Default.Agriculture
-    MachineType.RICE_TRANSPLANTER -> Icons.Default.Grass
+    MachineType.TRACTOR, MachineType.CULTIVATOR -> Icons.Default.Agriculture
+    MachineType.COMBINE -> ImageVector.vectorResource(R.drawable.ic_combine)
+    MachineType.RICE_TRANSPLANTER -> ImageVector.vectorResource(R.drawable.ic_transplanter)
     MachineType.VEHICLE -> Icons.Default.DirectionsCar
     MachineType.OTHER -> Icons.Default.Build
 }

@@ -44,6 +44,7 @@ data class Machine(
     val name: String,
     val manufacturer: String,
     val type: MachineType,
+    val customTypeName: String? = null,
     val horsepower: Int? = null,
     val serialNumber: String? = null,
     val registrationNumber: String? = null,
@@ -54,4 +55,8 @@ data class Machine(
     val lastMaintenanceDate: LocalDate? = null,
     val photoUrl: String? = null,
     val notes: String? = null
-)
+) {
+    /** 화면에 표시할 종류 라벨. customTypeName이 있으면 우선 사용. */
+    val typeDisplay: String
+        get() = customTypeName ?: type.displayName
+}

@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.example.farmmachinemanager.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -193,10 +195,17 @@ private fun InfoChip(icon: ImageVector, text: String) {
 }
 
 // 기계 종류별 아이콘과 색상
+@Composable
 private fun iconConfig(type: MachineType): Triple<Color, Color, ImageVector> = when (type) {
     MachineType.TRACTOR -> Triple(TractorIconBg, TractorIconTint, Icons.Default.Agriculture)
-    MachineType.COMBINE -> Triple(CombineIconBg, CombineIconTint, Icons.Default.Agriculture)
-    MachineType.RICE_TRANSPLANTER -> Triple(TransplanterIconBg, TransplanterIconTint, Icons.Default.Grass)
+    MachineType.COMBINE -> Triple(
+        CombineIconBg, CombineIconTint,
+        ImageVector.vectorResource(R.drawable.ic_combine)
+    )
+    MachineType.RICE_TRANSPLANTER -> Triple(
+        TransplanterIconBg, TransplanterIconTint,
+        ImageVector.vectorResource(R.drawable.ic_transplanter)
+    )
     MachineType.VEHICLE -> Triple(VehicleIconBg, VehicleIconTint, Icons.Default.DirectionsCar)
     MachineType.CULTIVATOR -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Agriculture)
     MachineType.OTHER -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Build)
@@ -205,7 +214,7 @@ private fun iconConfig(type: MachineType): Triple<Color, Color, ImageVector> = w
 private fun buildSubtitle(machine: Machine): String = buildString {
     append(machine.manufacturer)
     append(" · ")
-    append(machine.type.displayName)
+    append(machine.typeDisplay)
     machine.horsepower?.let { append(" · ${it}마력") }
 }
 

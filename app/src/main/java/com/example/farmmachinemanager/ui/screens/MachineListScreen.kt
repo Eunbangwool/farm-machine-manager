@@ -19,12 +19,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -67,6 +71,7 @@ fun MachineListScreen(
     companyName: String = "한농산업",
     onMachineClick: (Machine) -> Unit = {},
     onUpdateHoursClick: () -> Unit = {},
+    onAddMachineClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onFilterClick: () -> Unit = {}
 ) {
@@ -77,6 +82,9 @@ fun MachineListScreen(
         .collectAsState(initial = emptyList())
 
     var selectedFilter by remember { mutableStateOf<MachineType?>(null) }
+    // 검색 모드 토글 + 검색어
+    var isSearchMode by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val filterOptions = remember(machines) {
         listOf(
@@ -95,45 +103,110 @@ fun MachineListScreen(
     val selectedIndex = filterOptions.indexOfFirst { it.first == selectedFilter }
         .coerceAtLeast(0)
 
-    val visibleMachines = remember(selectedFilter, machines) {
-        if (selectedFilter == null) machines
+    val visibleMachines = remember(selectedFilter, machines, searchQuery) {
+        val typeFiltered = if (selectedFilter == null) machines
         else machines.filter { it.type == selectedFilter }
+        // 검색어가 있으면 이름/제조사에서 contains 매칭
+        if (searchQuery.isBlank()) typeFiltered
+        else typeFiltered.filter { m ->
+            m.name.contains(searchQuery, ignoreCase = true) ||
+                    m.manufacturer.contains(searchQuery, ignoreCase = true)
+        }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SurfaceSecondary)
     ) {
-        TopBar(
-            companyName = companyName,
-            filterOptions = filterOptions.map { it.second },
-            selectedIndex = selectedIndex,
-            onFilterSelect = { index -> selectedFilter = filterOptions[index].first },
-            onSearchClick = onSearchClick,
-            onFilterClick = onFilterClick
-        )
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 12.dp,
-                bottom = 24.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                UpdateHoursReminderCard(onClick = onUpdateHoursClick)
-            }
-            items(visibleMachines, key = { it.id }) { machine ->
-                MachineCard(
-                    machine = machine,
-                    onClick = { onMachineClick(machine) }
+            TopBar(
+                companyName = companyName,
+                filterOptions = filterOptions.map { it.second },
+                selectedIndex = selectedIndex,
+                onFilterSelect = { index -> selectedFilter = filterOptions[index].first },
+                onSearchClick = {
+                    isSearchMode = !isSearchMode
+                    if (!isSearchMode) searchQuery = ""
+                },
+                onFilterClick = onFilterClick
+            )
+
+            // 검색 입력창 (검색 모드일 때만 표시)
+            if (isSearchMode) {
+                SearchInputBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    onClose = {
+                        isSearchMode = false
+                        searchQuery = ""
+                    }
                 )
             }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 12.dp,
+                    bottom = 88.dp  // FAB 가리지 않게 넉넉히
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item {
+                    UpdateHoursReminderCard(onClick = onUpdateHoursClick)
+                }
+                items(visibleMachines, key = { it.id }) { machine ->
+                    MachineCard(
+                        machine = machine,
+                        onClick = { onMachineClick(machine) }
+                    )
+                }
+            }
         }
+
+        // 기계 등록 FAB (오른쪽 하단)
+        AddMachineFab(
+            onClick = onAddMachineClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(20.dp)
+        )
+    }
+}
+
+/**
+ * 새 기계 등록을 위한 FAB.
+ */
+@Composable
+private fun AddMachineFab(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(28.dp))
+            .background(TextPrimary)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            tint = SurfacePrimary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = "기계 등록",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = SurfacePrimary
+        )
     }
 }
 
@@ -229,12 +302,6 @@ private fun TopBar(
         ) {
             Column {
                 Text(
-                    text = companyName,
-                    fontSize = 12.sp,
-                    color = TextSecondary
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
                     text = "기계 관리",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
@@ -286,6 +353,67 @@ private fun IconCircleButton(
             tint = TextPrimary,
             modifier = Modifier.size(18.dp)
         )
+    }
+}
+
+/**
+ * 검색 모드 입력 바.
+ * 상단 검색 버튼을 누르면 펼쳐지고, 이름/제조사로 필터링한다.
+ */
+@Composable
+private fun SearchInputBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClose: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfacePrimary)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            tint = TextSecondary,
+            modifier = Modifier.size(18.dp)
+        )
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = {
+                Text(
+                    "이름 / 제조사로 검색",
+                    fontSize = 13.sp,
+                    color = TextTertiary
+                )
+            },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = SurfacePrimary,
+                unfocusedContainerColor = SurfacePrimary,
+                focusedIndicatorColor = TextPrimary,
+                unfocusedIndicatorColor = BorderColor,
+                cursorColor = TextPrimary
+            )
+        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onClose),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "검색 닫기",
+                tint = TextPrimary,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 
