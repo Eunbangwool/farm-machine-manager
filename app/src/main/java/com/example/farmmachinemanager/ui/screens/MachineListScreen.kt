@@ -57,6 +57,7 @@ import com.example.farmmachinemanager.ui.theme.SurfacePrimary
 import com.example.farmmachinemanager.ui.theme.SurfaceSecondary
 import com.example.farmmachinemanager.ui.theme.TextPrimary
 import com.example.farmmachinemanager.ui.theme.TextSecondary
+import com.example.farmmachinemanager.ui.theme.TextTertiary
 
 /**
  * 기계 목록 화면.
