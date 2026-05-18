@@ -127,6 +127,10 @@ fun SettingsScreen(
                 )
             }
 
+            // 동기화 섹션 (Firebase + 농장 코드)
+            SectionHeader(title = "동기화")
+            FirebaseSyncSection()
+
             // 향후 옵션 자리 (현재는 비활성)
             SectionHeader(title = "준비 중")
             Column(
@@ -141,8 +145,6 @@ fun SettingsScreen(
                 NavRow(label = "데이터 백업·복원", enabled = false)
                 Divider()
                 NavRow(label = "다크 모드", enabled = false)
-                Divider()
-                NavRow(label = "Firebase 동기화", enabled = false)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -288,6 +290,178 @@ private fun SettingsTopBar(onBack: () -> Unit) {
             fontSize = 17.sp,
             fontWeight = FontWeight.Medium,
             color = TextPrimary
+        )
+    }
+}
+
+// ============ Firebase 동기화 섹션 ============
+
+@Composable
+private fun FirebaseSyncSection() {
+    val mode = com.example.farmmachinemanager.AppContainer.currentMode
+    val farmCodeManager = remember {
+        runCatching { com.example.farmmachinemanager.AppContainer.farmCodeManager }.getOrNull()
+    }
+    var currentCode by remember {
+        androidx.compose.runtime.mutableStateOf(farmCodeManager?.farmCode)
+    }
+    var showJoinDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var joinCodeInput by remember { androidx.compose.runtime.mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+    ) {
+        // 1) 상태 표시
+        val (statusLabel, statusColor, statusDesc) = when (mode) {
+            com.example.farmmachinemanager.AppContainer.SyncMode.FIRESTORE_SYNCED ->
+                Triple(
+                    "연결됨",
+                    com.example.farmmachinemanager.ui.theme.StatusNormalText,
+                    "농장 코드: ${currentCode ?: "(없음)"}"
+                )
+            com.example.farmmachinemanager.AppContainer.SyncMode.LOCAL_ONLY ->
+                Triple(
+                    "로컬 전용",
+                    TextSecondary,
+                    "농장 코드를 설정하면 다른 폰과 자동 동기화돼요"
+                )
+            com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED ->
+                Triple(
+                    "Firebase 미설정",
+                    TextTertiary,
+                    "google-services.json을 app/ 폴더에 추가 후 빌드 필요"
+                )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Outlined.Sync,
+                contentDescription = null,
+                tint = statusColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "상태: $statusLabel",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = statusDesc,
+                    fontSize = 11.sp,
+                    color = TextSecondary
+                )
+            }
+        }
+        Divider()
+
+        // 2) Firebase 사용 가능 + 농장 코드 관리 가능 시에만 버튼 표시
+        if (mode != com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED &&
+            farmCodeManager != null
+        ) {
+            // 새 농장 시작
+            ActionButton(
+                label = if (currentCode == null) "새 농장 코드 생성" else "새 코드로 재시작",
+                hint = if (currentCode == null) "이 폰을 새 농장의 첫 폰으로" else "기존 코드를 버리고 새로 시작"
+            ) {
+                val code = farmCodeManager.generateNewCode()
+                currentCode = code
+            }
+            Divider()
+            // 기존 농장 참여
+            ActionButton(
+                label = "다른 폰 코드로 참여",
+                hint = "이미 사용 중인 농장 코드 입력"
+            ) {
+                joinCodeInput = ""
+                showJoinDialog = true
+            }
+            // 변경 후 재시작 안내
+            if (currentCode != null) {
+                Divider()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "코드를 바꾼 경우 앱을 다시 시작해야 적용돼요.",
+                        fontSize = 11.sp,
+                        color = TextTertiary
+                    )
+                }
+            }
+        }
+    }
+
+    // 코드 입력 다이얼로그
+    if (showJoinDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showJoinDialog = false },
+            title = { Text("농장 코드 입력") },
+            text = {
+                androidx.compose.material3.OutlinedTextField(
+                    value = joinCodeInput,
+                    onValueChange = { v -> joinCodeInput = v.filter { it.isDigit() }.take(6) },
+                    placeholder = { Text("6자리 숫자") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        if (joinCodeInput.length == 6) {
+                            farmCodeManager?.setCode(joinCodeInput)
+                            currentCode = joinCodeInput
+                            showJoinDialog = false
+                        }
+                    }
+                ) { Text("참여") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showJoinDialog = false }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun ActionButton(label: String, hint: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+            Text(text = hint, fontSize = 11.sp, color = TextSecondary)
+        }
+        Icon(
+            imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = TextTertiary,
+            modifier = Modifier.size(16.dp)
         )
     }
 }

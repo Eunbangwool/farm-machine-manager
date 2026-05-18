@@ -3,6 +3,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// google-services.json이 존재할 때만 Firebase 플러그인 적용.
+// → Firebase 설정 전이라도 빌드 가능. 사용자가 google-services.json을 app/ 폴더에
+//   배치하면 자동으로 Firebase가 활성화됨.
+val googleServicesJsonExists = project.file("google-services.json").exists()
+if (googleServicesJsonExists) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // CI 빌드에서는 GITHUB_RUN_NUMBER를 사용해 자동 버전 증가.
 // 로컬 빌드에서는 1을 사용 (Android Studio에서 빌드/실행 시).
 val ciRunNumber: Int = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
@@ -77,4 +85,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Firebase BoM이 모든 Firebase 의존성 버전을 통일.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+    // Tasks API를 코루틴 .await()로 변환하기 위함
+    implementation(libs.kotlinx.coroutines.play.services)
 }

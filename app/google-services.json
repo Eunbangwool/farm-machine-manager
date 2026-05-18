@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "810632460995",
+    "project_id": "farm-machine-manager-prod",
+    "storage_bucket": "farm-machine-manager-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810632460995:android:917d1b1dbca202d2f74076",
+        "android_client_info": {
+          "package_name": "com.example.farmmachinemanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhsKyNzyY7TR1J75p3XeezilIdrFXg3Qw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

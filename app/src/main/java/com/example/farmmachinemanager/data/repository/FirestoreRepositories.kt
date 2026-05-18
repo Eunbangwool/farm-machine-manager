@@ -1,73 +1,108 @@
 package com.example.farmmachinemanager.data.repository
 
-/*
- * Firestore Repository 구현
+import com.example.farmmachinemanager.data.Machine
+import com.example.farmmachinemanager.data.MachineStatus
+import com.example.farmmachinemanager.data.MachineType
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+
+/**
+ * Firestore 기반 Machine Repository.
  *
- * ⚠️ 활성화 전 준비 작업:
- * 1. FIREBASE_SETUP.md 가이드에 따라 Firebase 프로젝트 생성
- * 2. google-services.json을 app/ 폴더에 배치
- * 3. build.gradle.kts에 Firebase 의존성 추가
- * 4. 파일 상단의 `/* */` 주석 해제
+ * 컬렉션 구조: farms/{farmCode}/machines/{machineId}
  *
- * 의존성 추가 후 컴파일 가능합니다.
+ * - observeMachines(): Firestore snapshot listener로 실시간 변경 감지.
+ *   다른 폰에서 저장한 변경이 즉시 반영됨.
+ * - 오프라인 캐시는 Firestore SDK가 자동 처리 (기본 활성화).
  *
- * 사용 컬렉션 구조 (Firestore):
- *   companies/{companyId}/machines/{machineId}
- *   companies/{companyId}/machines/{machineId}/maintenance/{recordId}
- *   companies/{companyId}/machines/{machineId}/consumables/{consumableId}
- *
- * 회사 단위로 데이터를 격리해서 여러 회사가 같은 앱을 사용해도 데이터가 섞이지 않습니다.
- *
- * ───────────────────────────────────────────────────────────────────
- *
- * Firebase 의존성 추가 후 아래 코드 주석 해제:
- *
- * import com.example.farmmachinemanager.data.Consumable
- * import com.example.farmmachinemanager.data.Machine
- * import com.example.farmmachinemanager.data.MaintenanceRecord
- * import com.example.farmmachinemanager.data.TractorMaintenanceTemplate
- * import com.google.firebase.Timestamp
- * import com.google.firebase.firestore.FirebaseFirestore
- * import com.google.firebase.firestore.ktx.snapshots
- * import kotlinx.coroutines.flow.Flow
- * import kotlinx.coroutines.flow.map
- * import kotlinx.coroutines.tasks.await
- * import java.time.LocalDate
- * import java.time.ZoneId
- *
- * class FirestoreMachineRepository(
- *     private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
- *     private val companyId: String  // 로그인한 사용자의 회사 ID
- * ) : MachineRepository {
- *
- *     private val collection = db.collection("companies").document(companyId).collection("machines")
- *
- *     override fun observeMachines(): Flow<List<Machine>> =
- *         collection.snapshots().map { snapshot ->
- *             snapshot.documents.mapNotNull { it.toObject(Machine::class.java) }
- *         }
- *
- *     override suspend fun getMachine(id: String): Machine? =
- *         collection.document(id).get().await().toObject(Machine::class.java)
- *
- *     override suspend fun saveMachine(machine: Machine) {
- *         val docId = machine.id.ifBlank { collection.document().id }
- *         collection.document(docId).set(machine.copy(id = docId)).await()
- *     }
- *
- *     override suspend fun deleteMachine(id: String) {
- *         collection.document(id).delete().await()
- *     }
- * }
- *
- * // 같은 방식으로 FirestoreMaintenanceRepository, FirestoreConsumableRepository 구현.
- *
- * ───────────────────────────────────────────────────────────────────
- *
- * 데이터 모델 Firestore 호환성:
- * - Machine, MaintenanceRecord, Consumable 모두 빈 생성자 + 기본값 가짐 → ✅
- * - LocalDate는 Firestore가 직접 지원 안 함 → @ServerTimestamp + Timestamp로 변환 필요
- *   (또는 컨버터: LocalDate ↔ Timestamp)
- *
- * 다음 단계에서 본격 구현 예정.
+ * LocalDate, Enum은 Firestore가 직접 지원 안 하므로 Map ↔ Object 수동 변환.
  */
+class FirestoreMachineRepository(
+    farmCode: String,
+    db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) : MachineRepository {
+
+    private val collection = db
+        .collection("farms")
+        .document(farmCode)
+        .collection("machines")
+
+    override fun observeMachines(): Flow<List<Machine>> = callbackFlow {
+        val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
+            }
+            val machines = snapshot?.documents
+                ?.mapNotNull { doc -> doc.data?.let { mapToMachine(doc.id, it) } }
+                ?: emptyList()
+            trySend(machines)
+        }
+        awaitClose { registration.remove() }
+    }
+
+    override suspend fun getMachine(id: String): Machine? {
+        val doc = collection.document(id).get().await()
+        return doc.data?.let { mapToMachine(doc.id, it) }
+    }
+
+    override suspend fun saveMachine(machine: Machine) {
+        collection.document(machine.id).set(machineToMap(machine)).await()
+    }
+
+    override suspend fun deleteMachine(id: String) {
+        collection.document(id).delete().await()
+    }
+
+    // ============ 변환 함수 (LocalDate, Enum 처리) ============
+
+    private fun machineToMap(m: Machine): Map<String, Any?> = mapOf(
+        "id" to m.id,
+        "name" to m.name,
+        "manufacturer" to m.manufacturer,
+        "type" to m.type.name,
+        "customTypeName" to m.customTypeName,
+        "horsepower" to m.horsepower,
+        "serialNumber" to m.serialNumber,
+        "registrationNumber" to m.registrationNumber,
+        "year" to m.year,
+        "operatingHours" to m.operatingHours,
+        "status" to m.status.name,
+        "statusNote" to m.statusNote,
+        "lastMaintenanceDate" to m.lastMaintenanceDate?.toString(),
+        "photoUrl" to m.photoUrl,
+        "notes" to m.notes
+    )
+
+    private fun mapToMachine(id: String, data: Map<String, Any?>): Machine? = try {
+        Machine(
+            id = id,
+            name = data["name"] as? String ?: "",
+            manufacturer = data["manufacturer"] as? String ?: "",
+            type = (data["type"] as? String)
+                ?.let { runCatching { MachineType.valueOf(it) }.getOrNull() }
+                ?: MachineType.OTHER,
+            customTypeName = data["customTypeName"] as? String,
+            horsepower = (data["horsepower"] as? Number)?.toInt(),
+            serialNumber = data["serialNumber"] as? String,
+            registrationNumber = data["registrationNumber"] as? String,
+            year = (data["year"] as? Number)?.toInt(),
+            operatingHours = (data["operatingHours"] as? Number)?.toDouble() ?: 0.0,
+            status = (data["status"] as? String)
+                ?.let { runCatching { MachineStatus.valueOf(it) }.getOrNull() }
+                ?: MachineStatus.NORMAL,
+            statusNote = data["statusNote"] as? String,
+            lastMaintenanceDate = (data["lastMaintenanceDate"] as? String)
+                ?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
+            photoUrl = data["photoUrl"] as? String,
+            notes = data["notes"] as? String
+        )
+    } catch (e: Exception) {
+        null
+    }
+}

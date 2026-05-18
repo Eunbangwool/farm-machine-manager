@@ -36,6 +36,8 @@ import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Firebase 가용성 + 농장 코드 확인 후 Repository 백엔드 선택
+        AppContainer.init(applicationContext)
         enableEdgeToEdge()
         setContent {
             FarmMachineTheme {
