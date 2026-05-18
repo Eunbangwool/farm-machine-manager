@@ -28,11 +28,18 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -303,10 +310,10 @@ private fun FirebaseSyncSection() {
         runCatching { com.example.farmmachinemanager.AppContainer.farmCodeManager }.getOrNull()
     }
     var currentCode by remember {
-        androidx.compose.runtime.mutableStateOf(farmCodeManager?.farmCode)
+        mutableStateOf(farmCodeManager?.farmCode)
     }
-    var showJoinDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
-    var joinCodeInput by remember { androidx.compose.runtime.mutableStateOf("") }
+    var showJoinDialog by remember { mutableStateOf(false) }
+    var joinCodeInput by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -345,7 +352,7 @@ private fun FirebaseSyncSection() {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = androidx.compose.material.icons.Icons.Outlined.Sync,
+                imageVector = Icons.Outlined.Sync,
                 contentDescription = null,
                 tint = statusColor,
                 modifier = Modifier.size(18.dp)
@@ -408,11 +415,11 @@ private fun FirebaseSyncSection() {
 
     // 코드 입력 다이얼로그
     if (showJoinDialog) {
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = { showJoinDialog = false },
             title = { Text("농장 코드 입력") },
             text = {
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = joinCodeInput,
                     onValueChange = { v -> joinCodeInput = v.filter { it.isDigit() }.take(6) },
                     placeholder = { Text("6자리 숫자") },
@@ -420,7 +427,7 @@ private fun FirebaseSyncSection() {
                 )
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(
+                TextButton(
                     onClick = {
                         if (joinCodeInput.length == 6) {
                             farmCodeManager?.setCode(joinCodeInput)
@@ -431,7 +438,7 @@ private fun FirebaseSyncSection() {
                 ) { Text("참여") }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { showJoinDialog = false }) {
+                TextButton(onClick = { showJoinDialog = false }) {
                     Text("취소")
                 }
             }
@@ -458,7 +465,7 @@ private fun ActionButton(label: String, hint: String, onClick: () -> Unit) {
             Text(text = hint, fontSize = 11.sp, color = TextSecondary)
         }
         Icon(
-            imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
+            imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
             tint = TextTertiary,
             modifier = Modifier.size(16.dp)
