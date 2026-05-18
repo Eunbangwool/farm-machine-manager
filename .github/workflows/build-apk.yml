@@ -1,0 +1,89 @@
+# ===================================================================
+# Farm Machine Manager - 자동 APK 빌드
+# ===================================================================
+# main 브랜치에 push될 때마다 자동으로 APK를 빌드하고
+# GitHub Releases의 "latest" 태그에 첨부합니다.
+#
+# 빌드된 APK는 다음 URL에서 직접 다운로드 가능:
+#   https://github.com/Eunbangwool/farm-machine-manager/releases/latest
+# 또는 폰 북마크용 직접 URL:
+#   https://github.com/Eunbangwool/farm-machine-manager/releases/latest/download/app-debug.apk
+# ===================================================================
+
+name: Build APK
+
+on:
+  # main 브랜치에 push될 때
+  push:
+    branches: [main]
+  # Actions 탭에서 수동 실행 버튼도 활성화
+  workflow_dispatch:
+
+# Releases 생성/수정에 필요한 권한
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle 설정 (캐싱 포함)
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: APK 빌드
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: 빌드 정보 수집
+        id: info
+        run: |
+          echo "date=$(date '+%Y-%m-%d %H:%M' )" >> $GITHUB_OUTPUT
+          echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: APK를 Artifact으로 업로드 (백업용)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ steps.info.outputs.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: 최신 빌드 Release 업데이트
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "📱 최신 빌드"
+          body: |
+            **자동 빌드된 디버그 APK 파일**
+
+            ## 📲 폰에서 직접 설치하기
+            1. 폰 브라우저로 이 페이지 접속
+            2. 아래 **Assets** 섹션에서 `app-debug.apk` 탭
+            3. 다운로드 완료 후 알림 탭하여 설치
+            4. (최초 1회) "출처를 알 수 없는 앱" 허용 필요
+
+            ## 🔖 빌드 정보
+            - 빌드 일시: `${{ steps.info.outputs.date }} UTC` (한국시간 +9시간)
+            - 커밋: `${{ steps.info.outputs.sha }}`
+            - 브랜치: `main`
+
+            ## 🔗 폰 북마크용 직접 설치 URL
+            ```
+            https://github.com/${{ github.repository }}/releases/latest/download/app-debug.apk
+            ```
+            이 URL을 폰 브라우저 북마크에 저장하면, 매번 탭만으로 최신 APK 설치 가능합니다.
+          files: app/build/outputs/apk/debug/app-debug.apk
+          prerelease: false
+          make_latest: "true"
