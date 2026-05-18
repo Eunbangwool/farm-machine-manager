@@ -5,6 +5,8 @@
 # 사용법:
 #   ./apply-update.sh                       # ~/Downloads에서 최신 .patch 자동 검색
 #   ./apply-update.sh ~/Downloads/v7.patch  # 특정 파일 지정
+#
+# 입력: y/Y/ㅛ → 예, n/N/ㅜ → 아니오 (한영 전환 깜빡해도 동작)
 # ===================================================================
 
 set -e
@@ -12,6 +14,23 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
+
+# ----------------------------------------------------------------
+# 입력 판정 헬퍼 (영문/한글 동시 인식)
+# ----------------------------------------------------------------
+is_yes() {
+    case "$1" in
+        [Yy]|ㅛ|yes|YES|Yes) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+is_no() {
+    case "$1" in
+        [Nn]|ㅜ|no|NO|No) return 0 ;;
+        *) return 1 ;;
+    esac
+}
 
 # ----------------------------------------------------------------
 # 사전 점검
@@ -57,9 +76,8 @@ if [ -n "$(git status --porcelain)" ]; then
     git status --short
     echo ""
     echo "권장: 이대로 진행하면 변경사항과 패치가 섞일 수 있어요."
-    read -p "그래도 계속하시겠어요? [y/N] " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    read -r -p "그래도 계속하시겠어요? [y/ㅛ = 예, 기본 = 취소] " REPLY
+    if ! is_yes "$REPLY"; then
         echo "취소했습니다."
         echo ""
         echo "팁: 현재 변경사항을 일단 커밋하고 다시 시도하세요:"
@@ -77,9 +95,8 @@ echo "─────────────────"
 git apply --stat "$PATCH_FILE"
 echo ""
 
-read -p "적용할까요? [Y/n] " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Nn]$ ]]; then
+read -r -p "적용할까요? [Y/ㅛ = 예(기본), n/ㅜ = 취소] " REPLY
+if is_no "$REPLY"; then
     echo "취소했습니다."
     exit 0
 fi
@@ -116,9 +133,8 @@ echo ""
 # ----------------------------------------------------------------
 # 자동 커밋 + push
 # ----------------------------------------------------------------
-read -p "커밋하고 GitHub에 push 할까요? [Y/n] " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+read -r -p "커밋하고 GitHub에 push 할까요? [Y/ㅛ = 예(기본), n/ㅜ = 취소] " REPLY
+if ! is_no "$REPLY"; then
     # 패치 파일명에서 버전 추출 (예: v7.patch → v7)
     VERSION=$(basename "$PATCH_FILE" .patch)
 
