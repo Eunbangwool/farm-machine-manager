@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// CI 빌드에서는 GITHUB_RUN_NUMBER를 사용해 자동 버전 증가.
+// 로컬 빌드에서는 1을 사용 (Android Studio에서 빌드/실행 시).
+val ciRunNumber: Int = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+
 android {
     namespace = "com.example.farmmachinemanager"
     compileSdk {
@@ -15,13 +19,29 @@ android {
         applicationId = "com.example.farmmachinemanager"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // 빌드마다 +1 (1, 2, 3, ...). CI 빌드 번호와 동일.
+        versionCode = ciRunNumber
+        // 사람이 읽기 쉬운 버전. 예: "0.1.5" (CI 5번째 빌드)
+        versionName = "0.1.$ciRunNumber"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // CI 빌드마다 같은 keystore를 사용하여 APK 서명.
+    // → 새 APK를 기존 앱 위에 덮어 설치 가능 (uninstall 불필요)
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("../debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

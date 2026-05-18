@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -74,7 +74,7 @@ fun MachineListScreen(
     onUpdateHoursClick: () -> Unit = {},
     onAddMachineClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onFilterClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {}
 ) {
     // Repository에서 실시간으로 기계 목록 읽기.
     // 가동시간 업데이트 화면에서 저장한 새 값이 자동 반영됨.
@@ -132,7 +132,7 @@ fun MachineListScreen(
                     isSearchMode = !isSearchMode
                     if (!isSearchMode) searchQuery = ""
                 },
-                onFilterClick = onFilterClick
+                onSettingsClick = onSettingsClick
             )
 
             // 검색 입력창 (검색 모드일 때만 표시)
@@ -288,7 +288,7 @@ private fun TopBar(
     selectedIndex: Int,
     onFilterSelect: (Int) -> Unit,
     onSearchClick: () -> Unit,
-    onFilterClick: () -> Unit
+    onSettingsClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -317,9 +317,9 @@ private fun TopBar(
                     onClick = onSearchClick
                 )
                 IconCircleButton(
-                    icon = Icons.Default.Tune,
-                    contentDescription = "필터",
-                    onClick = onFilterClick
+                    icon = Icons.Default.Settings,
+                    contentDescription = "설정",
+                    onClick = onSettingsClick
                 )
             }
         }

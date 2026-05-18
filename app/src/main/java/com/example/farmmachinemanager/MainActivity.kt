@@ -22,6 +22,7 @@ import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
 import com.example.farmmachinemanager.ui.screens.EditMachineScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
+import com.example.farmmachinemanager.ui.screens.SettingsScreen
 import com.example.farmmachinemanager.ui.screens.UpdateOperatingHoursScreen
 import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
 
@@ -58,6 +59,7 @@ private sealed interface AppScreen {
     data object AddMachine : AppScreen
     data class EditMachine(val machine: Machine) : AppScreen
     data class DailyInspection(val machine: Machine) : AppScreen
+    data object Settings : AppScreen
 }
 
 @Composable
@@ -68,7 +70,8 @@ private fun AppRoot() {
         is AppScreen.List -> MachineListScreen(
             onMachineClick = { machine -> screen = AppScreen.Detail(machine) },
             onUpdateHoursClick = { screen = AppScreen.UpdateHours },
-            onAddMachineClick = { screen = AppScreen.AddMachine }
+            onAddMachineClick = { screen = AppScreen.AddMachine },
+            onSettingsClick = { screen = AppScreen.Settings }
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
@@ -100,6 +103,9 @@ private fun AppRoot() {
             machine = current.machine,
             onCancel = { screen = AppScreen.Detail(current.machine) },
             onSaveComplete = { screen = AppScreen.Detail(current.machine) }
+        )
+        is AppScreen.Settings -> SettingsScreen(
+            onBack = { screen = AppScreen.List }
         )
     }
 }
