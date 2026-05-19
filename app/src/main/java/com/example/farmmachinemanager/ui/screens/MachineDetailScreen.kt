@@ -33,10 +33,13 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -155,6 +158,31 @@ fun MachineDetailScreen(
     val topConsumables = sortedConsumables.take(3)
     val recentMaintenance = maintenanceRecords.take(3)
 
+    // 빠른 교체 실행 취소를 위한 상태
+    // pendingUndo가 null이 아니면 Snackbar에 [실행 취소] 버튼 표시
+    var pendingUndo by remember {
+        mutableStateOf<QuickReplaceUndo?>(null)
+    }
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+
+    // Snackbar 표시 / 사용자 액션 처리
+    LaunchedEffect(pendingUndo) {
+        val undo = pendingUndo ?: return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = "'${undo.consumableName}' 교체 처리됨",
+            actionLabel = "실행 취소",
+            duration = androidx.compose.material3.SnackbarDuration.Short
+        )
+        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+            // 1) 정비기록 삭제
+            AppContainer.maintenanceRepository.deleteMaintenance(undo.recordId)
+            // 2) 소모품 원상복구
+            AppContainer.consumableRepository.saveConsumable(undo.previousConsumable)
+        }
+        pendingUndo = null  // 다시 null로 → Snackbar 사라짐
+    }
+
+    androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -235,8 +263,9 @@ fun MachineDetailScreen(
                                             )
                                             AppContainer.consumableRepository.saveConsumable(updated)
                                             // 2) 정비기록 자동 생성
+                                            val recordId = "record_${System.currentTimeMillis()}"
                                             val record = MaintenanceRecord(
-                                                id = "record_${System.currentTimeMillis()}",
+                                                id = recordId,
                                                 machineId = machine.id,
                                                 date = today,
                                                 type = MaintenanceType.CONSUMABLE_REPLACE,
@@ -245,6 +274,12 @@ fun MachineDetailScreen(
                                                 replacedConsumableIds = listOf(consumable.id)
                                             )
                                             AppContainer.maintenanceRepository.addMaintenance(record)
+                                            // 3) 실행 취소용 스냅샷 저장 → Snackbar 표시
+                                            pendingUndo = QuickReplaceUndo(
+                                                consumableName = consumable.name,
+                                                previousConsumable = consumable,  // copy 전의 원본
+                                                recordId = recordId
+                                            )
                                         }
                                     }
                                 )
@@ -304,7 +339,27 @@ fun MachineDetailScreen(
             onAddMaintenanceClick = onAddMaintenanceClick
         )
     }
+
+    // SnackbarHost를 화면 하단(BottomActionBar 위)에 띄움
+    androidx.compose.material3.SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier
+            .align(androidx.compose.ui.Alignment.BottomCenter)
+            .padding(bottom = 80.dp, start = 12.dp, end = 12.dp)
+    )
+    }
 }
+
+/**
+ * 빠른 교체 실행 취소를 위한 스냅샷.
+ * - previousConsumable: 교체 전 상태 (lastReplacedDate/Hours 복원용)
+ * - recordId: 자동 생성된 정비기록 ID (삭제용)
+ */
+private data class QuickReplaceUndo(
+    val consumableName: String,
+    val previousConsumable: com.example.farmmachinemanager.data.Consumable,
+    val recordId: String
+)
 
 // ============ 컴포넌트들 ============
 
