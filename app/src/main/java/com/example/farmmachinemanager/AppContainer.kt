@@ -4,7 +4,9 @@ import android.content.Context
 import com.example.farmmachinemanager.data.FarmCodeManager
 import com.example.farmmachinemanager.data.FirebaseAvailability
 import com.example.farmmachinemanager.data.repository.ConsumableRepository
+import com.example.farmmachinemanager.data.repository.FirestoreConsumableRepository
 import com.example.farmmachinemanager.data.repository.FirestoreMachineRepository
+import com.example.farmmachinemanager.data.repository.FirestoreMaintenanceRepository
 import com.example.farmmachinemanager.data.repository.MachineRepository
 import com.example.farmmachinemanager.data.repository.MaintenanceRepository
 import com.example.farmmachinemanager.data.repository.SampleConsumableRepository
@@ -54,13 +56,21 @@ object AppContainer {
         }
     }
 
-    // Maintenance + Consumable은 다음 round에서 Firestore 마이그레이션.
-    // 현재는 메모리 기반으로 유지 (앱 재시작 시 사라짐).
     val maintenanceRepository: MaintenanceRepository by lazy {
-        SampleMaintenanceRepository()
+        val code = farmCodeManager.farmCode
+        if (currentMode == SyncMode.FIRESTORE_SYNCED && !code.isNullOrBlank()) {
+            FirestoreMaintenanceRepository(farmCode = code)
+        } else {
+            SampleMaintenanceRepository()
+        }
     }
 
     val consumableRepository: ConsumableRepository by lazy {
-        SampleConsumableRepository()
+        val code = farmCodeManager.farmCode
+        if (currentMode == SyncMode.FIRESTORE_SYNCED && !code.isNullOrBlank()) {
+            FirestoreConsumableRepository(farmCode = code)
+        } else {
+            SampleConsumableRepository()
+        }
     }
 }
