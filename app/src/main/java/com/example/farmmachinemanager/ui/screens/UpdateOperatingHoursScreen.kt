@@ -56,6 +56,8 @@ import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.ui.theme.BorderColor
 import com.example.farmmachinemanager.ui.theme.CombineIconBg
 import com.example.farmmachinemanager.ui.theme.CombineIconTint
+import com.example.farmmachinemanager.ui.theme.ForkliftIconBg
+import com.example.farmmachinemanager.ui.theme.ForkliftIconTint
 import com.example.farmmachinemanager.ui.theme.OtherIconBg
 import com.example.farmmachinemanager.ui.theme.OtherIconTint
 import com.example.farmmachinemanager.ui.theme.StatusRepairBg
@@ -519,6 +521,7 @@ private fun iconColorFor(type: MachineType): Pair<Color, Color> = when (type) {
     MachineType.TRACTOR -> TractorIconBg to TractorIconTint
     MachineType.COMBINE -> CombineIconBg to CombineIconTint
     MachineType.RICE_TRANSPLANTER -> TransplanterIconBg to TransplanterIconTint
+    MachineType.FORKLIFT -> ForkliftIconBg to ForkliftIconTint
     MachineType.VEHICLE -> VehicleIconBg to VehicleIconTint
     MachineType.CULTIVATOR, MachineType.OTHER -> OtherIconBg to OtherIconTint
 }
@@ -528,6 +531,7 @@ private fun iconFor(type: MachineType): ImageVector = when (type) {
     MachineType.TRACTOR, MachineType.CULTIVATOR -> Icons.Default.Agriculture
     MachineType.COMBINE -> ImageVector.vectorResource(R.drawable.ic_combine)
     MachineType.RICE_TRANSPLANTER -> ImageVector.vectorResource(R.drawable.ic_transplanter)
+    MachineType.FORKLIFT -> ImageVector.vectorResource(R.drawable.ic_forklift)
     MachineType.VEHICLE -> Icons.Default.DirectionsCar
     MachineType.OTHER -> Icons.Default.Build
 }

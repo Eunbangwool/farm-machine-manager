@@ -33,6 +33,9 @@ val TransplanterIconTint = Color(0xFF3B6D11)
 val VehicleIconBg = Color(0xFFE6F1FB)
 val VehicleIconTint = Color(0xFF0C447C)
 
+val ForkliftIconBg = Color(0xFFFFF4E0)
+val ForkliftIconTint = Color(0xFFB45A00)
+
 val OtherIconBg = Color(0xFFF1EFE8)
 val OtherIconTint = Color(0xFF444441)
 

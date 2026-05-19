@@ -269,6 +269,7 @@ private fun MachineTypeChips(
         MachineType.COMBINE to "콤바인",
         MachineType.RICE_TRANSPLANTER to "이앙기",
         MachineType.CULTIVATOR to "관리기",
+        MachineType.FORKLIFT to "지게차",
         MachineType.VEHICLE to "차량",
         MachineType.OTHER to "기타"
     )

@@ -41,6 +41,8 @@ import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.ui.theme.BorderColor
 import com.example.farmmachinemanager.ui.theme.CombineIconBg
 import com.example.farmmachinemanager.ui.theme.CombineIconTint
+import com.example.farmmachinemanager.ui.theme.ForkliftIconBg
+import com.example.farmmachinemanager.ui.theme.ForkliftIconTint
 import com.example.farmmachinemanager.ui.theme.OtherIconBg
 import com.example.farmmachinemanager.ui.theme.OtherIconTint
 import com.example.farmmachinemanager.ui.theme.StatusInspectionBg
@@ -205,6 +207,10 @@ private fun iconConfig(type: MachineType): Triple<Color, Color, ImageVector> = w
     MachineType.RICE_TRANSPLANTER -> Triple(
         TransplanterIconBg, TransplanterIconTint,
         ImageVector.vectorResource(R.drawable.ic_transplanter)
+    )
+    MachineType.FORKLIFT -> Triple(
+        ForkliftIconBg, ForkliftIconTint,
+        ImageVector.vectorResource(R.drawable.ic_forklift)
     )
     MachineType.VEHICLE -> Triple(VehicleIconBg, VehicleIconTint, Icons.Default.DirectionsCar)
     MachineType.CULTIVATOR -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Agriculture)
