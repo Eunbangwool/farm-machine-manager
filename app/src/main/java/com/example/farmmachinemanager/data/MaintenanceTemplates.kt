@@ -25,8 +25,8 @@ object MaintenanceTemplates {
         MachineType.TRACTOR -> TractorMaintenanceTemplate.defaultConsumables(machineId)
         MachineType.COMBINE -> CombineMaintenanceTemplate.defaultConsumables(machineId)
         MachineType.RICE_TRANSPLANTER -> TransplanterMaintenanceTemplate.defaultConsumables(machineId)
+        MachineType.FORKLIFT -> ForkliftMaintenanceTemplate.defaultConsumables(machineId)
         MachineType.CULTIVATOR,
-        MachineType.FORKLIFT,
         MachineType.VEHICLE,
         MachineType.OTHER -> emptyList()
     }
@@ -38,6 +38,7 @@ object MaintenanceTemplates {
         MachineType.TRACTOR -> TractorMaintenanceTemplate.standardCheckpoints
         MachineType.COMBINE -> CombineMaintenanceTemplate.standardCheckpoints
         MachineType.RICE_TRANSPLANTER -> TransplanterMaintenanceTemplate.standardCheckpoints
+        MachineType.FORKLIFT -> ForkliftMaintenanceTemplate.standardCheckpoints
         else -> emptyList()
     }
 
@@ -48,6 +49,7 @@ object MaintenanceTemplates {
         MachineType.TRACTOR -> "TYM 트랙터 매뉴얼 기준"
         MachineType.COMBINE -> "국제 KC1200 콤바인 매뉴얼 기준"
         MachineType.RICE_TRANSPLANTER -> "이앙기 NW시리즈 매뉴얼 기준 (8S)"
+        MachineType.FORKLIFT -> "CLARK D20/25/30/33-7 매뉴얼 기준"
         else -> null
     }
 }
