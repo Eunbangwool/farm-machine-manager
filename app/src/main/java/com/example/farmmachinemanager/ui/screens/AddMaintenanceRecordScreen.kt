@@ -459,7 +459,7 @@ private fun TopBar(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Outlined.Delete,
+                    imageVector = androidx.compose.material.icons.Icons.Default.Delete,
                     contentDescription = "삭제",
                     tint = com.example.farmmachinemanager.ui.theme.MaintenanceRepairTint,
                     modifier = Modifier.size(22.dp)
