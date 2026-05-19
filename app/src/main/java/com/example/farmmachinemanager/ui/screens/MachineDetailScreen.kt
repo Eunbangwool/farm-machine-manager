@@ -120,7 +120,9 @@ fun MachineDetailScreen(
     onMarkRepairComplete: () -> Unit = {},
     onDailyInspectionClick: () -> Unit = {},
     onViewAllConsumables: () -> Unit = {},
-    onViewAllMaintenance: () -> Unit = {}
+    onViewAllMaintenance: () -> Unit = {},
+    /** 미리보기에 표시된 정비기록 카드를 직접 클릭한 경우 수정 화면으로 진입 */
+    onEditMaintenanceClick: (MaintenanceRecord) -> Unit = {}
 ) {
     // 하드웨어 뒤로가기 버튼 처리 (앱이 꺼지지 않고 목록으로 돌아감)
     BackHandler { onBackClick() }
@@ -311,7 +313,12 @@ fun MachineDetailScreen(
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         CardSurface {
                             recentMaintenance.forEachIndexed { index, record ->
-                                MaintenanceRecordRow(record = record)
+                                MaintenanceRecordRow(
+                                    record = record,
+                                    modifier = Modifier.clickable {
+                                        onEditMaintenanceClick(record)
+                                    }
+                                )
                                 if (index < recentMaintenance.lastIndex) {
                                     Divider(
                                         color = BorderColor,

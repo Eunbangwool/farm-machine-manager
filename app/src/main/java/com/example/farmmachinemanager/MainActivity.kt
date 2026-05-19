@@ -142,7 +142,10 @@ private fun AppRoot() {
             onMarkRepairComplete = { screen = AppScreen.List },
             onDailyInspectionClick = { screen = AppScreen.DailyInspection(current.machine) },
             onViewAllConsumables = { screen = AppScreen.AllConsumables(current.machine) },
-            onViewAllMaintenance = { screen = AppScreen.AllMaintenance(current.machine) }
+            onViewAllMaintenance = { screen = AppScreen.AllMaintenance(current.machine) },
+            onEditMaintenanceClick = { record ->
+                screen = AppScreen.EditMaintenance(current.machine, record)
+            }
         )
         is AppScreen.AddMaintenance -> AddMaintenanceRecordScreen(
             machine = current.machine,
@@ -151,8 +154,8 @@ private fun AppRoot() {
         )
         is AppScreen.EditMaintenance -> AddMaintenanceRecordScreen(
             machine = current.machine,
-            onCancel = { screen = AppScreen.AllMaintenance(current.machine) },
-            onSaveComplete = { screen = AppScreen.AllMaintenance(current.machine) },
+            onCancel = { screen = AppScreen.Detail(current.machine) },
+            onSaveComplete = { screen = AppScreen.Detail(current.machine) },
             existingRecord = current.record
         )
         is AppScreen.UpdateHours -> UpdateOperatingHoursScreen(
