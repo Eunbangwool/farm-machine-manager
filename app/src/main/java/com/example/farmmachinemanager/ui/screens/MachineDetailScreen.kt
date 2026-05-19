@@ -171,7 +171,7 @@ fun MachineDetailScreen(
         val result = snackbarHostState.showSnackbar(
             message = "'${undo.consumableName}' 교체 처리됨",
             actionLabel = "실행 취소",
-            duration = androidx.compose.material3.SnackbarDuration.Short
+            duration = androidx.compose.material3.SnackbarDuration.Long
         )
         if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
             // 1) 정비기록 삭제
