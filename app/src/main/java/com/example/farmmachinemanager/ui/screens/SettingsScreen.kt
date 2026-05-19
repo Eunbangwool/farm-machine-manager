@@ -315,6 +315,9 @@ private fun FirebaseSyncSection() {
     var showJoinDialog by remember { mutableStateOf(false) }
     var joinCodeInput by remember { mutableStateOf("") }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var showRestartDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -384,6 +387,7 @@ private fun FirebaseSyncSection() {
             ) {
                 val code = farmCodeManager.generateNewCode()
                 currentCode = code
+                showRestartDialog = true
             }
             Divider()
             // 기존 농장 참여
@@ -404,9 +408,10 @@ private fun FirebaseSyncSection() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "코드를 바꾼 경우 앱을 다시 시작해야 적용돼요.",
-                        fontSize = 11.sp,
-                        color = TextTertiary
+                        text = "현재 코드: $currentCode",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextSecondary
                     )
                 }
             }
@@ -433,6 +438,7 @@ private fun FirebaseSyncSection() {
                             farmCodeManager?.setCode(joinCodeInput)
                             currentCode = joinCodeInput
                             showJoinDialog = false
+                            showRestartDialog = true
                         }
                     }
                 ) { Text("참여") }
@@ -440,6 +446,34 @@ private fun FirebaseSyncSection() {
             dismissButton = {
                 TextButton(onClick = { showJoinDialog = false }) {
                     Text("취소")
+                }
+            }
+        )
+    }
+
+    // 재시작 안내 다이얼로그 - 코드 적용을 위해 앱 재시작 필수
+    if (showRestartDialog) {
+        AlertDialog(
+            onDismissRequest = { /* 닫지 못하게 */ },
+            title = { Text("앱 재시작 필요") },
+            text = {
+                Text(
+                    "농장 코드가 적용되려면 앱을 완전히 종료한 후 다시 실행해야 합니다.\n\n" +
+                            "지금 자동으로 앱을 종료할까요? (앱 아이콘을 다시 탭해서 실행해 주세요)"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // 현재 Activity finish + process kill → 사용자가 아이콘 탭하면 새 process 시작
+                        (context as? android.app.Activity)?.finishAndRemoveTask()
+                        android.os.Process.killProcess(android.os.Process.myPid())
+                    }
+                ) { Text("앱 종료") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestartDialog = false }) {
+                    Text("나중에")
                 }
             }
         )
