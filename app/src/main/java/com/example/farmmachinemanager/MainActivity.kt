@@ -26,10 +26,13 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.farmmachinemanager.data.Machine
+import com.example.farmmachinemanager.data.MaintenanceRecord
 import com.example.farmmachinemanager.notifications.ConsumableCheckWorker
 import com.example.farmmachinemanager.notifications.NotificationHelper
 import com.example.farmmachinemanager.ui.screens.AddMachineScreen
 import com.example.farmmachinemanager.ui.screens.AddMaintenanceRecordScreen
+import com.example.farmmachinemanager.ui.screens.AllConsumablesScreen
+import com.example.farmmachinemanager.ui.screens.AllMaintenanceScreen
 import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
 import com.example.farmmachinemanager.ui.screens.EditMachineScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
@@ -107,12 +110,16 @@ private sealed interface AppScreen {
     data object List : AppScreen
     data class Detail(val machine: Machine) : AppScreen
     data class AddMaintenance(val machine: Machine) : AppScreen
+    /** 기존 정비기록 수정 (existingRecord와 함께 화면 진입) */
+    data class EditMaintenance(val machine: Machine, val record: MaintenanceRecord) : AppScreen
     data object UpdateHours : AppScreen
     data object AddMachine : AppScreen
     data class EditMachine(val machine: Machine) : AppScreen
     data class DailyInspection(val machine: Machine) : AppScreen
     data object Settings : AppScreen
     data object Statistics : AppScreen
+    data class AllMaintenance(val machine: Machine) : AppScreen
+    data class AllConsumables(val machine: Machine) : AppScreen
 }
 
 @Composable
@@ -133,12 +140,20 @@ private fun AppRoot() {
             onEditClick = { screen = AppScreen.EditMachine(current.machine) },
             onAddMaintenanceClick = { screen = AppScreen.AddMaintenance(current.machine) },
             onMarkRepairComplete = { screen = AppScreen.List },
-            onDailyInspectionClick = { screen = AppScreen.DailyInspection(current.machine) }
+            onDailyInspectionClick = { screen = AppScreen.DailyInspection(current.machine) },
+            onViewAllConsumables = { screen = AppScreen.AllConsumables(current.machine) },
+            onViewAllMaintenance = { screen = AppScreen.AllMaintenance(current.machine) }
         )
         is AppScreen.AddMaintenance -> AddMaintenanceRecordScreen(
             machine = current.machine,
             onCancel = { screen = AppScreen.Detail(current.machine) },
             onSaveComplete = { screen = AppScreen.Detail(current.machine) }
+        )
+        is AppScreen.EditMaintenance -> AddMaintenanceRecordScreen(
+            machine = current.machine,
+            onCancel = { screen = AppScreen.AllMaintenance(current.machine) },
+            onSaveComplete = { screen = AppScreen.AllMaintenance(current.machine) },
+            existingRecord = current.record
         )
         is AppScreen.UpdateHours -> UpdateOperatingHoursScreen(
             onCancel = { screen = AppScreen.List },
@@ -163,6 +178,17 @@ private fun AppRoot() {
         )
         is AppScreen.Statistics -> StatisticsScreen(
             onBack = { screen = AppScreen.List }
+        )
+        is AppScreen.AllMaintenance -> AllMaintenanceScreen(
+            machine = current.machine,
+            onBack = { screen = AppScreen.Detail(current.machine) },
+            onRecordClick = { record ->
+                screen = AppScreen.EditMaintenance(current.machine, record)
+            }
+        )
+        is AppScreen.AllConsumables -> AllConsumablesScreen(
+            machine = current.machine,
+            onBack = { screen = AppScreen.Detail(current.machine) }
         )
     }
 }

@@ -86,28 +86,39 @@ import java.time.format.DateTimeFormatter
 fun AddMaintenanceRecordScreen(
     machine: Machine,
     onCancel: () -> Unit,
-    onSaveComplete: () -> Unit
+    onSaveComplete: () -> Unit,
+    // null이면 신규 추가, 값이 있으면 수정 모드 (해당 record를 화면에 미리 채움)
+    existingRecord: MaintenanceRecord? = null
 ) {
+    val isEditMode = existingRecord != null
     val coroutineScope = rememberCoroutineScope()
     val consumables by AppContainer.consumableRepository
         .observeConsumablesFor(machine.id)
         .collectAsState(initial = emptyList())
 
-    // ---- 폼 상태 ----
-    var type by remember { mutableStateOf(MaintenanceType.CONSUMABLE_REPLACE) }
-    var title by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf(LocalDate.now()) }
-    var operatingHoursText by remember {
-        mutableStateOf(machine.operatingHours.toInt().toString())
+    // ---- 폼 상태 (existingRecord가 있으면 그 값으로 초기화) ----
+    var type by remember {
+        mutableStateOf(existingRecord?.type ?: MaintenanceType.CONSUMABLE_REPLACE)
     }
-    var costText by remember { mutableStateOf("") }
-    var shopName by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedConsumableIds by remember { mutableStateOf(emptySet<String>()) }
-    var isInProgress by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf(existingRecord?.title ?: "") }
+    var date by remember { mutableStateOf(existingRecord?.date ?: LocalDate.now()) }
+    var operatingHoursText by remember {
+        mutableStateOf(
+            (existingRecord?.operatingHoursAtMaintenance ?: machine.operatingHours)
+                .toInt().toString()
+        )
+    }
+    var costText by remember { mutableStateOf(existingRecord?.cost?.toString() ?: "") }
+    var shopName by remember { mutableStateOf(existingRecord?.shopName ?: "") }
+    var description by remember { mutableStateOf(existingRecord?.description ?: "") }
+    var selectedConsumableIds by remember {
+        mutableStateOf(existingRecord?.replacedConsumableIds?.toSet() ?: emptySet())
+    }
+    var isInProgress by remember { mutableStateOf(existingRecord?.isInProgress ?: false) }
     var isSaving by remember { mutableStateOf(false) }
     var datePickerOpen by remember { mutableStateOf(false) }
-    var photoUris by remember { mutableStateOf(emptyList<String>()) }
+    var photoUris by remember { mutableStateOf(existingRecord?.photoUrls ?: emptyList()) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // 시스템 사진 선택기 (API 33+ 네이티브, 그 이하는 자동 폴백). 권한 불필요.
     val context = LocalContext.current
@@ -141,7 +152,8 @@ fun AddMaintenanceRecordScreen(
             isSaving = true
             val hoursAtMaintenance = operatingHoursText.toDoubleOrNull()
             val record = MaintenanceRecord(
-                id = "m_${System.currentTimeMillis()}",
+                // 수정 모드: 기존 ID 유지 / 신규: 새 ID
+                id = existingRecord?.id ?: "m_${System.currentTimeMillis()}",
                 machineId = machine.id,
                 date = date,
                 type = type,
@@ -155,7 +167,11 @@ fun AddMaintenanceRecordScreen(
                 photoUrls = photoUris.toList()
             )
 
-            AppContainer.maintenanceRepository.addMaintenance(record)
+            if (isEditMode) {
+                AppContainer.maintenanceRepository.updateMaintenance(record)
+            } else {
+                AppContainer.maintenanceRepository.addMaintenance(record)
+            }
 
             // 체크된 소모품들의 마지막 교체일/시간 갱신
             val replacementHours = hoursAtMaintenance ?: machine.operatingHours
@@ -182,7 +198,11 @@ fun AddMaintenanceRecordScreen(
     ) {
         TopBar(
             machineName = machine.name,
-            onBackClick = onCancel
+            isEditMode = isEditMode,
+            onBackClick = onCancel,
+            onDeleteClick = if (isEditMode) {
+                { showDeleteDialog = true }
+            } else null
         )
 
         // 폼 (스크롤 가능)
@@ -355,6 +375,34 @@ fun AddMaintenanceRecordScreen(
             DatePicker(state = datePickerState)
         }
     }
+
+    // 삭제 확인 다이얼로그 (수정 모드에서 휴지통 아이콘 누른 경우)
+    if (showDeleteDialog && existingRecord != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("정비 기록 삭제") },
+            text = {
+                Text("'${existingRecord.title}' 정비 기록을 삭제하시겠어요?\n삭제된 기록은 복구할 수 없습니다.")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    coroutineScope.launch {
+                        AppContainer.maintenanceRepository.deleteMaintenance(existingRecord.id)
+                        showDeleteDialog = false
+                        onSaveComplete()
+                    }
+                }) {
+                    Text(
+                        text = "삭제",
+                        color = com.example.farmmachinemanager.ui.theme.MaintenanceRepairTint
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("취소") }
+            }
+        )
+    }
 }
 
 // ============ 보조 컴포넌트 ============
@@ -362,7 +410,9 @@ fun AddMaintenanceRecordScreen(
 @Composable
 private fun TopBar(
     machineName: String,
-    onBackClick: () -> Unit
+    isEditMode: Boolean = false,
+    onBackClick: () -> Unit,
+    onDeleteClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -386,9 +436,9 @@ private fun TopBar(
             )
         }
         Spacer(modifier = Modifier.size(8.dp))
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "정비 기록 추가",
+                text = if (isEditMode) "정비 기록 수정" else "정비 기록 추가",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextPrimary
@@ -398,6 +448,23 @@ private fun TopBar(
                 fontSize = 12.sp,
                 color = TextSecondary
             )
+        }
+        // 수정 모드에서만 휴지통 아이콘 표시
+        if (onDeleteClick != null) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onDeleteClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Outlined.Delete,
+                    contentDescription = "삭제",
+                    tint = com.example.farmmachinemanager.ui.theme.MaintenanceRepairTint,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
     }
 }
