@@ -711,7 +711,7 @@ private fun heroIconColor(type: MachineType): Pair<Color, Color> = when (type) {
 @Composable
 private fun heroIcon(type: MachineType): ImageVector = when (type) {
     MachineType.TRACTOR, MachineType.CULTIVATOR ->
-        androidx.compose.material.icons.Icons.Default.Agriculture
+        Icons.Default.Agriculture
     MachineType.COMBINE ->
         ImageVector.vectorResource(R.drawable.ic_combine)
     MachineType.RICE_TRANSPLANTER ->
@@ -719,9 +719,9 @@ private fun heroIcon(type: MachineType): ImageVector = when (type) {
     MachineType.FORKLIFT ->
         ImageVector.vectorResource(R.drawable.ic_forklift)
     MachineType.VEHICLE ->
-        androidx.compose.material.icons.Icons.Default.DirectionsCar
+        Icons.Default.DirectionsCar
     MachineType.OTHER ->
-        androidx.compose.material.icons.Icons.Default.Build
+        Icons.Default.Build
 }
 
 // ============ Preview ============
