@@ -91,4 +91,5 @@ dependencies {
     implementation(libs.firebase.firestore)
     // Tasks API를 코루틴 .await()로 변환하기 위함
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.androidx.work.runtime.ktx)
 }

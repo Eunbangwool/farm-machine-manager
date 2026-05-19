@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -75,7 +76,8 @@ fun MachineListScreen(
     onUpdateHoursClick: () -> Unit = {},
     onAddMachineClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onStatisticsClick: () -> Unit = {}
 ) {
     // Repository에서 실시간으로 기계 목록 읽기.
     // 가동시간 업데이트 화면에서 저장한 새 값이 자동 반영됨.
@@ -142,7 +144,8 @@ fun MachineListScreen(
                     isSearchMode = !isSearchMode
                     if (!isSearchMode) searchQuery = ""
                 },
-                onSettingsClick = onSettingsClick
+                onSettingsClick = onSettingsClick,
+                onStatisticsClick = onStatisticsClick
             )
 
             // 검색 입력창 (검색 모드일 때만 표시)
@@ -356,7 +359,8 @@ private fun TopBar(
     selectedIndex: Int,
     onFilterSelect: (Int) -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onStatisticsClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -383,6 +387,11 @@ private fun TopBar(
                     icon = Icons.Default.Search,
                     contentDescription = "검색",
                     onClick = onSearchClick
+                )
+                IconCircleButton(
+                    icon = Icons.Outlined.QueryStats,
+                    contentDescription = "통계",
+                    onClick = onStatisticsClick
                 )
                 IconCircleButton(
                     icon = Icons.Default.Settings,

@@ -143,6 +143,21 @@ class FirestoreMaintenanceRepository(
         awaitClose { registration.remove() }
     }
 
+    override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> = callbackFlow {
+        val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
+            }
+            val records = snapshot?.documents
+                ?.mapNotNull { doc -> doc.data?.let { recordFromMap(doc.id, it) } }
+                ?.sortedByDescending { it.date }
+                ?: emptyList()
+            trySend(records)
+        }
+        awaitClose { registration.remove() }
+    }
+
     override suspend fun addMaintenance(record: MaintenanceRecord) {
         collection.document(record.id).set(recordToMap(record)).await()
     }

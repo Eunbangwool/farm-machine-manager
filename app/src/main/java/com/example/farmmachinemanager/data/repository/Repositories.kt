@@ -24,6 +24,8 @@ interface MachineRepository {
 
 interface MaintenanceRepository {
     fun observeMaintenanceFor(machineId: String): Flow<List<MaintenanceRecord>>
+    /** 통계용: 모든 기계의 정비 기록 (날짜 내림차순) */
+    fun observeAllMaintenance(): Flow<List<MaintenanceRecord>>
     suspend fun addMaintenance(record: MaintenanceRecord)
     suspend fun updateMaintenance(record: MaintenanceRecord)
     suspend fun deleteMaintenance(id: String)

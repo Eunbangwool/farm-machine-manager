@@ -45,6 +45,9 @@ class SampleMaintenanceRepository : MaintenanceRepository {
                 .sortedByDescending { it.date }
         }
 
+    override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> =
+        state.map { records -> records.sortedByDescending { it.date } }
+
     override suspend fun addMaintenance(record: MaintenanceRecord) {
         state.value = state.value + record
     }

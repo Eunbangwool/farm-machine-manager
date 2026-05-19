@@ -1,9 +1,13 @@
 package com.example.farmmachinemanager
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
@@ -15,7 +19,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.farmmachinemanager.data.Machine
+import com.example.farmmachinemanager.notifications.ConsumableCheckWorker
+import com.example.farmmachinemanager.notifications.NotificationHelper
 import com.example.farmmachinemanager.ui.screens.AddMachineScreen
 import com.example.farmmachinemanager.ui.screens.AddMaintenanceRecordScreen
 import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
@@ -23,21 +35,30 @@ import com.example.farmmachinemanager.ui.screens.EditMachineScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
 import com.example.farmmachinemanager.ui.screens.SettingsScreen
+import com.example.farmmachinemanager.ui.screens.StatisticsScreen
 import com.example.farmmachinemanager.ui.screens.UpdateOperatingHoursScreen
 import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
+import java.util.concurrent.TimeUnit
 
 /**
  * 앱 진입점.
  *
  * 갤럭시 호환성: enableEdgeToEdge() + windowInsetsPadding(systemBars)
- * → 상태바/네비게이션 바 영역과 콘텐츠가 겹치지 않도록 안전하게 패딩 적용.
- *   (One UI의 다양한 노치/펀치홀/제스처 영역에서도 안전)
+ * 알림: ConsumableCheckWorker를 24시간 주기로 등록
  */
 class MainActivity : ComponentActivity() {
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* 허용/거부 결과는 무시: 다음 실행 때 다시 묻지 않음 */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Firebase 가용성 + 농장 코드 확인 후 Repository 백엔드 선택
         AppContainer.init(applicationContext)
+        NotificationHelper.ensureChannel(applicationContext)
+        scheduleConsumableCheck()
+        requestNotificationPermissionIfNeeded()
+
         enableEdgeToEdge()
         setContent {
             FarmMachineTheme {
@@ -48,6 +69,35 @@ class MainActivity : ComponentActivity() {
                 ) {
                     AppRoot()
                 }
+            }
+        }
+    }
+
+    /** 매일 한 번 ConsumableCheckWorker 실행 (배터리 절약 모드에서도 동작). */
+    private fun scheduleConsumableCheck() {
+        val request = PeriodicWorkRequestBuilder<ConsumableCheckWorker>(
+            repeatInterval = 1, repeatIntervalTimeUnit = TimeUnit.DAYS
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                .build()
+        ).build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            ConsumableCheckWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP, // 이미 등록되어 있으면 유지
+            request
+        )
+    }
+
+    /** Android 13+ 에서 알림 권한 필요. 거부해도 앱은 동작 (알림만 안 옴). */
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
@@ -62,6 +112,7 @@ private sealed interface AppScreen {
     data class EditMachine(val machine: Machine) : AppScreen
     data class DailyInspection(val machine: Machine) : AppScreen
     data object Settings : AppScreen
+    data object Statistics : AppScreen
 }
 
 @Composable
@@ -73,7 +124,8 @@ private fun AppRoot() {
             onMachineClick = { machine -> screen = AppScreen.Detail(machine) },
             onUpdateHoursClick = { screen = AppScreen.UpdateHours },
             onAddMachineClick = { screen = AppScreen.AddMachine },
-            onSettingsClick = { screen = AppScreen.Settings }
+            onSettingsClick = { screen = AppScreen.Settings },
+            onStatisticsClick = { screen = AppScreen.Statistics }
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
@@ -107,6 +159,9 @@ private fun AppRoot() {
             onSaveComplete = { screen = AppScreen.Detail(current.machine) }
         )
         is AppScreen.Settings -> SettingsScreen(
+            onBack = { screen = AppScreen.List }
+        )
+        is AppScreen.Statistics -> StatisticsScreen(
             onBack = { screen = AppScreen.List }
         )
     }

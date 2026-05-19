@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Update
@@ -137,6 +139,10 @@ fun SettingsScreen(
             // 동기화 섹션 (Firebase + 농장 코드)
             SectionHeader(title = "동기화")
             FirebaseSyncSection()
+
+            // 알림 섹션
+            SectionHeader(title = "알림")
+            NotificationSection()
 
             // 향후 옵션 자리 (현재는 비활성)
             SectionHeader(title = "준비 중")
@@ -504,5 +510,66 @@ private fun ActionButton(label: String, hint: String, onClick: () -> Unit) {
             tint = TextTertiary,
             modifier = Modifier.size(16.dp)
         )
+    }
+}
+
+// ============ 알림 섹션 ============
+
+@Composable
+private fun NotificationSection() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember {
+        com.example.farmmachinemanager.notifications.NotificationPreferences(context)
+    }
+    var enabled by remember { mutableStateOf(prefs.enabled) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    enabled = !enabled
+                    prefs.enabled = enabled
+                }
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = if (enabled) Icons.Outlined.Notifications else Icons.Outlined.NotificationsOff,
+                contentDescription = null,
+                tint = if (enabled) com.example.farmmachinemanager.ui.theme.StatusNormalText else TextTertiary,
+                modifier = Modifier.size(18.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "소모품 교체 알림",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = if (enabled)
+                        "교체 시기가 다가오거나 지난 항목을 매일 확인하여 알림"
+                    else
+                        "현재 알림이 꺼져 있습니다",
+                    fontSize = 11.sp,
+                    color = TextSecondary
+                )
+            }
+            androidx.compose.material3.Switch(
+                checked = enabled,
+                onCheckedChange = { v ->
+                    enabled = v
+                    prefs.enabled = v
+                }
+            )
+        }
     }
 }
