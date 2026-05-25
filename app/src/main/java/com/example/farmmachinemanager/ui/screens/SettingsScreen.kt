@@ -67,6 +67,7 @@ import com.example.farmmachinemanager.ui.theme.TextTertiary
 fun SettingsScreen(
     onBack: () -> Unit,
     onTroubleshootingClick: () -> Unit = {},
+    onInspectionChecklistClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -158,6 +159,12 @@ fun SettingsScreen(
                     label = "쿠보타 이앙기 트러블슈팅",
                     enabled = true,
                     onClick = onTroubleshootingClick
+                )
+                Divider()
+                NavRow(
+                    label = "쿠보타 이앙기 정기점검 일람",
+                    enabled = true,
+                    onClick = onInspectionChecklistClick
                 )
             }
 

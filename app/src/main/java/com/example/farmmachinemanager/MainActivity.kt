@@ -35,6 +35,7 @@ import com.example.farmmachinemanager.ui.screens.AllConsumablesScreen
 import com.example.farmmachinemanager.ui.screens.AllMaintenanceScreen
 import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
 import com.example.farmmachinemanager.ui.screens.EditMachineScreen
+import com.example.farmmachinemanager.ui.screens.InspectionChecklistScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
 import com.example.farmmachinemanager.ui.screens.SettingsScreen
@@ -120,6 +121,7 @@ private sealed interface AppScreen {
     data object Settings : AppScreen
     data object Statistics : AppScreen
     data object Troubleshooting : AppScreen
+    data object InspectionChecklist : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
 }
@@ -180,12 +182,16 @@ private fun AppRoot() {
         )
         is AppScreen.Settings -> SettingsScreen(
             onBack = { screen = AppScreen.List },
-            onTroubleshootingClick = { screen = AppScreen.Troubleshooting }
+            onTroubleshootingClick = { screen = AppScreen.Troubleshooting },
+            onInspectionChecklistClick = { screen = AppScreen.InspectionChecklist }
         )
         is AppScreen.Statistics -> StatisticsScreen(
             onBack = { screen = AppScreen.List }
         )
         is AppScreen.Troubleshooting -> TroubleshootingScreen(
+            onBack = { screen = AppScreen.Settings }
+        )
+        is AppScreen.InspectionChecklist -> InspectionChecklistScreen(
             onBack = { screen = AppScreen.Settings }
         )
         is AppScreen.AllMaintenance -> AllMaintenanceScreen(
