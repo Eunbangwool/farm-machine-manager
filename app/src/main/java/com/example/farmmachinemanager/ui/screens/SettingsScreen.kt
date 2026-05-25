@@ -65,7 +65,8 @@ import com.example.farmmachinemanager.ui.theme.TextTertiary
  */
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onTroubleshootingClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -143,6 +144,22 @@ fun SettingsScreen(
             // 알림 섹션
             SectionHeader(title = "알림")
             NotificationSection()
+
+            // 매뉴얼 섹션
+            SectionHeader(title = "매뉴얼")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            ) {
+                NavRow(
+                    label = "쿠보타 이앙기 트러블슈팅",
+                    enabled = true,
+                    onClick = onTroubleshootingClick
+                )
+            }
 
             // 향후 옵션 자리 (현재는 비활성)
             SectionHeader(title = "준비 중")
@@ -235,11 +252,13 @@ private fun InfoRow(
 }
 
 @Composable
-private fun NavRow(label: String, enabled: Boolean) {
+private fun NavRow(label: String, enabled: Boolean, onClick: (() -> Unit)? = null) {
+    val rowModifier = Modifier
+        .fillMaxWidth()
+        .let { if (enabled && onClick != null) it.clickable(onClick = onClick) else it }
+        .padding(horizontal = 14.dp, vertical = 14.dp)
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+        modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
