@@ -71,6 +71,7 @@ fun SettingsScreen(
     onPartsListClick: () -> Unit = {},
     onFuseGuideClick: () -> Unit = {},
     onLubricationClick: () -> Unit = {},
+    onSpecificationsClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -186,6 +187,12 @@ fun SettingsScreen(
                     label = "쿠보타 이앙기 급유·주유 일람",
                     enabled = true,
                     onClick = onLubricationClick
+                )
+                Divider()
+                NavRow(
+                    label = "쿠보타 이앙기 주요 제원",
+                    enabled = true,
+                    onClick = onSpecificationsClick
                 )
             }
 
