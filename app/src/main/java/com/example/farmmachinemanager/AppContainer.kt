@@ -3,6 +3,7 @@ package com.example.farmmachinemanager
 import android.content.Context
 import com.example.farmmachinemanager.data.FarmCodeManager
 import com.example.farmmachinemanager.data.FirebaseAvailability
+import com.example.farmmachinemanager.data.manual.ManualRepository
 import com.example.farmmachinemanager.data.repository.ConsumableRepository
 import com.example.farmmachinemanager.data.repository.FirestoreConsumableRepository
 import com.example.farmmachinemanager.data.repository.FirestoreMachineRepository
@@ -29,6 +30,8 @@ object AppContainer {
     private var initialized = false
     lateinit var farmCodeManager: FarmCodeManager
         private set
+    lateinit var manualRepository: ManualRepository
+        private set
 
     /** 사용 중인 모드 (UI에서 상태 표시용) */
     enum class SyncMode { LOCAL_ONLY, FIRESTORE_SYNCED, FIREBASE_NOT_CONFIGURED }
@@ -39,6 +42,7 @@ object AppContainer {
         if (initialized) return
         initialized = true
         farmCodeManager = FarmCodeManager(context)
+        manualRepository = ManualRepository(context.applicationContext)
 
         currentMode = when {
             !FirebaseAvailability.isAvailable -> SyncMode.FIREBASE_NOT_CONFIGURED
