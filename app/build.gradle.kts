@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // google-services.json이 존재할 때만 Firebase 플러그인 적용.
@@ -92,4 +93,5 @@ dependencies {
     // Tasks API를 코루틴 .await()로 변환하기 위함
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.kotlinx.serialization.json)
 }
