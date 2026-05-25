@@ -70,6 +70,7 @@ fun SettingsScreen(
     onInspectionChecklistClick: () -> Unit = {},
     onPartsListClick: () -> Unit = {},
     onFuseGuideClick: () -> Unit = {},
+    onLubricationClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -179,6 +180,12 @@ fun SettingsScreen(
                     label = "쿠보타 이앙기 퓨즈 가이드",
                     enabled = true,
                     onClick = onFuseGuideClick
+                )
+                Divider()
+                NavRow(
+                    label = "쿠보타 이앙기 급유·주유 일람",
+                    enabled = true,
+                    onClick = onLubricationClick
                 )
             }
 

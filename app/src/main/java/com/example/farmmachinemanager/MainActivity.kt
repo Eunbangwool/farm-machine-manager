@@ -37,6 +37,7 @@ import com.example.farmmachinemanager.ui.screens.DailyInspectionScreen
 import com.example.farmmachinemanager.ui.screens.EditMachineScreen
 import com.example.farmmachinemanager.ui.screens.FuseGuideScreen
 import com.example.farmmachinemanager.ui.screens.InspectionChecklistScreen
+import com.example.farmmachinemanager.ui.screens.LubricationScheduleScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
 import com.example.farmmachinemanager.ui.screens.PartsListScreen
@@ -126,6 +127,7 @@ private sealed interface AppScreen {
     data object InspectionChecklist : AppScreen
     data object PartsList : AppScreen
     data object FuseGuide : AppScreen
+    data object Lubrication : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
 }
@@ -189,7 +191,8 @@ private fun AppRoot() {
             onTroubleshootingClick = { screen = AppScreen.Troubleshooting },
             onInspectionChecklistClick = { screen = AppScreen.InspectionChecklist },
             onPartsListClick = { screen = AppScreen.PartsList },
-            onFuseGuideClick = { screen = AppScreen.FuseGuide }
+            onFuseGuideClick = { screen = AppScreen.FuseGuide },
+            onLubricationClick = { screen = AppScreen.Lubrication }
         )
         is AppScreen.Statistics -> StatisticsScreen(
             onBack = { screen = AppScreen.List }
@@ -204,6 +207,9 @@ private fun AppRoot() {
             onBack = { screen = AppScreen.Settings }
         )
         is AppScreen.FuseGuide -> FuseGuideScreen(
+            onBack = { screen = AppScreen.Settings }
+        )
+        is AppScreen.Lubrication -> LubricationScheduleScreen(
             onBack = { screen = AppScreen.Settings }
         )
         is AppScreen.AllMaintenance -> AllMaintenanceScreen(
