@@ -69,6 +69,7 @@ fun SettingsScreen(
     onTroubleshootingClick: () -> Unit = {},
     onInspectionChecklistClick: () -> Unit = {},
     onPartsListClick: () -> Unit = {},
+    onFuseGuideClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -172,6 +173,12 @@ fun SettingsScreen(
                     label = "쿠보타 이앙기 소모품 부품",
                     enabled = true,
                     onClick = onPartsListClick
+                )
+                Divider()
+                NavRow(
+                    label = "쿠보타 이앙기 퓨즈 가이드",
+                    enabled = true,
+                    onClick = onFuseGuideClick
                 )
             }
 
