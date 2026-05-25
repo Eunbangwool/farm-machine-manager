@@ -68,6 +68,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onTroubleshootingClick: () -> Unit = {},
     onInspectionChecklistClick: () -> Unit = {},
+    onPartsListClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -165,6 +166,12 @@ fun SettingsScreen(
                     label = "쿠보타 이앙기 정기점검 일람",
                     enabled = true,
                     onClick = onInspectionChecklistClick
+                )
+                Divider()
+                NavRow(
+                    label = "쿠보타 이앙기 소모품 부품",
+                    enabled = true,
+                    onClick = onPartsListClick
                 )
             }
 
