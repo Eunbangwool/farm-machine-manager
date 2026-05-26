@@ -124,7 +124,9 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlinx.serialization.json)
 
-    // ML Kit 텍스트 인식 (on-device, 무료, 인터넷 불필요) — 영수증 OCR.
-    // 한국어 + 라틴 문자 동시 인식.
-    implementation("com.google.mlkit:text-recognition-korean:16.0.1")
+    // ML Kit 텍스트 인식 (영수증 OCR) — unbundled (Google Play Services 경유).
+    // 모델을 APK 에 번들하지 않아 APK 가 가볍다. 첫 사용 시 Play 가 한국어
+    // OCR 모델(수 MB)을 1회 자동 다운로드. AndroidManifest 의 meta-data 로
+    // 설치 직후 미리 받도록 함.
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-korean:16.0.1")
 }
