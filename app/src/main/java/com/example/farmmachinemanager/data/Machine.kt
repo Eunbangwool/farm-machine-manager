@@ -11,9 +11,18 @@ enum class MachineType(val displayName: String) {
     COMBINE("콤바인"),
     RICE_TRANSPLANTER("이앙기"),
     CULTIVATOR("관리기"),
+    ROTAVATOR("로터베이터"),
+    PLOW("쟁기"),
+    SEEDER("파종기"),
+    HARVESTER("수확기"),
+    SPRAYER("농약살포기"),
+    DRONE("드론"),
+    BALER("베일러"),
+    LAWN_MOWER("예초기"),
+    LOADER("로더"),
     FORKLIFT("지게차"),
     VEHICLE("차량"),
-    OTHER("기타")
+    OTHER("기타"),
 }
 
 /**

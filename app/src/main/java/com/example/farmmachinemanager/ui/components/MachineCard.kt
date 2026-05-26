@@ -19,6 +19,14 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.outlined.Construction
+import androidx.compose.material.icons.outlined.FlightTakeoff
+import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.Grass
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.PrecisionManufacturing
+import androidx.compose.material.icons.outlined.Shower
+import androidx.compose.material.icons.outlined.YardSharp
 import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.WaterDrop
@@ -61,6 +69,24 @@ import com.example.farmmachinemanager.ui.theme.TransplanterIconBg
 import com.example.farmmachinemanager.ui.theme.TransplanterIconTint
 import com.example.farmmachinemanager.ui.theme.VehicleIconBg
 import com.example.farmmachinemanager.ui.theme.VehicleIconTint
+import com.example.farmmachinemanager.ui.theme.RotavatorIconBg
+import com.example.farmmachinemanager.ui.theme.RotavatorIconTint
+import com.example.farmmachinemanager.ui.theme.PlowIconBg
+import com.example.farmmachinemanager.ui.theme.PlowIconTint
+import com.example.farmmachinemanager.ui.theme.SeederIconBg
+import com.example.farmmachinemanager.ui.theme.SeederIconTint
+import com.example.farmmachinemanager.ui.theme.HarvesterIconBg
+import com.example.farmmachinemanager.ui.theme.HarvesterIconTint
+import com.example.farmmachinemanager.ui.theme.SprayerIconBg
+import com.example.farmmachinemanager.ui.theme.SprayerIconTint
+import com.example.farmmachinemanager.ui.theme.DroneIconBg
+import com.example.farmmachinemanager.ui.theme.DroneIconTint
+import com.example.farmmachinemanager.ui.theme.BalerIconBg
+import com.example.farmmachinemanager.ui.theme.BalerIconTint
+import com.example.farmmachinemanager.ui.theme.LawnMowerIconBg
+import com.example.farmmachinemanager.ui.theme.LawnMowerIconTint
+import com.example.farmmachinemanager.ui.theme.LoaderIconBg
+import com.example.farmmachinemanager.ui.theme.LoaderIconTint
 
 /**
  * 기계 한 대를 표현하는 카드.
@@ -208,12 +234,21 @@ private fun iconConfig(type: MachineType): Triple<Color, Color, ImageVector> = w
         TransplanterIconBg, TransplanterIconTint,
         ImageVector.vectorResource(R.drawable.ic_transplanter)
     )
+    MachineType.CULTIVATOR -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Agriculture)
+    MachineType.ROTAVATOR -> Triple(RotavatorIconBg, RotavatorIconTint, Icons.Outlined.PrecisionManufacturing)
+    MachineType.PLOW -> Triple(PlowIconBg, PlowIconTint, Icons.Outlined.Construction)
+    MachineType.SEEDER -> Triple(SeederIconBg, SeederIconTint, Icons.Outlined.Grain)
+    MachineType.HARVESTER -> Triple(HarvesterIconBg, HarvesterIconTint, Icons.Outlined.Grass)
+    MachineType.SPRAYER -> Triple(SprayerIconBg, SprayerIconTint, Icons.Outlined.Shower)
+    MachineType.DRONE -> Triple(DroneIconBg, DroneIconTint, Icons.Outlined.FlightTakeoff)
+    MachineType.BALER -> Triple(BalerIconBg, BalerIconTint, Icons.Outlined.Inventory2)
+    MachineType.LAWN_MOWER -> Triple(LawnMowerIconBg, LawnMowerIconTint, Icons.Outlined.YardSharp)
+    MachineType.LOADER -> Triple(LoaderIconBg, LoaderIconTint, Icons.Outlined.Construction)
     MachineType.FORKLIFT -> Triple(
         ForkliftIconBg, ForkliftIconTint,
         ImageVector.vectorResource(R.drawable.ic_forklift)
     )
     MachineType.VEHICLE -> Triple(VehicleIconBg, VehicleIconTint, Icons.Default.DirectionsCar)
-    MachineType.CULTIVATOR -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Agriculture)
     MachineType.OTHER -> Triple(OtherIconBg, OtherIconTint, Icons.Default.Build)
 }
 

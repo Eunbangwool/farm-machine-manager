@@ -74,3 +74,31 @@ val MaintenanceRepairTint = Color(0xFF791F1F)
 val MaintenanceCheckTint = Color(0xFF27500A)
 val MaintenanceReplaceTint = Color(0xFF185FA5)
 val MaintenanceInspectionTint = Color(0xFF633806)
+
+// 신규 농기계 종류 아이콘 (로터·쟁기·파종·수확·살포·드론·베일러·예초·로더)
+val RotavatorIconBg = Color(0xFFEFE5D7)
+val RotavatorIconTint = Color(0xFF6B4A1B)
+
+val PlowIconBg = Color(0xFFE8DDD0)
+val PlowIconTint = Color(0xFF5A3F1A)
+
+val SeederIconBg = Color(0xFFE6F0D9)
+val SeederIconTint = Color(0xFF335A12)
+
+val HarvesterIconBg = Color(0xFFFCE9D2)
+val HarvesterIconTint = Color(0xFF8C4A0E)
+
+val SprayerIconBg = Color(0xFFDDEEF5)
+val SprayerIconTint = Color(0xFF155A7A)
+
+val DroneIconBg = Color(0xFFE4ECF7)
+val DroneIconTint = Color(0xFF1F3D6B)
+
+val BalerIconBg = Color(0xFFF6EBC5)
+val BalerIconTint = Color(0xFF7A5A0F)
+
+val LawnMowerIconBg = Color(0xFFE0EBD2)
+val LawnMowerIconTint = Color(0xFF3D5E1A)
+
+val LoaderIconBg = Color(0xFFF7E2C2)
+val LoaderIconTint = Color(0xFF8C5A0E)

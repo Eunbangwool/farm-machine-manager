@@ -94,6 +94,32 @@ import com.example.farmmachinemanager.ui.theme.TransplanterIconBg
 import com.example.farmmachinemanager.ui.theme.TransplanterIconTint
 import com.example.farmmachinemanager.ui.theme.VehicleIconBg
 import com.example.farmmachinemanager.ui.theme.VehicleIconTint
+import com.example.farmmachinemanager.ui.theme.RotavatorIconBg
+import com.example.farmmachinemanager.ui.theme.RotavatorIconTint
+import com.example.farmmachinemanager.ui.theme.PlowIconBg
+import com.example.farmmachinemanager.ui.theme.PlowIconTint
+import com.example.farmmachinemanager.ui.theme.SeederIconBg
+import com.example.farmmachinemanager.ui.theme.SeederIconTint
+import com.example.farmmachinemanager.ui.theme.HarvesterIconBg
+import com.example.farmmachinemanager.ui.theme.HarvesterIconTint
+import com.example.farmmachinemanager.ui.theme.SprayerIconBg
+import com.example.farmmachinemanager.ui.theme.SprayerIconTint
+import com.example.farmmachinemanager.ui.theme.DroneIconBg
+import com.example.farmmachinemanager.ui.theme.DroneIconTint
+import com.example.farmmachinemanager.ui.theme.BalerIconBg
+import com.example.farmmachinemanager.ui.theme.BalerIconTint
+import com.example.farmmachinemanager.ui.theme.LawnMowerIconBg
+import com.example.farmmachinemanager.ui.theme.LawnMowerIconTint
+import com.example.farmmachinemanager.ui.theme.LoaderIconBg
+import com.example.farmmachinemanager.ui.theme.LoaderIconTint
+import androidx.compose.material.icons.outlined.Construction
+import androidx.compose.material.icons.outlined.FlightTakeoff
+import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.Grass
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.PrecisionManufacturing
+import androidx.compose.material.icons.outlined.Shower
+import androidx.compose.material.icons.outlined.YardSharp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
@@ -711,25 +737,37 @@ private fun heroIconColor(type: MachineType): Pair<Color, Color> = when (type) {
     MachineType.TRACTOR -> TractorIconBg to TractorIconTint
     MachineType.COMBINE -> CombineIconBg to CombineIconTint
     MachineType.RICE_TRANSPLANTER -> TransplanterIconBg to TransplanterIconTint
+    MachineType.CULTIVATOR -> OtherIconBg to OtherIconTint
+    MachineType.ROTAVATOR -> RotavatorIconBg to RotavatorIconTint
+    MachineType.PLOW -> PlowIconBg to PlowIconTint
+    MachineType.SEEDER -> SeederIconBg to SeederIconTint
+    MachineType.HARVESTER -> HarvesterIconBg to HarvesterIconTint
+    MachineType.SPRAYER -> SprayerIconBg to SprayerIconTint
+    MachineType.DRONE -> DroneIconBg to DroneIconTint
+    MachineType.BALER -> BalerIconBg to BalerIconTint
+    MachineType.LAWN_MOWER -> LawnMowerIconBg to LawnMowerIconTint
+    MachineType.LOADER -> LoaderIconBg to LoaderIconTint
     MachineType.FORKLIFT -> ForkliftIconBg to ForkliftIconTint
     MachineType.VEHICLE -> VehicleIconBg to VehicleIconTint
-    MachineType.CULTIVATOR, MachineType.OTHER -> OtherIconBg to OtherIconTint
+    MachineType.OTHER -> OtherIconBg to OtherIconTint
 }
 
 @Composable
 private fun heroIcon(type: MachineType): ImageVector = when (type) {
-    MachineType.TRACTOR, MachineType.CULTIVATOR ->
-        Icons.Default.Agriculture
-    MachineType.COMBINE ->
-        ImageVector.vectorResource(R.drawable.ic_combine)
-    MachineType.RICE_TRANSPLANTER ->
-        ImageVector.vectorResource(R.drawable.ic_transplanter)
-    MachineType.FORKLIFT ->
-        ImageVector.vectorResource(R.drawable.ic_forklift)
-    MachineType.VEHICLE ->
-        Icons.Default.DirectionsCar
-    MachineType.OTHER ->
-        Icons.Default.Build
+    MachineType.TRACTOR, MachineType.CULTIVATOR -> Icons.Default.Agriculture
+    MachineType.COMBINE -> ImageVector.vectorResource(R.drawable.ic_combine)
+    MachineType.RICE_TRANSPLANTER -> ImageVector.vectorResource(R.drawable.ic_transplanter)
+    MachineType.ROTAVATOR -> Icons.Outlined.PrecisionManufacturing
+    MachineType.PLOW, MachineType.LOADER -> Icons.Outlined.Construction
+    MachineType.SEEDER -> Icons.Outlined.Grain
+    MachineType.HARVESTER -> Icons.Outlined.Grass
+    MachineType.SPRAYER -> Icons.Outlined.Shower
+    MachineType.DRONE -> Icons.Outlined.FlightTakeoff
+    MachineType.BALER -> Icons.Outlined.Inventory2
+    MachineType.LAWN_MOWER -> Icons.Outlined.YardSharp
+    MachineType.FORKLIFT -> ImageVector.vectorResource(R.drawable.ic_forklift)
+    MachineType.VEHICLE -> Icons.Default.DirectionsCar
+    MachineType.OTHER -> Icons.Default.Build
 }
 
 // ============ Preview ============
