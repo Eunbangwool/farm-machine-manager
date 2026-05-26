@@ -123,4 +123,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlinx.serialization.json)
+
+    // ML Kit 텍스트 인식 (on-device, 무료, 인터넷 불필요) — 영수증 OCR.
+    // 한국어 + 라틴 문자 동시 인식.
+    implementation("com.google.mlkit:text-recognition-korean:16.0.1")
 }
