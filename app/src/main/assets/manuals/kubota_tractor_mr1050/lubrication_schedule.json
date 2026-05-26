@@ -1,0 +1,228 @@
+{
+  "$schema": "kubota_tractor_mr1050_lubrication_v1",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "series_name_ko": "MR 시리즈 (반장궤식)",
+    "models": ["MR800H", "MR900H", "MR1000H", "MR1050H"],
+    "manual_ref": "3D960-8971-2"
+  },
+  "categories": [
+    {"id": "fuel", "name_ko": "연료"},
+    {"id": "urea", "name_ko": "요소수"},
+    {"id": "coolant", "name_ko": "냉각수"},
+    {"id": "washer", "name_ko": "워셔액"},
+    {"id": "engine_oil", "name_ko": "엔진 오일"},
+    {"id": "mission_oil", "name_ko": "미션 오일"},
+    {"id": "gear_oil", "name_ko": "기어 오일"},
+    {"id": "grease", "name_ko": "그리스"}
+  ],
+  "items": [
+    {
+      "id": "LU-001",
+      "no": 1,
+      "category_id": "fuel",
+      "location_ja": "燃料",
+      "location_ko": "연료",
+      "capacity_ko": "115 L",
+      "lubricant_type_ko": "초저유황 디젤 경유 (S10)",
+      "lubricant_type_ja": "超低硫黄ディーゼル軽油 (S10)",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-002",
+      "no": 2,
+      "category_id": "urea",
+      "location_ja": "尿素水（AdBlue）",
+      "location_ko": "요소수 (AdBlue)",
+      "capacity_ko": "12.9 L",
+      "lubricant_type_ko": "ISO 22241-1 규격 적합 요소수 (AdBlue)",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-003",
+      "no": 3,
+      "category_id": "coolant",
+      "location_ja": "冷却水（リザーブタンク）",
+      "location_ko": "냉각수 (라디에이터·리저브 탱크)",
+      "capacity_ko": "라디에이터 10 L / 리저브 탱크 1.0 L",
+      "lubricant_type_ko": "맑은 물 (부동액 사용 시 부동액량만큼 청수 차감)",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-004",
+      "no": 4,
+      "category_id": "washer",
+      "location_ja": "ウォッシャ液",
+      "location_ko": "워셔액",
+      "capacity_ko": "2.0 L",
+      "lubricant_type_ko": "자동차용 워셔액",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-005",
+      "no": 5,
+      "category_id": "engine_oil",
+      "location_ja": "エンジンオイル（フィルタ含む）",
+      "location_ko": "엔진 오일 (필터 포함)",
+      "capacity_ko": "10.7 L",
+      "lubricant_type_ko": "쿠보타 순정 오일 D10W-30 DH-2 (DPF 탑재 디젤 엔진 전용)",
+      "lubricant_type_ja": "クボタ純オイル D10W-30 DH-2",
+      "page_ref": 220,
+      "warning_ko": "DPF 탑재 디젤 엔진에는 반드시 D10W-30 DH-2를 사용. 타 오일 사용 시 금속계 첨가제 잔재(회분)가 DPF에 퇴적되어 필터 막힘이 가속되며, DPF 기능 정지까지의 시간이 매우 빨라짐"
+    },
+    {
+      "id": "LU-006",
+      "no": 6,
+      "category_id": "mission_oil",
+      "location_ja": "ミッションオイル（油圧オイル）",
+      "location_ko": "미션 오일 (유압 오일)",
+      "capacity_ko": "60 L",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "lubricant_type_ja": "クボタ純オイル スーパー UDT-2",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-007",
+      "no": 7,
+      "category_id": "mission_oil",
+      "location_ja": "ミッションオイル（HST 部）",
+      "location_ko": "미션 오일 (HST부)",
+      "capacity_ko": "7 L",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-008",
+      "no": 8,
+      "category_id": "gear_oil",
+      "location_ja": "前輪デフケース",
+      "location_ko": "전륜 데프 케이스",
+      "capacity_ko": "5 L (W 사양: 6 L)",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "applies_to_spec_note_ko": "W 사양은 6L",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-009",
+      "no": 9,
+      "category_id": "gear_oil",
+      "location_ja": "前輪ケース左・右",
+      "location_ko": "전륜 케이스 (좌·우)",
+      "capacity_ko": "각 3.5 L",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-010",
+      "no": 10,
+      "category_id": "gear_oil",
+      "location_ja": "転輪",
+      "location_ko": "전륜 (転輪) [파워크롤러 사양]",
+      "capacity_ko": "0.10 L",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "applies_to_spec": "powerCrawler",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-011",
+      "no": 11,
+      "category_id": "gear_oil",
+      "location_ja": "遊輪",
+      "location_ko": "유륜 (遊輪) [파워크롤러 사양]",
+      "capacity_ko": "0.13 L",
+      "lubricant_type_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "applies_to_spec": "powerCrawler",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-012",
+      "no": 12,
+      "category_id": "grease",
+      "location_ja": "各操作レバー・ペダル支点",
+      "location_ko": "각 조작 레버·페달 지점부",
+      "capacity_ko": "주유 (적량)",
+      "lubricant_type_ko": "극압(만능) 그리스",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-013",
+      "no": 13,
+      "category_id": "grease",
+      "location_ja": "3 点リンク",
+      "location_ko": "3점 링크 (히치)",
+      "capacity_ko": "주입·도포 (적량)",
+      "lubricant_type_ko": "극압(만능) 그리스",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-014",
+      "no": 14,
+      "category_id": "grease",
+      "location_ja": "バッテリターミナル",
+      "location_ko": "배터리 터미널",
+      "capacity_ko": "도포 (적량)",
+      "lubricant_type_ko": "극압(만능) 그리스",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-015",
+      "no": 15,
+      "category_id": "grease",
+      "location_ja": "油圧シリンダ / 前輪ケースサポート / 前車軸受",
+      "location_ko": "유압 실린더, 전륜 케이스 서포트, 전차축 베어링",
+      "capacity_ko": "주입 (적량)",
+      "lubricant_type_ko": "극압(만능) 그리스",
+      "page_ref": 220
+    },
+    {
+      "id": "LU-016",
+      "no": 16,
+      "category_id": "grease",
+      "location_ja": "クローラサポート / 転輪揺動部 / ヨーク摺動部 [パワクロ仕様] / AT シリンダピン部 [PCAT 仕様]",
+      "location_ko": "크롤러 서포트 / 전륜 요동부 / 요크 슬라이딩부 [파워크롤러] / AT 실린더 핀부 [PCAT]",
+      "capacity_ko": "주입 (좌·우 각 1)",
+      "lubricant_type_ko": "극압(만능) 그리스",
+      "applies_to_spec": "powerCrawler/PCAT",
+      "page_ref": 220
+    }
+  ],
+  "recommended_lubricants_ko": {
+    "engine_oil": {
+      "name_ko": "쿠보타 순정 오일 D10W-30 DH-2",
+      "note_ko": "DPF 탑재기 전용. 반드시 사용해야 함",
+      "page_ref": 221
+    },
+    "mission_oil": {
+      "name_ko": "쿠보타 순정 슈퍼 UDT-2",
+      "usage_ko": "미션 오일·전차축 오일 공용",
+      "page_ref": 221
+    },
+    "urea": {
+      "name_ko": "ISO 22241-1 규격 적합 요소수 (AdBlue)",
+      "note_ko": "AdBlue는 독일 자동차 공업회(VDA) 등록 상표",
+      "page_ref": 221
+    },
+    "grease_general": {
+      "name_ko": "쿠보타 순정 그리스 No.2",
+      "alternatives_ko": [
+        "JX 일광일석 에너지: 에피녹스 그리스 AP2, 리조닉스 EP2",
+        "코스모 석유 루브리칸츠: 다이나맥스 No.2",
+        "이데미츠 흥산: 다프니 에포넥스 SR2",
+        "JCMAS GK 규격품"
+      ],
+      "page_ref": 221
+    },
+    "grease_horn_contact": {
+      "name_ko": "쿄도 유지 마루템프 PS2",
+      "usage_ko": "혼 접점용",
+      "page_ref": 221
+    }
+  },
+  "general_notes_ko": [
+    "그리스 펌프는 수동 핸드건식을 사용하세요.",
+    "점검·교환 시 트랙터를 평탄한 곳에 두세요. 경사지에서는 정확한 양을 표시하지 않습니다.",
+    "엔진 오일은 시동 전 또는 시동 정지 후 약 5분 경과 후 점검하세요.",
+    "지정된 쿠보타 순정품을 사용하세요. 특히 엔진 오일은 D10W-30 DH-2 필수.",
+    "보급·교환 시 먼지나 물이 혼입되지 않도록 주의하세요."
+  ]
+}

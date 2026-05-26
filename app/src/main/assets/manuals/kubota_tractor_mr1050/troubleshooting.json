@@ -1,0 +1,369 @@
+{
+  "$schema": "kubota_tractor_mr1050_troubleshooting_v1",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "series_name_ko": "MR 시리즈 (반장궤식)",
+    "models": ["MR800H", "MR900H", "MR1000H", "MR1050H"],
+    "manual_ref": "3D960-8971-2"
+  },
+  "categories": [
+    {
+      "id": "engine_start_difficult",
+      "name_ja": "始動困難な場合",
+      "name_ko": "시동 곤란",
+      "description_ko": "엔진이 잘 걸리지 않거나 걸려도 곧 멈추는 경우",
+      "page_ref": 263
+    },
+    {
+      "id": "engine_low_output",
+      "name_ja": "出力不足の場合",
+      "name_ko": "출력 부족",
+      "description_ko": "엔진 출력이 부족하거나 힘이 약한 경우",
+      "page_ref": 263
+    },
+    {
+      "id": "engine_sudden_stop",
+      "name_ja": "突然停止した場合",
+      "name_ko": "갑작스러운 정지",
+      "description_ko": "운전 중 엔진이 갑자기 멈춘 경우",
+      "page_ref": 263
+    },
+    {
+      "id": "exhaust_color_black",
+      "name_ja": "排気色が異常に黒い場合",
+      "name_ko": "배기색이 비정상으로 검은 경우",
+      "description_ko": "배기 색이 검게 나오는 경우 (불완전 연소)",
+      "page_ref": 263
+    },
+    {
+      "id": "water_temp_high",
+      "name_ja": "水温計が H 付近を示すとき",
+      "name_ko": "수온계가 H 부근(고온)을 가리킬 때",
+      "description_ko": "냉각수 온도가 비정상적으로 높을 때 (오버히트 전조)",
+      "page_ref": 263
+    },
+    {
+      "id": "white_smoke_at_start",
+      "name_ja": "始動時青白煙が消えない",
+      "name_ko": "시동 시 청백색 연기가 사라지지 않음",
+      "description_ko": "시동 후 청백색 연기가 지속될 때",
+      "page_ref": 263
+    },
+    {
+      "id": "transmission_error",
+      "name_ja": "モンロー・オート・ドラフト・レーザ・AD・倍速・トランスミッションの故障",
+      "name_ko": "트랜스미션·몬로·오토·드래프트·레이저·AD·배속 시스템 에러",
+      "description_ko": "전자 제어 시스템 에러 코드 표시",
+      "page_ref": 264
+    }
+  ],
+  "cases": [
+    {
+      "id": "TS-001",
+      "category_id": "engine_start_difficult",
+      "cause_ja": "燃料が流れない",
+      "cause_ko": "연료가 흐르지 않음",
+      "symptoms_ko": ["시동 곤란", "엔진이 걸리지 않음"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 탱크를 점검하고 침전된 불순물이나 수분을 제거"},
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 필터를 점검하고 오염돼 있으면 교환"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-002",
+      "category_id": "engine_start_difficult",
+      "cause_ja": "燃料送油系統に空気や水が混入している",
+      "cause_ko": "연료 송유 계통에 공기나 물이 혼입됨",
+      "symptoms_ko": ["시동 곤란"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "호스·플러그·자루 너트 및 조임 밴드 점검. 헐거움이 있으면 조이고, 손상이 있으면 신품 교환 또는 보수"},
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "공기 빼기 실시 (연료 공기 빼기 방법은 257p 참조)", "manual_page_ref": 257}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-003",
+      "category_id": "engine_start_difficult",
+      "cause_ja": "寒冷時にオイル粘度が高く、エンジン自体の回転が重い",
+      "cause_ko": "한랭 시 오일 점도가 높아 엔진 자체의 회전이 무거움",
+      "symptoms_ko": ["한랭지 시동 곤란"],
+      "remedies": [
+        {"type": "operation", "type_ko": "조작", "action_ko": "라디에이터에 뜨거운 물을 부음"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-004",
+      "category_id": "engine_start_difficult",
+      "cause_ja": "バッテリがあがり気味で、回転力が弱くなって圧縮を越す勢いがない",
+      "cause_ko": "배터리가 방전되어 회전력이 약해 압축을 넘지 못함",
+      "symptoms_ko": ["크랭킹 약함", "시동 안 됨"],
+      "remedies": [
+        {"type": "electrical", "type_ko": "전기 처치", "action_ko": "배터리를 충전"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-005",
+      "category_id": "engine_low_output",
+      "cause_ja": "燃料不足",
+      "cause_ko": "연료 부족",
+      "symptoms_ko": ["엔진 출력 부족"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료를 보급"},
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 계통을 조사 (특히 공기 혼입에 주의)"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-006",
+      "category_id": "engine_low_output",
+      "cause_ja": "燃料の流れ不足",
+      "cause_ko": "연료 흐름 부족",
+      "symptoms_ko": ["엔진 출력 부족"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 필터 청소"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-007",
+      "category_id": "engine_low_output",
+      "cause_ja": "エアクリーナの目詰まり",
+      "cause_ko": "에어 클리너 막힘",
+      "symptoms_ko": ["엔진 출력 부족", "에어 클리너 막힘 경고등 점등"],
+      "remedies": [
+        {"type": "machine", "type_ko": "기계 처치", "action_ko": "엘리먼트 청소"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-008",
+      "category_id": "engine_low_output",
+      "cause_ja": "尿素水（AdBlue）不足",
+      "cause_ko": "요소수(AdBlue) 부족",
+      "symptoms_ko": ["엔진 출력 부족", "요소수 인디케이터 점등"],
+      "remedies": [
+        {"type": "urea", "type_ko": "요소수 처치", "action_ko": "요소수(AdBlue)를 보급"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-009",
+      "category_id": "engine_sudden_stop",
+      "cause_ja": "燃料不足",
+      "cause_ko": "연료 부족",
+      "symptoms_ko": ["갑작스러운 정지"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 보급"},
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 계통 조사 (특히 공기 혼입 주의)"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-010",
+      "category_id": "engine_sudden_stop",
+      "cause_ja": "燃料が流れない",
+      "cause_ko": "연료가 흐르지 않음",
+      "symptoms_ko": ["갑작스러운 정지"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "연료 필터 점검·오염 시 교환"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-011",
+      "category_id": "engine_sudden_stop",
+      "cause_ja": "燃料が悪い",
+      "cause_ko": "연료 품질 불량",
+      "symptoms_ko": ["갑작스러운 정지"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "양질의 연료로 교환"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-012",
+      "category_id": "exhaust_color_black",
+      "cause_ja": "エンジンオイルの入り過ぎ",
+      "cause_ko": "엔진 오일 과다 주입",
+      "symptoms_ko": ["배기색 검음"],
+      "remedies": [
+        {"type": "oil", "type_ko": "오일 처치", "action_ko": "정규 오일량으로 조정"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-013",
+      "category_id": "exhaust_color_black",
+      "cause_ja": "エアクリーナの目詰まり",
+      "cause_ko": "에어 클리너 막힘",
+      "symptoms_ko": ["배기색 검음"],
+      "remedies": [
+        {"type": "machine", "type_ko": "기계 처치", "action_ko": "엘리먼트 청소"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-014",
+      "category_id": "water_temp_high",
+      "cause_ja": "冷却水が 125℃付近になったため",
+      "cause_ko": "냉각수가 125°C 부근에 도달",
+      "symptoms_ko": ["수온계 H 부근", "오버히트 위험"],
+      "remedies": [
+        {"type": "coolant", "type_ko": "냉각계 점검", "action_ko": "냉각수 양(부족) 및 수누설 점검"},
+        {"type": "machine", "type_ko": "기계 처치", "action_ko": "팬 벨트의 장력(헐거움) 점검"},
+        {"type": "machine", "type_ko": "기계 처치", "action_ko": "프론트 그릴·라디에이터 방충망에 먼지 막힘 없는지 점검"}
+      ],
+      "page_ref": 263,
+      "emergency_response_ko": [
+        "1. 작업 즉시 중지",
+        "2. 엔진을 약 5분간 아이들링",
+        "3. 엔진 정지",
+        "4. 30분 이상 식힌 후 점검"
+      ]
+    },
+    {
+      "id": "TS-015",
+      "category_id": "white_smoke_at_start",
+      "cause_ja": "前の作業が長時間にわたるアイドリング運転で終わっている、または冷機時アイドリング運転の繰返しで、マフラ内部に湿りが残っている",
+      "cause_ko": "장시간 아이들링으로 작업 종료 또는 냉기 시 반복 아이들링으로 머플러 내부에 습기가 남음",
+      "symptoms_ko": ["시동 시 청백색 연기 지속"],
+      "remedies": [
+        {"type": "operation", "type_ko": "조작", "action_ko": "부하를 걸어 머플러를 충분히 가열. 냉기 시 아이들링 반복과 장시간 아이들링을 가급적 피함"}
+      ],
+      "page_ref": 263
+    },
+    {
+      "id": "TS-016",
+      "category_id": "white_smoke_at_start",
+      "cause_ja": "ノズル不良",
+      "cause_ko": "노즐 불량",
+      "symptoms_ko": ["시동 시 청백색 연기 지속"],
+      "remedies": [
+        {"type": "service", "type_ko": "서비스", "action_ko": "노즐 점검 (구입처에 연락)"}
+      ],
+      "page_ref": 263,
+      "service_required": true
+    },
+    {
+      "id": "TS-017",
+      "category_id": "white_smoke_at_start",
+      "cause_ja": "燃料不良",
+      "cause_ko": "연료 불량",
+      "symptoms_ko": ["시동 시 청백색 연기 지속"],
+      "remedies": [
+        {"type": "fuel", "type_ko": "연료 처치", "action_ko": "양질의 연료로 교환"}
+      ],
+      "page_ref": 263
+    }
+  ],
+  "error_codes": {
+    "info_ko": "전자 메타에 표시되는 에러 코드 형식: 상단(VCU + 컴포넌트명) / 하단(SPN-FMI 코드). 표시 시 즉시 구입처에 연락하세요. 일부는 긴급 회피 처치로 일부 사용 제한 상태로 작업 가능.",
+    "page_ref": 264,
+    "important_categories": [
+      {
+        "category_ja": "リフトアーム / 3P 高さ規制 / ポジション / カバー / モンロー角度 / ドラフト",
+        "category_ko": "3점 링크·리프트 암 관련",
+        "common_action_ko": "메뉴 화면의 [3P 제어 모드]를 끄고(모드 램프 소등), 3점 링크 외부 조작 스위치로 조작",
+        "page_ref": 264
+      },
+      {
+        "category_ja": "ストローク / モンロー角度",
+        "category_ko": "스트로크·몬로 각도",
+        "common_action_ko": "몬로 절환 스위치를 끄고(몬로 램프 소등), 몬로 수동 스위치로 조작",
+        "page_ref": 264
+      },
+      {
+        "category_ja": "シャトル / ハンドアクセル / アクセルペダル / 主変速 / 副変速 / クラッチペダル / ブレーキペダル / 斜板センサ",
+        "category_ko": "변속·페달 센서 (시프트·핸드 액셀·액셀 페달·주변속·부변속·클러치 페달·브레이크 페달·사판 센서)",
+        "common_action_ko": "구입처에 연락. 일부 모드에서 주행 가능할 수 있음",
+        "page_ref": 264,
+        "additional_notes_ko": [
+          "부변속 레버 이상 시: [L], [M], [H] 위치에서는 주행 가능, [N]에서는 주행 불가",
+          "주변속 레버 이상 시: 주변속 조정 불가"
+        ]
+      },
+      {
+        "category_ja": "VT 通信 / DBM 通信 / ECU 通信 / ACU 通信 / ARU 通信",
+        "category_ko": "통신 이상 (VT 서브 모니터·메타 패널·엔진 ECU·배기 ACU·암레스트 통신)",
+        "common_action_ko": "구입처에 연락",
+        "page_ref": 265
+      },
+      {
+        "category_ja": "3P 上げ SOL / 3P 下げ SOL",
+        "category_ko": "3점 상승·하강 솔레노이드",
+        "common_action_ko": "구입처에 연락. 작업기 상승/하강 불가",
+        "page_ref": 265
+      },
+      {
+        "category_ja": "モンロ縮 SOL / モンロ伸 SOL",
+        "category_ko": "몬로 신축 솔레노이드",
+        "common_action_ko": "구입처에 연락. 몬로 실린더 신축 불가",
+        "page_ref": 265
+      },
+      {
+        "category_ja": "前進 SOL / 後進 SOL",
+        "category_ko": "전진·후진 솔레노이드",
+        "common_action_ko": "구입처에 연락",
+        "page_ref": 265
+      },
+      {
+        "category_ja": "PTO SOL / PTO SW",
+        "category_ko": "PTO 솔레노이드·스위치",
+        "common_action_ko": "구입처에 연락. PTO 회전 불가",
+        "page_ref": 266
+      },
+      {
+        "category_ja": "AD 左 SOL / AD 右 SOL",
+        "category_ko": "AD(자동 더블 액션) 좌·우 비례 감압 밸브",
+        "common_action_ko": "AD 스위치를 [꺼짐]으로 전환",
+        "page_ref": 267
+      },
+      {
+        "category_ja": "4WD SOL / 倍速 SOL",
+        "category_ko": "4WD·배속 솔레노이드",
+        "common_action_ko": "주행 모드 스위치를 [2WD] 또는 [4WD]로 전환",
+        "page_ref": 266
+      },
+      {
+        "category_ja": "HST 増速 SOL / HST 減速 SOL / Hi SOL / Lo SOL",
+        "category_ko": "HST 변속 솔레노이드 (증속·감속·Hi·Lo)",
+        "common_action_ko": "구입처에 연락",
+        "page_ref": 267
+      },
+      {
+        "category_ja": "シャトル SOL / シャトルスプール",
+        "category_ko": "셔틀 솔레노이드·셔틀 스풀",
+        "common_action_ko": "구입처에 연락. 셔틀 스풀 중립 스위치 이상 시 긴급 탈출 모드(269p) 참조",
+        "page_ref": 266
+      }
+    ],
+    "scr_error_codes": {
+      "info_ko": "SCR 시스템(요소수 분사) 에러 코드. 표시 시 엔진 출력이 아이들링 상태(Lv.2)로 제한됨",
+      "example_codes": [
+        {
+          "code": "1761-1",
+          "meaning_ko": "요소수 잔량 또는 시스템 이상",
+          "action_ko": "요소수 보급 또는 양품 교환. 미해결 시 구입처 연락",
+          "engine_restriction_ko": "Lv.2 (아이들링)"
+        },
+        {
+          "code": "4350-15",
+          "meaning_ko": "잘못된 요소수 보충 가능성",
+          "action_ko": "키 스위치를 끄고 수 분 대기 후 다시 켜면 에러 코드 사라짐. 다시 표시되면 10분간 엔진 운전 후 확인. 미해결 시 구입처 연락"
+        }
+      ],
+      "page_ref": 56
+    }
+  },
+  "scheduled_maintenance_reminder_ko": "운전 중 점검·정비 알림 시: 엔진 오일은 [메인터넌스 설정] 화면에서 시간 리셋 가능. 그 외 점검 항목은 [돌아가기] 스위치로 일시 해제. 키 [켜짐] 시 다시 표시됨.",
+  "general_notes_ko": [
+    "원인을 알 수 없을 때는 반드시 구입처(서비스센터)에 연락하세요.",
+    "에러 코드 표시 시 그 자리에서 자동으로 사용 제한이 걸리는 경우가 많습니다.",
+    "SCR 시스템 이상 시 엔진 출력이 Lv.2(아이들링)로 제한되어 작업이 어려워집니다.",
+    "DPF 관련 경고는 별도 표(warning_lights.json의 dpf_warning_levels) 참조.",
+    "MR1050과 MR1157은 본 데이터를 공유합니다."
+  ]
+}
