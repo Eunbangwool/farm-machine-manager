@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,11 +26,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.AlertDialog
@@ -50,12 +54,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.farmmachinemanager.BuildConfig
 import com.example.farmmachinemanager.ui.theme.BorderColor
+import com.example.farmmachinemanager.ui.theme.StatusInspectionBg
+import com.example.farmmachinemanager.ui.theme.StatusInspectionText
+import com.example.farmmachinemanager.ui.theme.StatusRepairText
 import com.example.farmmachinemanager.ui.theme.SurfacePrimary
 import com.example.farmmachinemanager.ui.theme.SurfaceSecondary
 import com.example.farmmachinemanager.ui.theme.TextPrimary
 import com.example.farmmachinemanager.ui.theme.TextSecondary
 import com.example.farmmachinemanager.ui.theme.TextTertiary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * 설정 화면.
@@ -104,7 +115,7 @@ fun SettingsScreen(
                 InfoRow(
                     icon = Icons.Outlined.Info,
                     label = "앱 이름",
-                    value = "농기계 관리"
+                    value = if (BuildConfig.IS_DEBUG_APP) "농기계 관리 (디버그)" else "농기계 관리"
                 )
                 Divider()
                 InfoRow(
@@ -114,10 +125,23 @@ fun SettingsScreen(
                 )
                 Divider()
                 InfoRow(
+                    icon = Icons.Outlined.Schedule,
+                    label = "빌드 시간",
+                    value = formatBuildTime(BuildConfig.BUILD_TIME_MS)
+                )
+                Divider()
+                InfoRow(
                     icon = Icons.Outlined.Update,
                     label = "패키지명",
                     value = info.packageName
                 )
+            }
+
+            // 디버그 빌드일 때만 노출되는 진단 카드.
+            // IS_DEBUG_APP 만 체크 (BuildConfig.DEBUG 는 일반 debug 빌드도 true).
+            if (BuildConfig.IS_DEBUG_APP) {
+                SectionHeader(title = "디버그")
+                DebugDiagnosticsCard()
             }
 
             // 기기 정보 섹션
@@ -238,6 +262,63 @@ private fun collectAppInfo(context: Context): AppInfo {
         )
     } catch (_: Exception) {
         AppInfo("(불러오기 실패)", 0L, context.packageName)
+    }
+}
+
+private val buildTimeFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.KOREA)
+
+private fun formatBuildTime(ms: Long): String =
+    if (ms <= 0L) "(없음)" else buildTimeFormatter.format(Date(ms))
+
+@Composable
+private fun DebugDiagnosticsCard() {
+    val mode = com.example.farmmachinemanager.AppContainer.currentMode
+    val farmCode = remember {
+        runCatching { com.example.farmmachinemanager.AppContainer.farmCodeManager.farmCode }
+            .getOrNull()
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(StatusInspectionBg)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Outlined.BugReport,
+                contentDescription = null,
+                tint = StatusInspectionText,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "디버그 빌드 진단",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = StatusInspectionText
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        DiagnosticRow("IS_DEBUG_APP", BuildConfig.IS_DEBUG_APP.toString())
+        DiagnosticRow("BUILD_TYPE", BuildConfig.BUILD_TYPE)
+        DiagnosticRow("APPLICATION_ID", BuildConfig.APPLICATION_ID)
+        DiagnosticRow("동기화 모드", mode.name)
+        DiagnosticRow("농장 코드", farmCode ?: "(없음)")
+    }
+}
+
+@Composable
+private fun DiagnosticRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Text(
+            label,
+            fontSize = 11.sp,
+            color = StatusInspectionText,
+            modifier = Modifier.padding(end = 10.dp).width(120.dp)
+        )
+        Text(value, fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -374,6 +455,7 @@ private fun FirebaseSyncSection() {
     }
     var showJoinDialog by remember { mutableStateOf(false) }
     var joinCodeInput by remember { mutableStateOf("") }
+    var showLeaveDialog by remember { mutableStateOf(false) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
     var showRestartDialog by remember { mutableStateOf(false) }
@@ -459,8 +541,17 @@ private fun FirebaseSyncSection() {
                 joinCodeInput = ""
                 showJoinDialog = true
             }
-            // 변경 후 재시작 안내
+            // 농장 떠나기 (현재 코드 있을 때만)
             if (currentCode != null) {
+                Divider()
+                ActionButton(
+                    label = "농장 떠나기",
+                    hint = "이 폰을 로컬 전용으로 전환 (데이터는 Firestore에 남음)",
+                    danger = true,
+                    icon = Icons.Outlined.ExitToApp,
+                ) {
+                    showLeaveDialog = true
+                }
                 Divider()
                 Row(
                     modifier = Modifier
@@ -477,6 +568,32 @@ private fun FirebaseSyncSection() {
                 }
             }
         }
+    }
+
+    // 농장 떠나기 확인
+    if (showLeaveDialog) {
+        AlertDialog(
+            onDismissRequest = { showLeaveDialog = false },
+            title = { Text("농장 떠나기") },
+            text = {
+                Text(
+                    "이 폰의 농장 연결을 끊고 로컬 전용으로 전환합니다.\n" +
+                            "농장 데이터는 Firestore에 그대로 남고, 같은 코드로 다시 참여할 수 있어요."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    farmCodeManager?.clearCode()
+                    com.example.farmmachinemanager.AppContainer.refreshSyncMode()
+                    currentCode = null
+                    showLeaveDialog = false
+                    showRestartDialog = true
+                }) { Text("떠나기", color = StatusRepairText) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLeaveDialog = false }) { Text("취소") }
+            }
+        )
     }
 
     // 코드 입력 다이얼로그
@@ -543,7 +660,14 @@ private fun FirebaseSyncSection() {
 }
 
 @Composable
-private fun ActionButton(label: String, hint: String, onClick: () -> Unit) {
+private fun ActionButton(
+    label: String,
+    hint: String,
+    danger: Boolean = false,
+    icon: ImageVector? = null,
+    onClick: () -> Unit,
+) {
+    val labelColor = if (danger) StatusRepairText else TextPrimary
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -551,12 +675,21 @@ private fun ActionButton(label: String, hint: String, onClick: () -> Unit) {
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = labelColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.size(10.dp))
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextPrimary
+                color = labelColor
             )
             Text(text = hint, fontSize = 11.sp, color = TextSecondary)
         }
