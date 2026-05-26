@@ -26,9 +26,7 @@ object MaintenanceTemplates {
         MachineType.COMBINE -> CombineMaintenanceTemplate.defaultConsumables(machineId)
         MachineType.RICE_TRANSPLANTER -> TransplanterMaintenanceTemplate.defaultConsumables(machineId)
         MachineType.FORKLIFT -> ForkliftMaintenanceTemplate.defaultConsumables(machineId)
-        MachineType.CULTIVATOR,
-        MachineType.VEHICLE,
-        MachineType.OTHER -> emptyList()
+        else -> emptyList()
     }
 
     /**
