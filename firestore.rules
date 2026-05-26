@@ -1,0 +1,16 @@
+// Firestore 보안 규칙 — Firebase 콘솔 → Firestore Database → 규칙 탭에 그대로 게시.
+//
+// 정책: 6자리 숫자 농장 코드를 알면 누구나 그 농장 데이터를 읽고 쓸 수 있다.
+// 더 강한 보안이 필요하면 Authentication 도입 후 request.auth 검사를 추가.
+//
+// 주의: `firebase.console` 의 "규칙" 탭에서 한 번 게시해야 적용됨.
+// google-services.json 만 갖고 자동 적용되지 않는다.
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /farms/{farmCode}/{document=**} {
+      allow read, write: if farmCode.matches('[0-9]{6}');
+    }
+  }
+}
