@@ -1,8 +1,10 @@
 # ===================================================================
-# Farm Machine Manager - 자동 APK 빌드
+# Farm Machine Manager - 자동 APK 빌드 (운영 + 디버그 dual APK)
 # ===================================================================
-# 빌드 실패 시에도 로그 마지막 200줄을 release body 와 artifact 로 노출.
-# 컴파일 에러를 외부에서 진단 가능하게 한다.
+# 매 main push 마다:
+#  - FarmManager.apk (운영) + FarmManager-debug.apk (디버그) 둘 다 빌드
+#  - release latest 에 두 APK + build.log 첨부
+#  - 빌드 실패 시 로그 마지막 200줄이 release body 와 artifact 로 노출
 
 name: Build APK
 
