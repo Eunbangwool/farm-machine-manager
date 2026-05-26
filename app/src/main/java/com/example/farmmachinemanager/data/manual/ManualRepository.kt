@@ -119,9 +119,11 @@ class ManualRepository(private val context: Context) {
      * - 이앙기 → 이앙기 매뉴얼 (null 이 아닌 임의 token)
      */
     fun manualKeyForMachine(machineName: String, isTractor: Boolean, isRicePlanter: Boolean): ManualKey? {
-        val upper = machineName.uppercase()
+        val upper = machineName.uppercase().replace(" ", "")
         return when {
-            isTractor && (upper.contains("MR1050") || upper.contains("MR1157")) -> ManualKey.TRACTOR_MR1050
+            // MR1050 / MR1157 은 모델명만으로 트랙터 매뉴얼 적용 (등록 종류 무관).
+            // MR1157 은 엔진 외 구조가 MR1050 과 동일하므로 같은 데이터셋 사용.
+            upper.contains("MR1050") || upper.contains("MR1157") -> ManualKey.TRACTOR_MR1050
             isRicePlanter -> ManualKey.PLANTER
             else -> null
         }

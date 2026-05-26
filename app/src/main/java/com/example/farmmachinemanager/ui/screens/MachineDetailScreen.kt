@@ -750,7 +750,7 @@ private fun BatchMaintenanceEntryCard(
     machine: Machine,
     onIntervalClick: (String) -> Unit,
 ) {
-    val intervals = remember(machine.type) { intervalsFor(machine.type) }
+    val intervals = remember(machine.name, machine.type) { intervalsFor(machine) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -791,19 +791,27 @@ private fun BatchMaintenanceEntryCard(
     }
 }
 
-/** 머신 타입별 대표 정기 정비 인터벌 목록. */
-private fun intervalsFor(type: MachineType): List<String> = when (type) {
-    MachineType.TRACTOR -> listOf(
-        "50시간마다", "100시간마다", "200시간마다", "400시간마다",
-        "600시간마다", "800시간마다", "1500시간마다",
-        "1년마다", "2년마다",
-    )
-    MachineType.RICE_TRANSPLANTER -> listOf(
-        "50시간마다", "100시간마다", "200시간마다", "400시간마다",
-        "800시간마다", "1500시간마다",
-        "시즌 전후", "1년마다",
-    )
-    else -> listOf("50시간마다", "100시간마다", "200시간마다", "400시간마다")
+/**
+ * 머신별 대표 정기 정비 인터벌 목록.
+ * MR1050 / MR1157 은 모델명만으로 트랙터 인터벌 적용 (등록 종류 무관).
+ */
+private fun intervalsFor(machine: Machine): List<String> {
+    val name = machine.name.uppercase().replace(" ", "")
+    val usesTractorManual = name.contains("MR1050") || name.contains("MR1157") ||
+        machine.type == MachineType.TRACTOR
+    return when {
+        usesTractorManual -> listOf(
+            "50시간마다", "100시간마다", "200시간마다", "400시간마다",
+            "600시간마다", "800시간마다", "1500시간마다",
+            "1년마다", "2년마다",
+        )
+        machine.type == MachineType.RICE_TRANSPLANTER -> listOf(
+            "50시간마다", "100시간마다", "200시간마다", "400시간마다",
+            "800시간마다", "1500시간마다",
+            "시즌 전후", "1년마다",
+        )
+        else -> listOf("50시간마다", "100시간마다", "200시간마다", "400시간마다")
+    }
 }
 
 private fun heroIconColor(type: MachineType): Pair<Color, Color> = when (type) {
