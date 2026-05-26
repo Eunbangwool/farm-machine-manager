@@ -114,7 +114,8 @@ class FirestoreMachineRepository(
         "statusNote" to m.statusNote,
         "lastMaintenanceDate" to m.lastMaintenanceDate?.toString(),
         "photoUrl" to m.photoUrl,
-        "notes" to m.notes
+        "notes" to m.notes,
+        "manualId" to m.manualId
     )
 
     private fun mapToMachine(id: String, data: Map<String, Any?>): Machine? = try {
@@ -138,7 +139,8 @@ class FirestoreMachineRepository(
             lastMaintenanceDate = (data["lastMaintenanceDate"] as? String)
                 ?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
             photoUrl = data["photoUrl"] as? String,
-            notes = data["notes"] as? String
+            notes = data["notes"] as? String,
+            manualId = data["manualId"] as? String
         )
     } catch (e: Exception) {
         null

@@ -118,11 +118,17 @@ class ManualRepository(private val context: Context) {
      * - 그 외 트랙터 → 매뉴얼 없음 (null)
      * - 이앙기 → 이앙기 매뉴얼 (null 이 아닌 임의 token)
      */
-    fun manualKeyForMachine(machineName: String, isTractor: Boolean, isRicePlanter: Boolean): ManualKey? {
+    fun manualKeyForMachine(
+        machineName: String,
+        isTractor: Boolean,
+        isRicePlanter: Boolean,
+        manualId: String? = null,
+    ): ManualKey? {
+        // 1) 등록 시 사용자가 명시적으로 선택한 매뉴얼이 있으면 그것을 우선.
+        ManualCatalog.keyForId(manualId)?.let { return it }
+        // 2) 미선택 시 모델명·종류로 자동 추론 (하위 호환).
         val upper = machineName.uppercase().replace(" ", "")
         return when {
-            // MR1050 / MR1157 은 모델명만으로 트랙터 매뉴얼 적용 (등록 종류 무관).
-            // MR1157 은 엔진 외 구조가 MR1050 과 동일하므로 같은 데이터셋 사용.
             upper.contains("MR1050") || upper.contains("MR1157") -> ManualKey.TRACTOR_MR1050
             isRicePlanter -> ManualKey.PLANTER
             else -> null

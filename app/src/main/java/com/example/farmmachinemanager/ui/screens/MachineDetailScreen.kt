@@ -797,7 +797,8 @@ private fun BatchMaintenanceEntryCard(
  */
 private fun intervalsFor(machine: Machine): List<String> {
     val name = machine.name.uppercase().replace(" ", "")
-    val usesTractorManual = name.contains("MR1050") || name.contains("MR1157") ||
+    val usesTractorManual = machine.manualId == com.example.farmmachinemanager.data.manual.ManualKey.TRACTOR_MR1050.name ||
+        name.contains("MR1050") || name.contains("MR1157") ||
         machine.type == MachineType.TRACTOR
     return when {
         usesTractorManual -> listOf(
