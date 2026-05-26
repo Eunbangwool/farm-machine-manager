@@ -148,7 +148,9 @@ fun MachineDetailScreen(
     onViewAllConsumables: () -> Unit = {},
     onViewAllMaintenance: () -> Unit = {},
     /** 미리보기에 표시된 정비기록 카드를 직접 클릭한 경우 수정 화면으로 진입 */
-    onEditMaintenanceClick: (MaintenanceRecord) -> Unit = {}
+    onEditMaintenanceClick: (MaintenanceRecord) -> Unit = {},
+    /** 정기 정비 일괄 입력 진입. 인자: "50시간마다" 같은 인터벌 키. */
+    onBatchMaintenanceClick: (String) -> Unit = {},
 ) {
     // 하드웨어 뒤로가기 버튼 처리 (앱이 꺼지지 않고 목록으로 돌아감)
     BackHandler { onBackClick() }
@@ -367,6 +369,14 @@ fun MachineDetailScreen(
 
             item {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SectionHeader(title = "정기 정비 일괄 입력")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    BatchMaintenanceEntryCard(
+                        machine = machine,
+                        onIntervalClick = onBatchMaintenanceClick,
+                    )
+
                     Spacer(modifier = Modifier.height(20.dp))
                     SectionHeader(title = "기본 정보")
                     Spacer(modifier = Modifier.height(10.dp))
@@ -732,6 +742,71 @@ private fun BottomActionBar(
 }
 
 // ============ 헬퍼 ============
+
+/**
+ * 정기 정비 인터벌 진입 카드.
+ * 머신 타입에 따라 표시 인터벌 목록 변경 (이앙기/트랙터 매뉴얼이 다른 인터벌 사용).
+ */
+@Composable
+private fun BatchMaintenanceEntryCard(
+    machine: Machine,
+    onIntervalClick: (String) -> Unit,
+) {
+    val intervals = remember(machine.type) { intervalsFor(machine.type) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .padding(16.dp),
+    ) {
+        Text(
+            text = "정기 정비 시기가 도래했을 때 매뉴얼 항목을 한 번에 체크하여 저장합니다.",
+            fontSize = 12.sp,
+            color = TextSecondary,
+            lineHeight = 18.sp,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        androidx.compose.foundation.layout.FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            intervals.forEach { interval ->
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(SurfaceSecondary)
+                        .clickable { onIntervalClick(interval) }
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = interval,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextPrimary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 머신 타입별 대표 정기 정비 인터벌 목록. */
+private fun intervalsFor(type: MachineType): List<String> = when (type) {
+    MachineType.TRACTOR -> listOf(
+        "50시간마다", "100시간마다", "200시간마다", "400시간마다",
+        "600시간마다", "800시간마다", "1500시간마다",
+        "1년마다", "2년마다",
+    )
+    MachineType.RICE_TRANSPLANTER -> listOf(
+        "50시간마다", "100시간마다", "200시간마다", "400시간마다",
+        "800시간마다", "1500시간마다",
+        "시즌 전후", "1년마다",
+    )
+    else -> listOf("50시간마다", "100시간마다", "200시간마다", "400시간마다")
+}
 
 private fun heroIconColor(type: MachineType): Pair<Color, Color> = when (type) {
     MachineType.TRACTOR -> TractorIconBg to TractorIconTint
