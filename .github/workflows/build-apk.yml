@@ -1,10 +1,12 @@
 # ===================================================================
-# Farm Machine Manager - 자동 APK 빌드 (운영 + 디버그 dual APK)
+# Farm Machine Manager - 자동 APK 빌드 (운영만)
 # ===================================================================
 # 매 main push 마다:
-#  - FarmManager.apk (운영) + FarmManager-debug.apk (디버그) 둘 다 빌드
-#  - release latest 에 두 APK + build.log 첨부
+#  - FarmManager.apk (운영) 빌드 → release latest 첨부
 #  - 빌드 실패 시 로그 마지막 200줄이 release body 와 artifact 로 노출
+#
+# 디버그 APK (FarmManager-debug.apk) 는 Firebase 콘솔에 디버그 패키지
+# (com.example.farmmachinemanager.debug) 추가 후 다시 활성화.
 
 name: Build APK
 
@@ -43,22 +45,13 @@ jobs:
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
 
-      # 운영 APK (FarmManager.apk) → IS_DEBUG_APP=false, app_name "농돌이"
-      # 디버그 APK (FarmManager-debug.apk) → IS_DEBUG_APP=true, app_name "농돌이 디버그",
-      #                                        applicationId .debug suffix 라 운영과 동시 설치 가능
-      - name: APK 빌드 (운영 + 디버그)
+      - name: APK 빌드 (운영)
         id: build
         continue-on-error: true
         run: |
           set -o pipefail
-          {
-            echo '=== 운영 APK 빌드 ==='
-            ./gradlew assembleDebug --parallel -x lint
-            cp app/build/outputs/apk/debug/app-debug.apk FarmManager.apk
-            echo '=== 디버그 APK 빌드 (clean + -PdebugBuild=true) ==='
-            ./gradlew clean assembleDebug -PdebugBuild=true --parallel -x lint
-            cp app/build/outputs/apk/debug/app-debug.apk FarmManager-debug.apk
-          } 2>&1 | tee build.log
+          ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
+          cp app/build/outputs/apk/debug/app-debug.apk FarmManager.apk
 
       - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
         if: always()
@@ -101,8 +94,7 @@ jobs:
             echo '**자동 빌드된 농돌이 APK**'
             echo
             echo '## 📲 폰에서 직접 설치'
-            echo "- 운영 앱: [FarmManager.apk](https://github.com/$REPO/releases/latest/download/FarmManager.apk) — 일반 사용자용"
-            echo "- 디버그 앱: [FarmManager-debug.apk](https://github.com/$REPO/releases/latest/download/FarmManager-debug.apk) — 진단/등급 카드 노출, applicationId .debug suffix 라 운영과 동시 설치 가능"
+            echo "[FarmManager.apk](https://github.com/$REPO/releases/latest/download/FarmManager.apk) 탭하여 다운로드."
             echo
             echo '## 🔖 빌드 정보'
             echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
@@ -110,8 +102,7 @@ jobs:
             echo "- 빌드 번호: \`${{ github.run_number }}\`"
             echo
             echo '## 🔗 폰 북마크용 직접 설치 URL'
-            echo "- 운영: https://github.com/$REPO/releases/latest/download/FarmManager.apk"
-            echo "- 디버그: https://github.com/$REPO/releases/latest/download/FarmManager-debug.apk"
+            echo "https://github.com/$REPO/releases/latest/download/FarmManager.apk"
           } > release_body.md
 
       - name: 최신 빌드 Release 업데이트
@@ -123,7 +114,6 @@ jobs:
           body_path: release_body.md
           files: |
             FarmManager.apk
-            FarmManager-debug.apk
             build.log
           prerelease: false
           make_latest: "true"
