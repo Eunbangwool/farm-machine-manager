@@ -1,6 +1,8 @@
 # ===================================================================
-# Farm Machine Manager - 자동 APK 빌드 (최적화 버전)
+# Farm Machine Manager - 자동 APK 빌드
 # ===================================================================
+# 빌드 실패 시에도 로그 마지막 200줄을 release body 와 artifact 로 노출.
+# 컴파일 에러를 외부에서 진단 가능하게 한다.
 
 name: Build APK
 
@@ -12,7 +14,6 @@ on:
 permissions:
   contents: write
 
-# 새 push가 들어오면 이전 빌드 자동 취소 (시간 낭비 방지)
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -32,7 +33,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Gradle 설정 (캐시 일시 비활성 — Actions cache 서비스 장애 회피)
+      - name: Gradle 설정 (캐시 일시 비활성)
         uses: gradle/actions/setup-gradle@v3
         with:
           cache-disabled: true
@@ -40,36 +41,85 @@ jobs:
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
 
-      - name: APK 빌드 (병렬 + 캐시 + 린트 스킵)
-        run: ./gradlew assembleDebug --parallel --build-cache -x lint
+      # 빌드 stdout / stderr 을 모두 build.log 로 캡쳐. fail 해도 다음 step 으로 진행.
+      - name: APK 빌드
+        id: build
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
 
-      - name: APK 이름 변경 (app-debug.apk → FarmManager.apk)
+      - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
+        if: always()
+        run: |
+          echo '## Build log tail' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -200 build.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: 빌드 로그를 artifact 로 업로드
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ github.sha }}
+          path: build.log
+          retention-days: 14
+
+      - name: 빌드 실패 시 release 본문에 로그 마지막 200줄 첨부
+        if: steps.build.outcome != 'success'
+        run: |
+          {
+            echo '**❌ 빌드 실패 — 컴파일 로그 (tail 200)**'
+            echo
+            echo '## 빌드 정보'
+            echo "- 커밋: \`${GITHUB_SHA::7}\`"
+            echo "- 빌드 번호: \`${{ github.run_number }}\`"
+            echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
+            echo
+            echo '## 로그'
+            echo '```'
+            tail -200 build.log
+            echo '```'
+          } > release_body.md
+
+      - name: 빌드 성공 시 release body 작성
+        if: steps.build.outcome == 'success'
+        run: |
+          {
+            echo '**자동 빌드된 디버그 APK**'
+            echo
+            echo '## 📲 폰에서 직접 설치'
+            echo '아래 Assets의 `FarmManager.apk` 탭하여 다운로드.'
+            echo
+            echo '## 🔖 빌드 정보'
+            echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
+            echo "- 커밋: \`${GITHUB_SHA::7}\`"
+            echo "- 빌드 번호: \`${{ github.run_number }}\`"
+            echo
+            echo '## 🔗 폰 북마크용 직접 설치 URL'
+            echo "https://github.com/${{ github.repository }}/releases/latest/download/FarmManager.apk"
+          } > release_body.md
+
+      - name: APK 이름 변경 (성공 시)
+        if: steps.build.outcome == 'success'
         run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FarmManager.apk
 
-      - name: 빌드 정보 수집
-        id: info
-        run: |
-          echo "date=$(date '+%Y-%m-%d %H:%M' )" >> $GITHUB_OUTPUT
-          echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-
       - name: 최신 빌드 Release 업데이트
+        if: always()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: "📱 최신 빌드"
-          body: |
-            **자동 빌드된 디버그 APK**
-
-            ## 📲 폰에서 직접 설치
-            아래 Assets의 `FarmManager.apk` 탭하여 다운로드.
-
-            ## 🔖 빌드 정보
-            - 일시: `${{ steps.info.outputs.date }} UTC`
-            - 커밋: `${{ steps.info.outputs.sha }}`
-            - 빌드 번호: `${{ github.run_number }}`
-
-            ## 🔗 폰 북마크용 직접 설치 URL
-            https://github.com/${{ github.repository }}/releases/latest/download/FarmManager.apk
-          files: app/build/outputs/apk/debug/FarmManager.apk
+          body_path: release_body.md
+          files: |
+            app/build/outputs/apk/debug/FarmManager.apk
+            build.log
           prerelease: false
           make_latest: "true"
+          fail_on_unmatched_files: false
+
+      - name: 빌드 실패면 워크플로우도 실패로 마감
+        if: steps.build.outcome != 'success'
+        run: |
+          echo "Build failed — see release_body.md or build-log artifact."
+          exit 1
