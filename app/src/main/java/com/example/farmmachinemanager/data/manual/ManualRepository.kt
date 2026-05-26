@@ -6,12 +6,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 /**
- * 안드로이드 assets 폴더에서 쿠보타 이앙기 매뉴얼 JSON을 읽어 파싱한다.
+ * 안드로이드 assets 폴더에서 농기계 매뉴얼 JSON 을 읽어 파싱한다.
  *
- * 파일 경로: app/src/main/assets/manuals/kubota_planter/(category).json
+ * 데이터셋 경로:
+ *  - 이앙기 (kubota_planter): app/src/main/assets/manuals/kubota_planter/(category).json
+ *  - 트랙터 (kubota_tractor_mr1050): app/src/main/assets/manuals/kubota_tractor_mr1050/(category).json
  *
- * 데이터는 lazy + 메모리 캐싱. 같은 데이터셋을 두 번 요청하면 두 번째부터는
- * 디스크 I/O 없이 캐시에서 반환한다.
+ * 데이터는 lazy + 메모리 캐싱.
  */
 class ManualRepository(private val context: Context) {
 
@@ -21,8 +22,10 @@ class ManualRepository(private val context: Context) {
         coerceInputValues = true
     }
 
-    private val basePath = "manuals/kubota_planter"
+    private val planterBase = "manuals/kubota_planter"
+    private val tractorMr1050Base = "manuals/kubota_tractor_mr1050"
 
+    // ----- 이앙기 캐시 -----
     private var indexCache: ManualIndex? = null
     private var troubleshootingCache: TroubleshootingData? = null
     private var inspectionCache: InspectionScheduleData? = null
@@ -31,36 +34,106 @@ class ManualRepository(private val context: Context) {
     private var fuseCache: FuseCircuitsData? = null
     private var specificationsCache: SpecificationsData? = null
 
+    // ----- 트랙터 (MR1050) 캐시 -----
+    private var tractorIndexCache: ManualIndex? = null
+    private var tractorInspectionCache: TractorInspectionScheduleData? = null
+    private var tractorLubricationCache: TractorLubricationScheduleData? = null
+    private var tractorConsumablesCache: TractorConsumablesData? = null
+    private var tractorSpecificationsCache: TractorSpecificationsData? = null
+    private var tractorWarningLightsCache: TractorWarningLightsData? = null
+    private var tractorTroubleshootingCache: TractorTroubleshootingData? = null
+
+    // ===== 이앙기 (기존) =====
+
     suspend fun loadIndex(): ManualIndex = withContext(Dispatchers.IO) {
-        indexCache ?: decode<ManualIndex>("index.json").also { indexCache = it }
+        indexCache ?: decode<ManualIndex>(planterBase, "index.json").also { indexCache = it }
     }
 
     suspend fun loadTroubleshooting(): TroubleshootingData = withContext(Dispatchers.IO) {
-        troubleshootingCache ?: decode<TroubleshootingData>("troubleshooting.json").also { troubleshootingCache = it }
+        troubleshootingCache ?: decode<TroubleshootingData>(planterBase, "troubleshooting.json").also { troubleshootingCache = it }
     }
 
     suspend fun loadInspectionSchedule(): InspectionScheduleData = withContext(Dispatchers.IO) {
-        inspectionCache ?: decode<InspectionScheduleData>("inspection_schedule.json").also { inspectionCache = it }
+        inspectionCache ?: decode<InspectionScheduleData>(planterBase, "inspection_schedule.json").also { inspectionCache = it }
     }
 
     suspend fun loadLubricationSchedule(): LubricationScheduleData = withContext(Dispatchers.IO) {
-        lubricationCache ?: decode<LubricationScheduleData>("lubrication_schedule.json").also { lubricationCache = it }
+        lubricationCache ?: decode<LubricationScheduleData>(planterBase, "lubrication_schedule.json").also { lubricationCache = it }
     }
 
     suspend fun loadConsumables(): ConsumablesData = withContext(Dispatchers.IO) {
-        consumablesCache ?: decode<ConsumablesData>("consumables.json").also { consumablesCache = it }
+        consumablesCache ?: decode<ConsumablesData>(planterBase, "consumables.json").also { consumablesCache = it }
     }
 
     suspend fun loadFuseCircuits(): FuseCircuitsData = withContext(Dispatchers.IO) {
-        fuseCache ?: decode<FuseCircuitsData>("fuse_circuits.json").also { fuseCache = it }
+        fuseCache ?: decode<FuseCircuitsData>(planterBase, "fuse_circuits.json").also { fuseCache = it }
     }
 
     suspend fun loadSpecifications(): SpecificationsData = withContext(Dispatchers.IO) {
-        specificationsCache ?: decode<SpecificationsData>("specifications.json").also { specificationsCache = it }
+        specificationsCache ?: decode<SpecificationsData>(planterBase, "specifications.json").also { specificationsCache = it }
     }
 
-    private inline fun <reified T> decode(fileName: String): T {
+    // ===== 트랙터 MR1050 (신규) =====
+    // MR1050 과 MR1157 은 엔진 외 구조 동일하므로 본 데이터셋을 둘 다 참조.
+
+    suspend fun loadTractorIndex(): ManualIndex = withContext(Dispatchers.IO) {
+        tractorIndexCache ?: decode<ManualIndex>(tractorMr1050Base, "index.json").also { tractorIndexCache = it }
+    }
+
+    suspend fun loadTractorInspectionSchedule(): TractorInspectionScheduleData = withContext(Dispatchers.IO) {
+        tractorInspectionCache ?: decode<TractorInspectionScheduleData>(tractorMr1050Base, "inspection_schedule.json")
+            .also { tractorInspectionCache = it }
+    }
+
+    suspend fun loadTractorLubricationSchedule(): TractorLubricationScheduleData = withContext(Dispatchers.IO) {
+        tractorLubricationCache ?: decode<TractorLubricationScheduleData>(tractorMr1050Base, "lubrication_schedule.json")
+            .also { tractorLubricationCache = it }
+    }
+
+    suspend fun loadTractorConsumables(): TractorConsumablesData = withContext(Dispatchers.IO) {
+        tractorConsumablesCache ?: decode<TractorConsumablesData>(tractorMr1050Base, "consumables.json")
+            .also { tractorConsumablesCache = it }
+    }
+
+    suspend fun loadTractorSpecifications(): TractorSpecificationsData = withContext(Dispatchers.IO) {
+        tractorSpecificationsCache ?: decode<TractorSpecificationsData>(tractorMr1050Base, "specifications.json")
+            .also { tractorSpecificationsCache = it }
+    }
+
+    suspend fun loadTractorWarningLights(): TractorWarningLightsData = withContext(Dispatchers.IO) {
+        tractorWarningLightsCache ?: decode<TractorWarningLightsData>(tractorMr1050Base, "warning_lights.json")
+            .also { tractorWarningLightsCache = it }
+    }
+
+    suspend fun loadTractorTroubleshooting(): TractorTroubleshootingData = withContext(Dispatchers.IO) {
+        tractorTroubleshootingCache ?: decode<TractorTroubleshootingData>(tractorMr1050Base, "troubleshooting.json")
+            .also { tractorTroubleshootingCache = it }
+    }
+
+    // ----- 머신 → 매뉴얼 매핑 -----
+
+    /**
+     * 머신 모델 이름으로 어떤 매뉴얼 데이터셋을 보여줄지 결정.
+     * - "MR1050" / "MR1157" → 트랙터 MR1050 매뉴얼 (엔진 외 구조 동일)
+     * - 그 외 트랙터 → 매뉴얼 없음 (null)
+     * - 이앙기 → 이앙기 매뉴얼 (null 이 아닌 임의 token)
+     */
+    fun manualKeyForMachine(machineName: String, isTractor: Boolean, isRicePlanter: Boolean): ManualKey? {
+        val upper = machineName.uppercase()
+        return when {
+            isTractor && (upper.contains("MR1050") || upper.contains("MR1157")) -> ManualKey.TRACTOR_MR1050
+            isRicePlanter -> ManualKey.PLANTER
+            else -> null
+        }
+    }
+
+    private inline fun <reified T> decode(basePath: String, fileName: String): T {
         val text = context.assets.open("$basePath/$fileName").bufferedReader().use { it.readText() }
         return json.decodeFromString(text)
     }
+}
+
+enum class ManualKey {
+    PLANTER,
+    TRACTOR_MR1050,
 }

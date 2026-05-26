@@ -1,0 +1,174 @@
+{
+  "$schema": "kubota_tractor_mr1050_specifications_v1",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "manufacturer_ko": "쿠보타",
+    "series_name_ja": "MR Series (半装軌式)",
+    "series_name_ko": "MR 시리즈 (반장궤식 / 하프 크롤러 트랙터)",
+    "manual_ref": "3D960-8971-2",
+    "page_ref": "270-279"
+  },
+  "common_specifications": {
+    "drive_type_ko": "반장궤식 (半装軌式 / 하프 크롤러)",
+    "engine": {
+      "type_ko": "수냉 4사이클 직립형 디젤",
+      "fuel_ko": "디젤 경유 (초저유황 S10)",
+      "start_method_ko": "셀 모터식",
+      "battery_ko": "31-900 (BCI 사이즈-CCA)"
+    },
+    "steering_ko": "전 유압식 파워 스티어링",
+    "transmission": {
+      "type_ko": "무단 변속 KVT",
+      "stages_ko": "부변속 3단 / 주변속 무단"
+    },
+    "brake_ko": "1계통 좌우 독립 (연결 장치 부속), 습식 디스크 브레이크 (기계식)",
+    "differential_ko": "4피니언 베벨기어식 (데프 록 부속)",
+    "clutch_ko": "전자 유압식 습식 다판",
+    "speed_range_ko": "전진: 0.1~27.7 km/h / 후진: 0.1~22.7 km/h",
+    "pto": {
+      "shaft_size_ko": "JIS 35",
+      "standard_rpm_ko": "589 / 828 / 1170 rpm (엔진 2600)",
+      "reverse_rpm_ko": "523 rpm (엔진 2600)",
+      "ground_pto_ko": "트랙터 주행 1m당 3.12회전",
+      "low_rpm_pto_ko": "406 / 537 / 760 / 1015 rpm (엔진 2600)"
+    },
+    "implement_lift_ko": {
+      "control_ko": "포지션·드래프트 믹스 컨트롤",
+      "mount_ko": "3점 링크 JIS 2형"
+    }
+  },
+  "models": [
+    {
+      "model": "MR800H-PC",
+      "name_ko": "쿠보타 MR800H-PC",
+      "horsepower_ps": "약 80 PS급 (모델명 기준)",
+      "spec_variants_ko": ["PC1", "PC2", "PC3", "PC1N (N 사양: 좁은 폭 크롤러)", "PC1NN (좁은 폭 N 사양)"],
+      "drive_type_ko": "반장궤식"
+    },
+    {
+      "model": "MR900H-PC",
+      "name_ko": "쿠보타 MR900H-PC",
+      "horsepower_ps": "약 90 PS급 (모델명 기준)",
+      "spec_variants_ko": ["PC1", "PC2", "PC3", "PC1N", "PC1NN"]
+    },
+    {
+      "model": "MR1000H-PC",
+      "name_ko": "쿠보타 MR1000H-PC",
+      "dimensions_mm": {
+        "length": 4035,
+        "width_standard": 1890,
+        "width_PC2": 1980,
+        "width_PC3": 1955,
+        "width_N": 1815,
+        "height": 2625,
+        "wheelbase": 2250,
+        "ground_clearance": 470
+      },
+      "mass_kg": "3930 (표준) / 3960 (PC2,PC3) / 3880 (N)",
+      "engine": {
+        "model": "KUBOTA V3800-TIEF4",
+        "type_ko": "수냉 4사이클 4기통 직립형 디젤",
+        "displacement_L": 3.769,
+        "power_kw": 73.5,
+        "power_ps": 100,
+        "rpm": 2600,
+        "fuel_tank_L": 115,
+        "urea_tank_L": 12.9
+      },
+      "front_tire_ko": "표준: 9.5-24 / 전륜 편평 사양: 320/60-26 또는 360/70R20 / N 사양: 9.5-24",
+      "crawler": {
+        "width_x_ground_length_mm": "표준 사양: 450 × 1310 / N 사양: 280 × 1310",
+        "link_pitch_mm": "50 × 90",
+        "track_width_mm": "1440 (N 사양: 1320)",
+        "ground_area_cm2": "11790 (N 사양: 7340)",
+        "ground_pressure_kpa": "20.8 (N 사양: 32.7)"
+      },
+      "suspension_ko": "요동식 (+9°, -7°)"
+    },
+    {
+      "model": "MR1050H-PC",
+      "name_ko": "쿠보타 MR1050H-PC",
+      "dimensions_mm": {
+        "length": 4085,
+        "width_standard": 1890,
+        "width_PC2": 1980,
+        "width_PC3": 1955,
+        "width_N": 1815,
+        "height": 2625,
+        "wheelbase": 2355,
+        "ground_clearance": 470
+      },
+      "mass_kg": "3940 (표준) / 3970 (PC2,PC3) / 3890 (N)",
+      "engine": {
+        "model": "KUBOTA V3800-TIEF4",
+        "type_ko": "수냉 4사이클 4기통 직립형 디젤",
+        "displacement_L": 3.769,
+        "power_kw": 77.2,
+        "power_ps": 105,
+        "rpm": 2600,
+        "fuel_tank_L": 115,
+        "urea_tank_L": 12.9
+      },
+      "front_tire_ko": "표준: 9.5-24 / 전륜 편평 사양: 320/60-26 또는 360/70R20",
+      "crawler": {
+        "width_x_ground_length_mm": "표준: 450 × 1310 / N: 280 × 1310",
+        "link_pitch_mm": "50 × 90",
+        "track_width_mm": "1440 (N 사양: 1320)",
+        "ground_area_cm2": "11790 (N 사양: 7340)",
+        "ground_pressure_kpa": "21.1 (N 사양: 33.3)"
+      },
+      "suspension_ko": "요동식 (+9°, -7°)"
+    },
+    {
+      "model": "MR1050H-PCAT",
+      "name_ko": "쿠보타 MR1050H-PCAT (PCAT 사양)",
+      "spec_ko": "N (좁은 폭 크롤러) 사양 / PCAT",
+      "dimensions_mm": {
+        "length": 4085,
+        "width": 1815,
+        "height": 2625,
+        "wheelbase": 2355,
+        "ground_clearance": 430
+      },
+      "mass_kg": 3910,
+      "engine": {
+        "model": "KUBOTA V3800-TIEF4",
+        "type_ko": "수냉 4사이클 4기통 직립형 디젤",
+        "displacement_L": 3.769,
+        "power_kw": 77.2,
+        "power_ps": 105,
+        "rpm": 2600,
+        "fuel_tank_L": 115,
+        "urea_tank_L": 12.9
+      },
+      "front_tire_ko": "9.5-24",
+      "crawler": {
+        "width_x_ground_length_mm": "280 × 1310",
+        "link_pitch_mm": "50 × 90",
+        "track_width_options_mm": "1320, 1440, 1500 (3단)",
+        "ground_area_cm2": 7340,
+        "ground_pressure_kpa": 33.2
+      },
+      "suspension_ko": "요동식 (+9°, -7°)"
+    }
+  ],
+  "spec_variants_ko": {
+    "PC": "Power Crawler 표준 사양",
+    "PCAT": "PCAT 사양 (Power Crawler Auto Track / 트랙 폭 가변)",
+    "PC1": "PC1 표준",
+    "PC2": "PC2 (전륜 편평)",
+    "PC3": "PC3 (전륜 편평 대구경)",
+    "PC1N": "좁은 폭 크롤러 N 사양",
+    "PC1NN": "더 좁은 N 사양",
+    "PowerCrawler": "파워 크롤러 (반장궤) 사양",
+    "Wheel": "휠 사양 (휠 트랙터)",
+    "MA": "Monro Auto 수평 제어 사양",
+    "W": "W 사양 (전륜 데프 케이스 6L)",
+    "KVT": "Kubota Variable Transmission (무단 변속)"
+  },
+  "notes_ko": [
+    "질량·전장은 주조 웨이트 받침대 장착 상태의 값입니다 (전부 웨이트 제외).",
+    "이 주요 제원은 개량을 위해 예고 없이 변경될 수 있습니다.",
+    "MR1050과 MR1157은 엔진 외 구조가 거의 동일하므로 본 데이터를 공유할 수 있습니다 (엔진 출력만 다름)."
+  ]
+}

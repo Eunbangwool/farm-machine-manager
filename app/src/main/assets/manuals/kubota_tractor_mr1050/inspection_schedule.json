@@ -1,0 +1,844 @@
+{
+  "$schema": "kubota_tractor_mr1050_inspection_v1",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "manufacturer_ko": "쿠보타",
+    "category": "tractor",
+    "category_ko": "트랙터",
+    "series_name_ja": "MR series (半装軌式 ハーフクローラ)",
+    "series_name_ko": "MR 시리즈 (반장궤식 하프 크롤러)",
+    "models": ["MR800H", "MR900H", "MR1000H", "MR1050H"],
+    "manual_ref": "3D960-8971-2",
+    "source": "download.pdf",
+    "note_ko": "MR1050과 MR1157은 엔진 외 구조 거의 동일하므로 본 데이터 공유 가능"
+  },
+  "legend": {
+    "action_symbols": {
+      "○": {"meaning_ja": "定期点検", "meaning_ko": "정기 점검"},
+      "◎": {"meaning_ja": "ならし運転 50時間後 初回点検", "meaning_ko": "초기 길들임 운전 50시간 후 초회 점검"}
+    },
+    "interval_groups_ko": [
+      "50시간마다",
+      "100시간마다",
+      "200시간마다",
+      "400시간마다",
+      "600시간마다",
+      "800시간마다",
+      "1500시간마다",
+      "3000시간마다",
+      "8000시간마다",
+      "1~2개월마다",
+      "3개월마다",
+      "1년마다",
+      "2년마다",
+      "필요시"
+    ]
+  },
+  "specifications_variants_ko": {
+    "PC": "표준 사양 (Power Crawler / 반장궤식)",
+    "PCAT": "PCAT 사양",
+    "powerCrawler": "파워 크롤러 (パワクロ) 사양",
+    "W": "W 사양 (전륜 데프케이스 6L)",
+    "MA": "Monro Auto (수평 제어) 사양"
+  },
+  "items": [
+    {
+      "id": "IN-001",
+      "name_ja": "グリースの注入",
+      "name_ko": "그리스 주입",
+      "action_ja": "補充",
+      "action_ko": "보충",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 231
+    },
+    {
+      "id": "IN-002",
+      "name_ja": "エンジン始動システム",
+      "name_ko": "엔진 시동 시스템",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 233
+    },
+    {
+      "id": "IN-003",
+      "name_ja": "タイヤ取付けボルト",
+      "name_ko": "타이어 장착 볼트",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 234
+    },
+    {
+      "id": "IN-004",
+      "name_ja": "パワーステアリングホース",
+      "name_ko": "파워 스티어링 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 234
+    },
+    {
+      "id": "IN-005",
+      "name_ja": "燃料ホース",
+      "name_ko": "연료 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 235
+    },
+    {
+      "id": "IN-006",
+      "name_ja": "クラッチハウジング",
+      "name_ko": "클러치 하우징",
+      "action_ja": "水抜き",
+      "action_ko": "물 빼기",
+      "interval_ko": "50시간마다",
+      "applies_to": "all",
+      "page_ref": 234
+    },
+    {
+      "id": "IN-007",
+      "name_ja": "エンジンの始動確認",
+      "name_ko": "엔진 시동 확인",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 239
+    },
+    {
+      "id": "IN-008",
+      "name_ja": "エンジンの排気の状態",
+      "name_ko": "엔진 배기 상태",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 239
+    },
+    {
+      "id": "IN-009",
+      "name_ja": "エキゾーストパイプおよびマフラの状態",
+      "name_ko": "배기 파이프 및 머플러 상태",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 239
+    },
+    {
+      "id": "IN-010",
+      "name_ja": "バッテリ電解液",
+      "name_ko": "배터리 전해액",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 235,
+      "note_ko": "아워미터 표시 시간이 100시간 이내인 경우, 1년마다 점검"
+    },
+    {
+      "id": "IN-011",
+      "name_ja": "ブレーキペダル",
+      "name_ko": "브레이크 페달",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 238
+    },
+    {
+      "id": "IN-012",
+      "name_ja": "ファンベルト",
+      "name_ko": "팬 벨트",
+      "action_ja": "調整",
+      "action_ko": "조정",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 237
+    },
+    {
+      "id": "IN-013",
+      "name_ja": "クラッチペダル",
+      "name_ko": "클러치 페달",
+      "action_ja": "調整",
+      "action_ko": "조정",
+      "interval_ko": "100시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 238,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-014",
+      "name_ja": "エアクリーナエレメント（アウター）",
+      "name_ko": "에어 클리너 엘리먼트 (아우터)",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "100시간마다",
+      "applies_to": "all",
+      "page_ref": 236
+    },
+    {
+      "id": "IN-015",
+      "name_ja": "油圧オイルフィルタ",
+      "name_ko": "유압 오일 필터",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "200시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 241,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-016",
+      "name_ja": "トーインおよびタイロッド",
+      "name_ko": "토인 및 타이로드",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 243
+    },
+    {
+      "id": "IN-017",
+      "name_ja": "ラジエータホース",
+      "name_ko": "라디에이터 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 239
+    },
+    {
+      "id": "IN-018",
+      "name_ja": "オイルクーラホース",
+      "name_ko": "오일 쿨러 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 241
+    },
+    {
+      "id": "IN-019",
+      "name_ja": "吸気ホース",
+      "name_ko": "흡기 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 240
+    },
+    {
+      "id": "IN-020",
+      "name_ja": "エアコンベルト",
+      "name_ko": "에어컨 벨트",
+      "action_ja": "調整",
+      "action_ko": "조정",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 245
+    },
+    {
+      "id": "IN-021",
+      "name_ja": "室内エアフィルタ",
+      "name_ko": "실내 에어 필터",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 244
+    },
+    {
+      "id": "IN-022",
+      "name_ja": "外気フィルタ",
+      "name_ko": "외기 필터",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 244
+    },
+    {
+      "id": "IN-023",
+      "name_ja": "エアコンコンデンサ",
+      "name_ko": "에어컨 컨덴서",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 245
+    },
+    {
+      "id": "IN-024",
+      "name_ja": "燃料タンク",
+      "name_ko": "연료 탱크",
+      "action_ja": "水抜き",
+      "action_ko": "물 빼기",
+      "interval_ko": "200시간마다",
+      "applies_to": "all",
+      "page_ref": 243
+    },
+    {
+      "id": "IN-025",
+      "name_ja": "エンジンオイル",
+      "name_ko": "엔진 오일",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "400시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 245,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-026",
+      "name_ja": "エンジンオイルフィルタ",
+      "name_ko": "엔진 오일 필터",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "400시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 246,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-027",
+      "name_ja": "燃料フィルタ",
+      "name_ko": "연료 필터",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "400시간마다",
+      "applies_to": "all",
+      "page_ref": 246
+    },
+    {
+      "id": "IN-028",
+      "name_ja": "セパレータ",
+      "name_ko": "세퍼레이터 (수분 분리기)",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "400시간마다",
+      "applies_to": "all",
+      "page_ref": 247
+    },
+    {
+      "id": "IN-029",
+      "name_ja": "ミッションオイル",
+      "name_ko": "미션 오일 (트랜스미션 오일)",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "600시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 247,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-030",
+      "name_ja": "前部デフケースオイル",
+      "name_ko": "전부 데프 케이스 오일",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "600시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 248,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-031",
+      "name_ja": "前輪ケースオイル（左右）",
+      "name_ko": "전륜 케이스 오일 (좌·우)",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "600시간마다 (초회: 길들임 50시간 후)",
+      "applies_to": "all",
+      "page_ref": 248,
+      "break_in_required": true
+    },
+    {
+      "id": "IN-032",
+      "name_ja": "前部デフケース前後遊び",
+      "name_ko": "전부 데프 케이스 전후 유격",
+      "action_ja": "調整",
+      "action_ko": "조정",
+      "interval_ko": "600시간마다",
+      "applies_to": "all",
+      "page_ref": 248
+    },
+    {
+      "id": "IN-033",
+      "name_ja": "エンジンバルブクリアランス",
+      "name_ko": "엔진 밸브 클리어런스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "800시간마다",
+      "applies_to": "all",
+      "page_ref": 248,
+      "service_required": true
+    },
+    {
+      "id": "IN-034",
+      "name_ja": "オイルセパレータエレメント",
+      "name_ko": "오일 세퍼레이터 엘리먼트",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 249
+    },
+    {
+      "id": "IN-035",
+      "name_ja": "インジェクタ",
+      "name_ko": "인젝터",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 248,
+      "service_required": true
+    },
+    {
+      "id": "IN-036",
+      "name_ja": "尿素水ホース",
+      "name_ko": "요소수 호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 249
+    },
+    {
+      "id": "IN-037",
+      "name_ja": "PCV バルブ",
+      "name_ko": "PCV 밸브",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 249
+    },
+    {
+      "id": "IN-038",
+      "name_ja": "EGR クーラー",
+      "name_ko": "EGR 쿨러",
+      "action_ja": "点検・清掃",
+      "action_ko": "점검·청소",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 249,
+      "service_required": true
+    },
+    {
+      "id": "IN-039",
+      "name_ja": "尿素水インジェクタ（清掃）",
+      "name_ko": "요소수 인젝터 (청소)",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "1500시간마다",
+      "applies_to": "all",
+      "page_ref": 249
+    },
+    {
+      "id": "IN-040",
+      "name_ja": "尿素水ポンプエレメント",
+      "name_ko": "요소수 펌프 엘리먼트",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-041",
+      "name_ja": "尿素水インジェクタ（点検）",
+      "name_ko": "요소수 인젝터 (점검)",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-042",
+      "name_ja": "サプライポンプ",
+      "name_ko": "공급 펌프 (서플라이 펌프)",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 249,
+      "service_required": true
+    },
+    {
+      "id": "IN-043",
+      "name_ja": "ターボチャージャ",
+      "name_ko": "터보차저",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 249,
+      "service_required": true
+    },
+    {
+      "id": "IN-044",
+      "name_ja": "インテークエアヒータ",
+      "name_ko": "흡기 에어 히터",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-045",
+      "name_ja": "EGR システム",
+      "name_ko": "EGR 시스템",
+      "action_ja": "点検・清掃",
+      "action_ko": "점검·청소",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-046",
+      "name_ja": "DPF マフラ",
+      "name_ko": "DPF 머플러",
+      "action_ja": "清掃",
+      "action_ko": "청소",
+      "interval_ko": "3000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-047",
+      "name_ja": "尿素水タンクサクションフィルタ",
+      "name_ko": "요소수 탱크 흡입 필터",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "8000시간마다",
+      "applies_to": "all",
+      "page_ref": 250,
+      "service_required": true
+    },
+    {
+      "id": "IN-048",
+      "name_ja": "防錆運転",
+      "name_ko": "방청 운전",
+      "action_ja": "運転",
+      "action_ko": "운전",
+      "interval_ko": "1~2개월마다",
+      "applies_to": "all",
+      "page_ref": 251,
+      "note_ko": "장기간 미사용 시 방청 운전"
+    },
+    {
+      "id": "IN-049",
+      "name_ja": "エアコンの簡易点検",
+      "name_ko": "에어컨 간이 점검",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "3개월마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-050",
+      "name_ja": "尿素水(AdBlue)の品質",
+      "name_ko": "요소수 (AdBlue) 품질",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-051",
+      "name_ja": "エアクリーナエレメント（インナー）",
+      "name_ko": "에어 클리너 엘리먼트 (이너)",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-052",
+      "name_ja": "エアクリーナエレメント（アウター）",
+      "name_ko": "에어 클리너 엘리먼트 (아우터) 교환",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "1년마다 또는 6회 청소 후",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-053",
+      "name_ja": "エアコン配管、ホース",
+      "name_ko": "에어컨 배관·호스",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-054",
+      "name_ja": "キャブマウントゴム",
+      "name_ko": "캐빈 마운트 고무",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-055",
+      "name_ja": "エキゾーストマニフォールド",
+      "name_ko": "배기 매니폴드",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-056",
+      "name_ja": "DPF 差圧センサパイプ",
+      "name_ko": "DPF 차압 센서 파이프",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-057",
+      "name_ja": "EGR パイプ",
+      "name_ko": "EGR 파이프",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "1년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-058",
+      "name_ja": "パワーステアリングホース",
+      "name_ko": "파워 스티어링 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-059",
+      "name_ja": "燃料ホース",
+      "name_ko": "연료 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-060",
+      "name_ja": "ラジエータホース",
+      "name_ko": "라디에이터 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-061",
+      "name_ja": "オイルクーラホース",
+      "name_ko": "오일 쿨러 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-062",
+      "name_ja": "吸気ホース",
+      "name_ko": "흡기 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-063",
+      "name_ja": "冷却水",
+      "name_ko": "냉각수",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 251
+    },
+    {
+      "id": "IN-064",
+      "name_ja": "メインシリンダホース",
+      "name_ko": "메인 실린더 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-065",
+      "name_ja": "モンローシリンダホース",
+      "name_ko": "몬로 실린더 호스 [MA 사양]",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to_spec": "MA",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-066",
+      "name_ja": "デフロックホース",
+      "name_ko": "데프 록 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-067",
+      "name_ja": "PCV バルブホース",
+      "name_ko": "PCV 밸브 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-068",
+      "name_ja": "DPF 差圧センサホース",
+      "name_ko": "DPF 차압 센서 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-069",
+      "name_ja": "ブーストセンサホース",
+      "name_ko": "부스트 센서 호스",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 253
+    },
+    {
+      "id": "IN-070",
+      "name_ja": "ラジエータ",
+      "name_ko": "라디에이터",
+      "action_ja": "洗浄",
+      "action_ko": "세정",
+      "interval_ko": "2년마다",
+      "applies_to": "all",
+      "page_ref": 252
+    },
+    {
+      "id": "IN-071",
+      "name_ja": "ヒューズ類",
+      "name_ko": "퓨즈류",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 257
+    },
+    {
+      "id": "IN-072",
+      "name_ja": "ランプ類",
+      "name_ko": "램프류",
+      "action_ja": "交換",
+      "action_ko": "교환",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 260
+    },
+    {
+      "id": "IN-073",
+      "name_ja": "ドアヒンジ部とリアウインドヒンジ部",
+      "name_ko": "도어 힌지부와 리어 윈드 힌지부",
+      "action_ja": "注油",
+      "action_ko": "주유 (오일링)",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 260
+    },
+    {
+      "id": "IN-074",
+      "name_ja": "ウォッシャ液",
+      "name_ko": "워셔액",
+      "action_ja": "補充",
+      "action_ko": "보충",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 261
+    },
+    {
+      "id": "IN-075",
+      "name_ja": "冷媒（ガス）量",
+      "name_ko": "냉매(가스)량",
+      "action_ja": "点検",
+      "action_ko": "점검",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 261
+    },
+    {
+      "id": "IN-076",
+      "name_ja": "燃料系統",
+      "name_ko": "연료 계통",
+      "action_ja": "空気抜き",
+      "action_ko": "공기 빼기",
+      "interval_ko": "필요시",
+      "applies_to": "all",
+      "page_ref": 257
+    },
+    {
+      "id": "IN-077",
+      "name_ja": "転輪、遊輪のオイル交換とオイルシール点検",
+      "name_ko": "전륜·유륜 오일 교환과 오일 씰 점검 [파워크롤러 사양]",
+      "action_ja": "交換・点検",
+      "action_ko": "교환·점검",
+      "interval_ko": "200시간마다 (초회: 길들임 50시간 후)",
+      "applies_to_spec": "powerCrawler",
+      "page_ref": 255,
+      "break_in_required": true
+    }
+  ],
+  "general_notes_ko": [
+    "표의 시간은 기준값이며, 사용 조건이나 환경에 따라 부품의 조정·교환 시기가 달라집니다.",
+    "일상 점검은 작업 전·후에 반드시 실시하세요.",
+    "사용 시간은 아워미터 표시 시간을 참조하세요.",
+    "전문 기술이나 특수 공구가 필요한 경우는 구입처(서비스센터)에 연락하세요.",
+    "이 데이터는 MR1050H 기준이며, MR1157도 엔진 외 구조가 거의 동일하므로 공유 가능합니다."
+  ]
+}
