@@ -9,13 +9,13 @@ import androidx.compose.ui.graphics.Color
 // 농기계 도메인 전용 색상은 아래 별도 섹션에서 유지.
 // ============================================================
 
-// 농작이와 공유하는 액센트 톤 (sage → 차콜 그레이) -------------
-val Forest = Color(0xFF1F1F1F)
-val Primary = Color(0xFF4A4A4A)
-val Fresh = Color(0xFF8F8F8F)
+// 농작이와 공유하는 액센트 톤 (sage → warm-tinted gray) ---------
+val Forest = Color(0xFF2A2826)
+val Primary = Color(0xFF555350)
+val Fresh = Color(0xFF92908A)
 val Tint = Color(0xFFEFEEE6)
 
-val ActionPrimary = Color(0xFF4A4A4A)
+val ActionPrimary = Color(0xFF555350)
 val ActionPrimaryText = Color(0xFFFAF9F4)
 val ActionDanger = Color(0xFF8C3A33)
 
