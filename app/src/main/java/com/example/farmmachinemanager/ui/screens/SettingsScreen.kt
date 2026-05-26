@@ -57,6 +57,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.BuildConfig
+import com.example.farmmachinemanager.ui.theme.ActionDanger
+import com.example.farmmachinemanager.ui.theme.ActionPrimary
+import com.example.farmmachinemanager.ui.theme.ActionPrimaryText
 import com.example.farmmachinemanager.ui.theme.BorderColor
 import com.example.farmmachinemanager.ui.theme.StatusInspectionBg
 import com.example.farmmachinemanager.ui.theme.StatusInspectionText
@@ -515,44 +518,41 @@ private fun FirebaseSyncSection() {
     val context = androidx.compose.ui.platform.LocalContext.current
     var showRestartDialog by remember { mutableStateOf(false) }
 
+    val (statusLabel, statusColor, statusDesc) = when (mode) {
+        com.example.farmmachinemanager.AppContainer.SyncMode.FIRESTORE_SYNCED ->
+            Triple(
+                "연결됨",
+                com.example.farmmachinemanager.ui.theme.StatusNormalText,
+                if (currentCode != null) "농장 코드 $currentCode 로 다른 폰과 자동 동기화 중"
+                else "Firestore 에 연결됨"
+            )
+        com.example.farmmachinemanager.AppContainer.SyncMode.LOCAL_ONLY ->
+            Triple(
+                "로컬 전용",
+                TextSecondary,
+                "농장 코드를 설정하면 다른 폰과 자동 동기화돼요"
+            )
+        com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED ->
+            Triple(
+                "Firebase 미설정",
+                TextTertiary,
+                "google-services.json 을 app/ 폴더에 추가 후 빌드 필요"
+            )
+    }
+
+    // 카드 1: 동기화 상태 (정보 카드)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(SurfacePrimary)
             .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CardHeader(title = "동기화")
-        Divider()
-
-        // 1) 상태 표시
-        val (statusLabel, statusColor, statusDesc) = when (mode) {
-            com.example.farmmachinemanager.AppContainer.SyncMode.FIRESTORE_SYNCED ->
-                Triple(
-                    "연결됨",
-                    com.example.farmmachinemanager.ui.theme.StatusNormalText,
-                    "농장 코드: ${currentCode ?: "(없음)"}"
-                )
-            com.example.farmmachinemanager.AppContainer.SyncMode.LOCAL_ONLY ->
-                Triple(
-                    "로컬 전용",
-                    TextSecondary,
-                    "농장 코드를 설정하면 다른 폰과 자동 동기화돼요"
-                )
-            com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED ->
-                Triple(
-                    "Firebase 미설정",
-                    TextTertiary,
-                    "google-services.json을 app/ 폴더에 추가 후 빌드 필요"
-                )
-        }
-
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 imageVector = Icons.Outlined.Sync,
@@ -560,104 +560,88 @@ private fun FirebaseSyncSection() {
                 tint = statusColor,
                 modifier = Modifier.size(18.dp)
             )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "상태: $statusLabel",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary
-                )
-                Text(
-                    text = statusDesc,
-                    fontSize = 11.sp,
-                    color = TextSecondary
-                )
-            }
+            Text(
+                text = "동기화 — $statusLabel",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextPrimary,
+            )
         }
-
-        // 최근 Firestore 에러를 사용자에게 노출. PERMISSION_DENIED 같은 콘솔 규칙 문제를 침묵 처리하지 않는다.
+        Text(
+            text = statusDesc,
+            fontSize = 12.sp,
+            color = TextSecondary,
+        )
         lastError?.let { err ->
-            Divider()
-            Row(
+            Spacer(modifier = Modifier.height(6.dp))
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
                     .background(StatusInspectionBg)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.BugReport,
-                    contentDescription = null,
-                    tint = StatusRepairText,
-                    modifier = Modifier.size(18.dp)
+                Text(
+                    text = "최근 동기화 오류",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = StatusRepairText,
                 )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "최근 동기화 오류",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = StatusRepairText
-                    )
-                    Text(
-                        text = err,
-                        fontSize = 11.sp,
-                        color = TextPrimary
-                    )
-                }
+                Text(
+                    text = err,
+                    fontSize = 11.sp,
+                    color = TextPrimary,
+                )
             }
         }
-        Divider()
+    }
 
-        // 2) Firebase 사용 가능 + 농장 코드 관리 가능 시에만 버튼 표시
-        if (mode != com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED &&
-            farmCodeManager != null
-        ) {
-            // 새 농장 시작
-            ActionButton(
-                label = if (currentCode == null) "새 농장 코드 생성" else "새 코드로 재시작",
-                hint = if (currentCode == null) "이 폰을 새 농장의 첫 폰으로" else "기존 코드를 버리고 새로 시작"
-            ) {
-                val code = farmCodeManager.generateNewCode()
-                com.example.farmmachinemanager.AppContainer.refreshSyncMode()
-                currentCode = code
-                showRestartDialog = true
-            }
-            Divider()
-            // 기존 농장 참여
-            ActionButton(
-                label = "다른 폰 코드로 참여",
-                hint = "이미 사용 중인 농장 코드 입력"
-            ) {
-                joinCodeInput = ""
-                showJoinDialog = true
-            }
-            // 농장 떠나기 (현재 코드 있을 때만)
-            if (currentCode != null) {
-                Divider()
-                ActionButton(
-                    label = "농장 떠나기",
-                    hint = "이 폰을 로컬 전용으로 전환 (데이터는 Firestore에 남음)",
-                    danger = true,
-                    icon = Icons.Outlined.ExitToApp,
-                ) {
-                    showLeaveDialog = true
+    // Firebase 사용 가능 + 농장 코드 관리 가능 시에만 액션 카드들 표시
+    if (mode != com.example.farmmachinemanager.AppContainer.SyncMode.FIREBASE_NOT_CONFIGURED &&
+        farmCodeManager != null
+    ) {
+        // 카드 2: 새 농장 코드 생성
+        FarmActionCard(
+            title = if (currentCode == null) "내 농장 만들기" else "새 코드로 재시작",
+            subtitle = if (currentCode == null)
+                "6자리 코드가 자동 생성됩니다. 이 폰을 새 농장의 첫 폰으로 시작해요."
+            else
+                "기존 코드를 버리고 새 농장을 시작합니다. 이전 데이터는 Firestore 에 남습니다.",
+            button = {
+                PrimaryButton(label = if (currentCode == null) "내 농장 만들기" else "새 코드 생성") {
+                    val code = farmCodeManager.generateNewCode()
+                    com.example.farmmachinemanager.AppContainer.refreshSyncMode()
+                    currentCode = code
+                    showRestartDialog = true
                 }
-                Divider()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "현재 코드: $currentCode",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextSecondary
-                    )
+            },
+        )
+
+        // 카드 3: 기존 농장 참여
+        FarmActionCard(
+            title = "다른 폰 코드로 참여",
+            subtitle = "이미 사용 중인 농장 코드를 입력해 같은 데이터를 함께 보세요.",
+            button = {
+                PrimaryButton(label = "참여하기") {
+                    joinCodeInput = ""
+                    showJoinDialog = true
                 }
-            }
+            },
+        )
+
+        // 카드 4: 농장 떠나기 (현재 코드 있을 때만)
+        if (currentCode != null) {
+            FarmActionCard(
+                title = "농장 떠나기",
+                subtitle = "이 폰을 로컬 전용으로 전환합니다. 데이터는 Firestore 에 남고, 같은 코드로 다시 참여할 수 있어요.",
+                button = {
+                    DangerButton(label = "농장 떠나기") {
+                        showLeaveDialog = true
+                    }
+                },
+                trailingInfo = "현재 코드: $currentCode",
+            )
         }
     }
 
@@ -758,6 +742,8 @@ private fun ActionButton(
     icon: ImageVector? = null,
     onClick: () -> Unit,
 ) {
+    // 더 이상 사용 안 함 — FarmActionCard + PrimaryButton/DangerButton 으로 대체.
+    // 호출처 없어 deprecated 상태이지만 호환을 위해 잠시 유지.
     val labelColor = if (danger) StatusRepairText else TextPrimary
     Row(
         modifier = Modifier
@@ -789,6 +775,106 @@ private fun ActionButton(
             contentDescription = null,
             tint = TextTertiary,
             modifier = Modifier.size(16.dp)
+        )
+    }
+}
+
+/**
+ * 농작이의 농장 코드 카드 패턴 (line 156-218 등).
+ * 카드 = padding 16dp + 제목 14sp SemiBold + 부제 12sp + Spacer + 버튼.
+ * trailingInfo 가 있으면 버튼 아래에 "현재 코드: 836433" 같은 작은 라벨.
+ */
+@Composable
+private fun FarmActionCard(
+    title: String,
+    subtitle: String,
+    button: @Composable () -> Unit,
+    trailingInfo: String? = null,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextPrimary,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = subtitle,
+            fontSize = 12.sp,
+            color = TextSecondary,
+            lineHeight = 18.sp,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        button()
+        if (trailingInfo != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = trailingInfo,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextSecondary,
+            )
+        }
+    }
+}
+
+/**
+ * 농작이 PrimaryButton (line 2632-2646) 그대로 매칭.
+ * RoundedCornerShape(10dp) + ActionPrimary 배경 + ActionPrimaryText 색.
+ */
+@Composable
+private fun PrimaryButton(
+    label: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val bg = if (enabled) ActionPrimary else TextTertiary
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(bg)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = ActionPrimaryText,
+        )
+    }
+}
+
+/**
+ * 농작이 DangerButton (line 2648-2661) 그대로 매칭.
+ * RoundedCornerShape(10dp) + ActionDanger 보더 + ActionDanger 텍스트.
+ */
+@Composable
+private fun DangerButton(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .border(0.5.dp, ActionDanger, RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = ActionDanger,
         )
     }
 }
