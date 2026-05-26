@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 /**
  * 안드로이드 assets 폴더에서 쿠보타 이앙기 매뉴얼 JSON을 읽어 파싱한다.
  *
- * 파일 경로: app/src/main/assets/manuals/kubota_planter/*.json
+ * 파일 경로: app/src/main/assets/manuals/kubota_planter/(category).json
  *
  * 데이터는 lazy + 메모리 캐싱. 같은 데이터셋을 두 번 요청하면 두 번째부터는
  * 디스크 I/O 없이 캐시에서 반환한다.
