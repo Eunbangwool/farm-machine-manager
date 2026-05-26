@@ -94,6 +94,9 @@ fun SettingsScreen(
     val context = LocalContext.current
     val info = remember { collectAppInfo(context) }
 
+    var showBusiness by remember { mutableStateOf(false) }
+    var showAttributions by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -146,29 +149,6 @@ fun SettingsScreen(
             // 디버그 빌드일 때만 노출되는 진단 카드.
             if (BuildConfig.IS_DEBUG_APP) {
                 DebugDiagnosticsCard()
-            }
-
-            // 기기 정보 카드
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfacePrimary)
-                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            ) {
-                CardHeader(title = "기기 정보")
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.PhoneAndroid,
-                    label = "모델",
-                    value = "${Build.MANUFACTURER} ${Build.MODEL}"
-                )
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.PhoneAndroid,
-                    label = "Android 버전",
-                    value = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
-                )
             }
 
             // 동기화 카드 (FirebaseSyncSection 내부에 헤더 포함)
@@ -247,9 +227,186 @@ fun SettingsScreen(
                 NavRow(label = "다크 모드", enabled = false)
             }
 
+            // 더 보기 카드 (농작이 패턴 매칭)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            ) {
+                CardHeader(title = "더 보기")
+                Divider()
+                LegalRow("이용약관") {
+                    openExternalUrl(context, "https://www.sangwolnongsan.com/terms")
+                }
+                Divider()
+                LegalRow("개인정보처리방침") {
+                    openExternalUrl(context, "https://www.sangwolnongsan.com/privacy")
+                }
+                Divider()
+                LegalRow("사업자 정보") { showBusiness = true }
+                Divider()
+                LegalRow("오픈소스 · 데이터 출처") { showAttributions = true }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+
+    // ── 다이얼로그 (Column 외부 emit — 본문 layout 영향 없음) ──
+
+    if (showBusiness) {
+        val biz = com.example.farmmachinemanager.data.BusinessInfo
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showBusiness = false },
+            title = { Text("사업자 정보", fontSize = 15.sp, fontWeight = FontWeight.SemiBold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    BusinessRow("상호", biz.COMPANY_NAME)
+                    BusinessRow("대표자", biz.REPRESENTATIVE)
+                    BusinessRow("사업자등록번호", biz.BUSINESS_REG_NUMBER)
+                    BusinessRow("통신판매업 신고", biz.ECOMMERCE_REG_NUMBER)
+                    BusinessRow("사업장 주소", biz.ADDRESS)
+                    BusinessRow("대표 전화", biz.PHONE)
+                    BusinessRow("이메일", biz.EMAIL)
+                    BusinessRow("웹사이트", biz.WEBSITE_URL)
+                    BusinessRow("업종", biz.INDUSTRY)
+                    BusinessRow("호스팅 제공", biz.HOSTING_PROVIDER)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "전자상거래법에 의거하여 사업자 정보를 공개합니다. 결제·환불·취소 등 문의는 위 전화나 이메일로 연락 주세요.",
+                        fontSize = 10.sp,
+                        color = TextTertiary,
+                        lineHeight = 14.sp
+                    )
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { showBusiness = false }) {
+                    Text("닫기")
+                }
+            }
+        )
+    }
+
+    if (showAttributions) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showAttributions = false },
+            title = { Text("오픈소스 · 데이터 출처", fontSize = 15.sp, fontWeight = FontWeight.SemiBold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = "이 앱은 다음 공공 데이터·오픈소스 라이브러리·매뉴얼을 사용합니다.",
+                        fontSize = 12.sp,
+                        color = TextSecondary,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    AttributionItem(
+                        title = "쿠보타 매뉴얼 데이터",
+                        body = "이앙기·트랙터 점검·소모품·트러블슈팅 데이터. © Kubota Corporation. 농돌이는 사용자의 정비 기록 보조 목적으로 일부 발췌 재구성.",
+                    )
+                    AttributionItem(
+                        title = "Firebase / Google Play Services",
+                        body = "Firestore 동기화. © Google Inc.",
+                    )
+                    AttributionItem(
+                        title = "Jetpack Compose · Material Icons",
+                        body = "Apache License 2.0. Android Open Source Project.",
+                    )
+                    AttributionItem(
+                        title = "kotlinx-serialization",
+                        body = "Apache License 2.0. JetBrains.",
+                    )
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { showAttributions = false }) {
+                    Text("닫기")
+                }
+            }
+        )
+    }
+}
+
+/**
+ * 더보기 카드 안의 행. 단순 라벨 + chevron.
+ */
+@Composable
+private fun LegalRow(label: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = TextPrimary,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+            contentDescription = null,
+            tint = TextTertiary,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun BusinessRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            color = TextSecondary,
+            modifier = Modifier.width(96.dp),
+        )
+        Text(
+            text = value,
+            fontSize = 12.sp,
+            color = TextPrimary,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun AttributionItem(title: String, body: String) {
+    Column(modifier = Modifier.padding(bottom = 12.dp)) {
+        Text(
+            text = title,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextPrimary,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = body,
+            fontSize = 11.sp,
+            color = TextSecondary,
+            lineHeight = 16.sp,
+        )
+    }
+}
+
+/** 외부 브라우저로 URL 열기. */
+private fun openExternalUrl(context: Context, url: String) {
+    val intent = android.content.Intent(
+        android.content.Intent.ACTION_VIEW,
+        android.net.Uri.parse(url),
+    )
+    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(intent) }
 }
 
 private data class AppInfo(

@@ -395,11 +395,7 @@ private fun TopBar(
                     contentDescription = "통계",
                     onClick = onStatisticsClick
                 )
-                IconCircleButton(
-                    icon = Icons.Default.Settings,
-                    contentDescription = "설정",
-                    onClick = onSettingsClick
-                )
+                // 설정 버튼 제거 — 상단 탭(기계 관리 / 설정)으로 대체됨
             }
         }
 
