@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -93,12 +94,14 @@ fun UpdateOperatingHoursScreen(
     onCancel: () -> Unit,
     onSaveComplete: () -> Unit
 ) {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val machines by AppContainer.machineRepository
         .observeMachines()
         .collectAsState(initial = emptyList())
 
     var selectedMachine by remember { mutableStateOf<Machine?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
 
     val current = selectedMachine
     if (current == null) {
@@ -109,14 +112,25 @@ fun UpdateOperatingHoursScreen(
             onBack = onCancel
         )
     } else {
-        BackHandler { selectedMachine = null }
+        BackHandler(enabled = !isSaving) { selectedMachine = null }
         HoursInputView(
             machine = current,
+            isSaving = isSaving,
             onSave = { newHours ->
+                isSaving = true
                 coroutineScope.launch {
-                    val updated = current.copy(operatingHours = newHours)
-                    AppContainer.machineRepository.saveMachine(updated)
-                    onSaveComplete()
+                    try {
+                        val updated = current.copy(operatingHours = newHours)
+                        AppContainer.machineRepository.saveMachine(updated)
+                        onSaveComplete()
+                    } catch (t: Throwable) {
+                        isSaving = false
+                        android.widget.Toast.makeText(
+                            context,
+                            "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             },
             onBack = { selectedMachine = null }
@@ -236,13 +250,13 @@ private fun PickableMachineCard(
 @Composable
 private fun HoursInputView(
     machine: Machine,
+    isSaving: Boolean,
     onSave: (Double) -> Unit,
     onBack: () -> Unit
 ) {
     var hoursText by remember {
         mutableStateOf(machine.operatingHours.toInt().toString())
     }
-    var isSaving by remember { mutableStateOf(false) }
 
     val newHours = hoursText.toDoubleOrNull()
     val diff = newHours?.let { it - machine.operatingHours }
@@ -310,7 +324,6 @@ private fun HoursInputView(
             isSaving = isSaving,
             onSave = {
                 if (isValid && newHours != null) {
-                    isSaving = true
                     onSave(newHours)
                 }
             }
