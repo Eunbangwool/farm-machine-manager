@@ -105,8 +105,7 @@ fun SettingsScreen(
                 .padding(PaddingValues(16.dp)),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // 앱 정보 섹션
-            SectionHeader(title = "앱 정보")
+            // 앱 정보 카드 (카드 자체가 그룹 — 외부 라벨 없음)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,6 +113,8 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
+                CardHeader(title = "앱 정보")
+                Divider()
                 InfoRow(
                     icon = Icons.Outlined.Info,
                     label = "앱 이름",
@@ -140,14 +141,11 @@ fun SettingsScreen(
             }
 
             // 디버그 빌드일 때만 노출되는 진단 카드.
-            // IS_DEBUG_APP 만 체크 (BuildConfig.DEBUG 는 일반 debug 빌드도 true).
             if (BuildConfig.IS_DEBUG_APP) {
-                SectionHeader(title = "디버그")
                 DebugDiagnosticsCard()
             }
 
-            // 기기 정보 섹션
-            SectionHeader(title = "기기 정보")
+            // 기기 정보 카드
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,6 +153,8 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
+                CardHeader(title = "기기 정보")
+                Divider()
                 InfoRow(
                     icon = Icons.Outlined.PhoneAndroid,
                     label = "모델",
@@ -168,16 +168,13 @@ fun SettingsScreen(
                 )
             }
 
-            // 동기화 섹션 (Firebase + 농장 코드)
-            SectionHeader(title = "동기화")
+            // 동기화 카드 (FirebaseSyncSection 내부에 헤더 포함)
             FirebaseSyncSection()
 
-            // 알림 섹션
-            SectionHeader(title = "알림")
+            // 알림 카드 (NotificationSection 내부에 헤더 포함)
             NotificationSection()
 
-            // 매뉴얼 섹션
-            SectionHeader(title = "매뉴얼")
+            // 매뉴얼 카드
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,6 +182,8 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
+                CardHeader(title = "매뉴얼")
+                Divider()
                 NavRow(
                     label = "쿠보타 이앙기 트러블슈팅",
                     enabled = true,
@@ -222,8 +221,7 @@ fun SettingsScreen(
                 )
             }
 
-            // 향후 옵션 자리 (현재는 비활성)
-            SectionHeader(title = "준비 중")
+            // 준비 중 카드
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -231,6 +229,8 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
+                CardHeader(title = "준비 중")
+                Divider()
                 NavRow(label = "회사 이름 변경", enabled = false)
                 Divider()
                 NavRow(label = "데이터 백업·복원", enabled = false)
@@ -434,14 +434,29 @@ private fun SettingsTopBar(onBack: () -> Unit) {
                 modifier = Modifier.size(22.dp)
             )
         }
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(4.dp))
         Text(
             text = "설정",
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold,
             color = TextPrimary
         )
     }
+}
+
+/**
+ * 카드 안에서 그 카드의 그룹 라벨을 표시하는 헤더 행.
+ * 농작이 패턴: 카드 위 별도 SectionHeader 없이 카드 안 첫 행으로 흡수.
+ */
+@Composable
+private fun CardHeader(title: String) {
+    Text(
+        text = title,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = TextPrimary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+    )
 }
 
 // ============ Firebase 동기화 섹션 ============
@@ -471,6 +486,9 @@ private fun FirebaseSyncSection() {
             .background(SurfacePrimary)
             .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
     ) {
+        CardHeader(title = "동기화")
+        Divider()
+
         // 1) 상태 표시
         val (statusLabel, statusColor, statusDesc) = when (mode) {
             com.example.farmmachinemanager.AppContainer.SyncMode.FIRESTORE_SYNCED ->
@@ -756,6 +774,8 @@ private fun NotificationSection() {
             .background(SurfacePrimary)
             .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
     ) {
+        CardHeader(title = "알림")
+        Divider()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
