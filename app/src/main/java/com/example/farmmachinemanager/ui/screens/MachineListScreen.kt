@@ -103,9 +103,18 @@ fun MachineListScreen(
             MachineType.COMBINE to "콤바인",
             MachineType.RICE_TRANSPLANTER to "이앙기",
             MachineType.CULTIVATOR to "관리기",
+            MachineType.ROTAVATOR to "로터베이터",
+            MachineType.PLOW to "쟁기",
+            MachineType.SEEDER to "파종기",
+            MachineType.HARVESTER to "수확기",
+            MachineType.SPRAYER to "농약살포기",
+            MachineType.DRONE to "드론",
+            MachineType.BALER to "베일러",
+            MachineType.LAWN_MOWER to "예초기",
+            MachineType.LOADER to "로더",
             MachineType.FORKLIFT to "지게차",
             MachineType.VEHICLE to "차량",
-            MachineType.OTHER to "기타"
+            MachineType.OTHER to "기타",
         ).map { (type, label) ->
             type to FilterOption(
                 label = label,
@@ -185,9 +194,18 @@ fun MachineListScreen(
                         MachineType.COMBINE,
                         MachineType.RICE_TRANSPLANTER,
                         MachineType.CULTIVATOR,
+                        MachineType.ROTAVATOR,
+                        MachineType.PLOW,
+                        MachineType.SEEDER,
+                        MachineType.HARVESTER,
+                        MachineType.SPRAYER,
+                        MachineType.DRONE,
+                        MachineType.BALER,
+                        MachineType.LAWN_MOWER,
+                        MachineType.LOADER,
                         MachineType.FORKLIFT,
                         MachineType.VEHICLE,
-                        MachineType.OTHER
+                        MachineType.OTHER,
                     )
                     val grouped = visibleMachines.groupBy { it.type }
                     groupOrder.forEach { type ->
