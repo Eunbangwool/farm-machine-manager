@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -82,6 +83,76 @@ import java.time.format.DateTimeFormatter
  *
  * Repository 직접 호출 방식이라 ViewModel 없이 동작.
  */
+/**
+ * 영수증 스캔 버튼 — 갤러리 사진을 ML Kit OCR 로 인식해 금액·업체·날짜 자동 채움.
+ */
+@Composable
+private fun ReceiptScanButton(onScanned: (com.example.farmmachinemanager.data.ReceiptOcr.Parsed) -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var scanning by remember { mutableStateOf(false) }
+    val picker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            scanning = true
+            scope.launch {
+                try {
+                    val parsed = com.example.farmmachinemanager.data.ReceiptOcr.scan(context, uri)
+                    onScanned(parsed)
+                    android.widget.Toast.makeText(
+                        context,
+                        "영수증 인식 완료 — 결과를 확인하고 저장하세요",
+                        android.widget.Toast.LENGTH_SHORT,
+                    ).show()
+                } catch (t: Throwable) {
+                    android.widget.Toast.makeText(
+                        context,
+                        "인식 실패: ${t.message ?: "알 수 없는 오류"}",
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                } finally {
+                    scanning = false
+                }
+            }
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfaceSecondary)
+            .clickable(enabled = !scanning) {
+                picker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.ReceiptLong,
+            contentDescription = null,
+            tint = TextPrimary,
+            modifier = Modifier.size(20.dp),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (scanning) "인식 중…" else "영수증 스캔으로 자동 입력",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary,
+            )
+            Text(
+                text = "갤러리 사진에서 금액·업체·날짜를 자동으로 채웁니다",
+                fontSize = 11.sp,
+                color = TextSecondary,
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMaintenanceRecordScreen(
@@ -223,6 +294,17 @@ fun AddMaintenanceRecordScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // 영수증 스캔 — 갤러리 사진 OCR 로 금액·업체·날짜 자동 채움
+            ReceiptScanButton(
+                onScanned = { parsed ->
+                    parsed.cost?.let { costText = it.toString() }
+                    parsed.vendor?.let { v -> if (shopName.isBlank()) shopName = v }
+                    parsed.date?.let { date = it }
+                    if (title.isBlank()) title = "영수증 정비"
+                    if (description.isBlank()) description = parsed.rawText.take(300)
+                },
+            )
+
             FormSection(label = "정비 종류") {
                 TypeSelector(
                     selected = type,
