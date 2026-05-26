@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -99,7 +98,6 @@ import androidx.compose.material.icons.outlined.Grass
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.PrecisionManufacturing
 import androidx.compose.material.icons.outlined.Shower
-import androidx.compose.material.icons.outlined.YardSharp
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -587,7 +585,7 @@ private fun iconFor(type: MachineType): ImageVector = when (type) {
     MachineType.SPRAYER -> Icons.Outlined.Shower
     MachineType.DRONE -> Icons.Outlined.FlightTakeoff
     MachineType.BALER -> Icons.Outlined.Inventory2
-    MachineType.LAWN_MOWER -> Icons.Outlined.YardSharp
+    MachineType.LAWN_MOWER -> Icons.Outlined.Grass
     MachineType.FORKLIFT -> ImageVector.vectorResource(R.drawable.ic_forklift)
     MachineType.VEHICLE -> Icons.Default.DirectionsCar
     MachineType.OTHER -> Icons.Default.Build

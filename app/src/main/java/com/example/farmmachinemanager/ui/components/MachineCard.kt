@@ -26,8 +26,6 @@ import androidx.compose.material.icons.outlined.Grass
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.PrecisionManufacturing
 import androidx.compose.material.icons.outlined.Shower
-import androidx.compose.material.icons.outlined.YardSharp
-import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.Icon
@@ -242,7 +240,7 @@ private fun iconConfig(type: MachineType): Triple<Color, Color, ImageVector> = w
     MachineType.SPRAYER -> Triple(SprayerIconBg, SprayerIconTint, Icons.Outlined.Shower)
     MachineType.DRONE -> Triple(DroneIconBg, DroneIconTint, Icons.Outlined.FlightTakeoff)
     MachineType.BALER -> Triple(BalerIconBg, BalerIconTint, Icons.Outlined.Inventory2)
-    MachineType.LAWN_MOWER -> Triple(LawnMowerIconBg, LawnMowerIconTint, Icons.Outlined.YardSharp)
+    MachineType.LAWN_MOWER -> Triple(LawnMowerIconBg, LawnMowerIconTint, Icons.Outlined.Grass)
     MachineType.LOADER -> Triple(LoaderIconBg, LoaderIconTint, Icons.Outlined.Construction)
     MachineType.FORKLIFT -> Triple(
         ForkliftIconBg, ForkliftIconTint,
