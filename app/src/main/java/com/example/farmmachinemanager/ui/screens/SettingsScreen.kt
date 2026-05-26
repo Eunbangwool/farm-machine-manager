@@ -330,7 +330,7 @@ private fun SectionHeader(title: String) {
         fontSize = 12.sp,
         fontWeight = FontWeight.Medium,
         color = TextSecondary,
-        modifier = Modifier.padding(start = 4.dp)
+        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
     )
 }
 
@@ -343,7 +343,7 @@ private fun InfoRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -351,11 +351,11 @@ private fun InfoRow(
             imageVector = icon,
             contentDescription = null,
             tint = TextSecondary,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(20.dp)
         )
         Text(
             text = label,
-            fontSize = 13.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = TextPrimary,
             modifier = Modifier.weight(1f)
@@ -373,14 +373,14 @@ private fun NavRow(label: String, enabled: Boolean, onClick: (() -> Unit)? = nul
     val rowModifier = Modifier
         .fillMaxWidth()
         .let { if (enabled && onClick != null) it.clickable(onClick = onClick) else it }
-        .padding(horizontal = 14.dp, vertical = 14.dp)
+        .padding(horizontal = 16.dp, vertical = 14.dp)
     Row(
         modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            fontSize = 13.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = if (enabled) TextPrimary else TextTertiary,
             modifier = Modifier.weight(1f)
@@ -392,7 +392,7 @@ private fun NavRow(label: String, enabled: Boolean, onClick: (() -> Unit)? = nul
             modifier = Modifier.padding(end = 6.dp)
         )
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = null,
             tint = TextTertiary,
             modifier = Modifier.size(16.dp)
