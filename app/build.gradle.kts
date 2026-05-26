@@ -16,6 +16,13 @@ if (googleServicesJsonExists) {
 // 로컬 빌드에서는 1을 사용 (Android Studio에서 빌드/실행 시).
 val ciRunNumber: Int = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
+// 디버그 패키지 분리 — `-PdebugBuild=true` 로 빌드하면:
+//  - applicationId 에 ".debug" suffix → 운영 앱과 별개로 동시 설치 가능
+//  - versionName 에 "-debug" suffix → 식별 쉽게
+//  - app_name "농기계 관리 디버그" → 홈 화면 라벨 구분
+//  - BuildConfig.IS_DEBUG_APP=true → 설정 화면에서 진단 카드 노출
+val debugBuild: Boolean = (project.findProperty("debugBuild") as? String)?.toBoolean() ?: false
+
 android {
     namespace = "com.example.farmmachinemanager"
     compileSdk {
@@ -34,6 +41,14 @@ android {
         versionName = "0.1.$ciRunNumber"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 빌드 시간 (epoch ms) - 매 빌드마다 갱신. 설정 화면에서 사람 읽기 쉬운 형식으로 변환.
+        buildConfigField("long", "BUILD_TIME_MS", "${System.currentTimeMillis()}L")
+        // 디버그 앱 빌드 여부. 설정 화면에서 진단/등급전환 카드 노출 판정용.
+        buildConfigField("boolean", "IS_DEBUG_APP", debugBuild.toString())
+
+        // app_name 기본값 (운영 빌드). 디버그 빌드는 buildType 에서 덮어씀.
+        resValue("string", "app_name", "농기계 관리")
     }
 
     // CI 빌드마다 같은 keystore를 사용하여 APK 서명.
@@ -50,6 +65,11 @@ android {
     buildTypes {
         debug {
             signingConfig = signingConfigs.getByName("debug")
+            if (debugBuild) {
+                applicationIdSuffix = ".debug"
+                versionNameSuffix = "-debug"
+                resValue("string", "app_name", "농기계 관리 디버그")
+            }
         }
         release {
             isMinifyEnabled = false
@@ -57,6 +77,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (debugBuild) {
+                applicationIdSuffix = ".debug"
+                versionNameSuffix = "-debug"
+                resValue("string", "app_name", "농기계 관리 디버그")
+            }
         }
     }
     compileOptions {
@@ -65,6 +90,10 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+        // app_name 을 build.gradle 에서 동적 주입 (운영/디버그 라벨 구분).
+        // AGP 8.x 부터 기본 false → resValue() 호출하려면 명시적 활성화 필요.
+        resValues = true
     }
 }
 
