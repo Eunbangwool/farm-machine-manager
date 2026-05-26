@@ -176,10 +176,12 @@ fun MachineDetailScreen(
             duration = androidx.compose.material3.SnackbarDuration.Long
         )
         if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
-            // 1) 정비기록 삭제
-            AppContainer.maintenanceRepository.deleteMaintenance(undo.recordId)
-            // 2) 소모품 원상복구
-            AppContainer.consumableRepository.saveConsumable(undo.previousConsumable)
+            try {
+                AppContainer.maintenanceRepository.deleteMaintenance(undo.recordId)
+                AppContainer.consumableRepository.saveConsumable(undo.previousConsumable)
+            } catch (t: Throwable) {
+                snackbarHostState.showSnackbar("실행 취소 실패: ${t.message ?: "알 수 없는 오류"}")
+            }
         }
         pendingUndo = null  // 다시 null로 → Snackbar 사라짐
     }
@@ -211,24 +213,27 @@ fun MachineDetailScreen(
                         statusNote = machine.statusNote,
                         onMarkComplete = {
                             coroutineScope.launch {
-                                // 1) 기계 상태를 NORMAL로 갱신
-                                AppContainer.machineRepository.saveMachine(
-                                    machine.copy(
-                                        status = MachineStatus.NORMAL,
-                                        statusNote = null
+                                try {
+                                    AppContainer.machineRepository.saveMachine(
+                                        machine.copy(
+                                            status = MachineStatus.NORMAL,
+                                            statusNote = null
+                                        )
                                     )
-                                )
-                                // 2) 진행 중이던 수리 정비기록을 완료로 표시
-                                maintenanceRecords
-                                    .firstOrNull {
-                                        it.type == MaintenanceType.REPAIR && it.isInProgress
-                                    }
-                                    ?.let { record ->
-                                        AppContainer.maintenanceRepository
-                                            .updateMaintenance(record.copy(isInProgress = false))
-                                    }
-                                // 3) 목록으로 복귀 (machine 스냅샷이 stale이므로)
-                                onMarkRepairComplete()
+                                    maintenanceRecords
+                                        .firstOrNull {
+                                            it.type == MaintenanceType.REPAIR && it.isInProgress
+                                        }
+                                        ?.let { record ->
+                                            AppContainer.maintenanceRepository
+                                                .updateMaintenance(record.copy(isInProgress = false))
+                                        }
+                                    onMarkRepairComplete()
+                                } catch (t: Throwable) {
+                                    snackbarHostState.showSnackbar(
+                                        "수리 완료 처리 실패: ${t.message ?: "알 수 없는 오류"}"
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -258,13 +263,10 @@ fun MachineDetailScreen(
                                     today = today,
                                     onQuickReplaceClick = {
                                         coroutineScope.launch {
-                                            // 1) 소모품 갱신 - 교체 시점 기록
                                             val updated = consumable.copy(
                                                 lastReplacedDate = today,
                                                 lastReplacedHours = machine.operatingHours
                                             )
-                                            AppContainer.consumableRepository.saveConsumable(updated)
-                                            // 2) 정비기록 자동 생성
                                             val recordId = "record_${System.currentTimeMillis()}"
                                             val record = MaintenanceRecord(
                                                 id = recordId,
@@ -275,13 +277,19 @@ fun MachineDetailScreen(
                                                 operatingHoursAtMaintenance = machine.operatingHours,
                                                 replacedConsumableIds = listOf(consumable.id)
                                             )
-                                            AppContainer.maintenanceRepository.addMaintenance(record)
-                                            // 3) 실행 취소용 스냅샷 저장 → Snackbar 표시
-                                            pendingUndo = QuickReplaceUndo(
-                                                consumableName = consumable.name,
-                                                previousConsumable = consumable,  // copy 전의 원본
-                                                recordId = recordId
-                                            )
+                                            try {
+                                                AppContainer.consumableRepository.saveConsumable(updated)
+                                                AppContainer.maintenanceRepository.addMaintenance(record)
+                                                pendingUndo = QuickReplaceUndo(
+                                                    consumableName = consumable.name,
+                                                    previousConsumable = consumable,
+                                                    recordId = recordId
+                                                )
+                                            } catch (t: Throwable) {
+                                                snackbarHostState.showSnackbar(
+                                                    "교체 처리 실패: ${t.message ?: "알 수 없는 오류"}"
+                                                )
+                                            }
                                         }
                                     }
                                 )

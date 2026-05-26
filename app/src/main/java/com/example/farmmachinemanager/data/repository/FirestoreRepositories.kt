@@ -36,7 +36,8 @@ class FirestoreMachineRepository(
     override fun observeMachines(): Flow<List<Machine>> = callbackFlow {
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                trySend(emptyList())
+                // 권한 오류·네트워크 오류 등은 마지막으로 본 데이터를 유지한다.
+                // 빈 리스트를 emit 하면 UI 가 깜빡거린다.
                 return@addSnapshotListener
             }
             val machines = snapshot?.documents
@@ -131,7 +132,7 @@ class FirestoreMaintenanceRepository(
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    trySend(emptyList())
+                    // 마지막 데이터 유지
                     return@addSnapshotListener
                 }
                 val records = snapshot?.documents
@@ -146,7 +147,7 @@ class FirestoreMaintenanceRepository(
     override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> = callbackFlow {
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                trySend(emptyList())
+                // 마지막 데이터 유지
                 return@addSnapshotListener
             }
             val records = snapshot?.documents
@@ -237,7 +238,7 @@ class FirestoreConsumableRepository(
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    trySend(emptyList())
+                    // 마지막 데이터 유지
                     return@addSnapshotListener
                 }
                 val consumables = snapshot?.documents

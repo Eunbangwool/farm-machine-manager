@@ -36,10 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.example.farmmachinemanager.AppContainer
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MachineStatus
@@ -66,6 +68,7 @@ fun AddMachineScreen(
     BackHandler { onCancel() }
 
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var name by remember { mutableStateOf("") }
     var manufacturer by remember { mutableStateOf("") }
@@ -210,11 +213,18 @@ fun AddMachineScreen(
                             status = MachineStatus.NORMAL,
                             statusNote = null
                         )
-                        // 1. 기계 저장
-                        AppContainer.machineRepository.saveMachine(machine)
-                        // 2. 종류에 맞는 표준 정비 템플릿 자동 적용 (소모품 자동 등록)
-                        AppContainer.consumableRepository.applyStandardTemplate(newId, type!!)
-                        onSaveComplete()
+                        try {
+                            AppContainer.machineRepository.saveMachine(machine)
+                            AppContainer.consumableRepository.applyStandardTemplate(newId, type!!)
+                            onSaveComplete()
+                        } catch (t: Throwable) {
+                            isSaving = false
+                            Toast.makeText(
+                                context,
+                                "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }

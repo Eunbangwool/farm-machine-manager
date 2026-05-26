@@ -168,27 +168,35 @@ fun AddMaintenanceRecordScreen(
                 photoUrls = photoUris.toList()
             )
 
-            if (isEditMode) {
-                AppContainer.maintenanceRepository.updateMaintenance(record)
-            } else {
-                AppContainer.maintenanceRepository.addMaintenance(record)
-            }
-
-            // 체크된 소모품들의 마지막 교체일/시간 갱신
-            val replacementHours = hoursAtMaintenance ?: machine.operatingHours
-            consumables
-                .filter { it.id in selectedConsumableIds }
-                .forEach { c ->
-                    AppContainer.consumableRepository.saveConsumable(
-                        c.copy(
-                            lastReplacedHours = replacementHours,
-                            lastReplacedDate = date
-                        )
-                    )
+            try {
+                if (isEditMode) {
+                    AppContainer.maintenanceRepository.updateMaintenance(record)
+                } else {
+                    AppContainer.maintenanceRepository.addMaintenance(record)
                 }
 
-            isSaving = false
-            onSaveComplete()
+                val replacementHours = hoursAtMaintenance ?: machine.operatingHours
+                consumables
+                    .filter { it.id in selectedConsumableIds }
+                    .forEach { c ->
+                        AppContainer.consumableRepository.saveConsumable(
+                            c.copy(
+                                lastReplacedHours = replacementHours,
+                                lastReplacedDate = date
+                            )
+                        )
+                    }
+
+                isSaving = false
+                onSaveComplete()
+            } catch (t: Throwable) {
+                isSaving = false
+                android.widget.Toast.makeText(
+                    context,
+                    "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -388,9 +396,18 @@ fun AddMaintenanceRecordScreen(
             confirmButton = {
                 TextButton(onClick = {
                     coroutineScope.launch {
-                        AppContainer.maintenanceRepository.deleteMaintenance(existingRecord.id)
-                        showDeleteDialog = false
-                        onSaveComplete()
+                        try {
+                            AppContainer.maintenanceRepository.deleteMaintenance(existingRecord.id)
+                            showDeleteDialog = false
+                            onSaveComplete()
+                        } catch (t: Throwable) {
+                            showDeleteDialog = false
+                            android.widget.Toast.makeText(
+                                context,
+                                "삭제 실패: ${t.message ?: "알 수 없는 오류"}",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }) {
                     Text(
