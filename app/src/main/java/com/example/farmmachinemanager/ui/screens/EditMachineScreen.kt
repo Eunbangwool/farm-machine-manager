@@ -79,6 +79,9 @@ fun EditMachineScreen(
         mutableStateOf(machine.year?.toString() ?: "")
     }
     var serialNumber by remember { mutableStateOf(machine.serialNumber ?: "") }
+    var operatingHoursText by remember {
+        mutableStateOf(machine.operatingHours.toInt().toString())
+    }
     var isSaving by remember { mutableStateOf(false) }
 
     val isValid = name.isNotBlank() &&
@@ -166,6 +169,21 @@ fun EditMachineScreen(
                 )
             }
 
+            EditFormField(label = "가동시간", required = false) {
+                OutlinedTextField(
+                    value = operatingHoursText,
+                    onValueChange = { v ->
+                        if (v.isEmpty() || v.all { it.isDigit() }) operatingHoursText = v
+                    },
+                    suffix = { Text("h", fontSize = 13.sp, color = TextSecondary) },
+                    placeholder = { Text("예: 850", color = TextTertiary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = editFieldColors()
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -182,7 +200,8 @@ fun EditMachineScreen(
                             type = type,
                             horsepower = horsepowerText.toIntOrNull(),
                             year = yearText.toIntOrNull(),
-                            serialNumber = serialNumber.trim().ifBlank { null }
+                            serialNumber = serialNumber.trim().ifBlank { null },
+                            operatingHours = operatingHoursText.toDoubleOrNull() ?: machine.operatingHours
                         )
                         try {
                             AppContainer.machineRepository.saveMachine(updated)
