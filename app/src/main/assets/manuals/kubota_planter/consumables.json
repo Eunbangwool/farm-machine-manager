@@ -346,7 +346,7 @@
       "id": "PT-031",
       "category_id": "fertilizer_part",
       "name_ja": "クリダシロール（1）",
-      "name_ko": "푸시아웃 롤 1",
+      "name_ko": "배출 롤 1",
       "part_number": "PW200-9153-0",
       "quantities_by_model": {
         "NW50N": 5, "NW50S": 5,
@@ -360,7 +360,7 @@
       "id": "PT-032",
       "category_id": "fertilizer_part",
       "name_ja": "クリダシロール（2）",
-      "name_ko": "푸시아웃 롤 2",
+      "name_ko": "배출 롤 2",
       "part_number": "PW200-9154-0",
       "quantities_by_model": {
         "NW50N": 5, "NW50S": 5,

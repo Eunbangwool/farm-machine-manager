@@ -325,7 +325,7 @@
       "id": "IN-023",
       "section_id": "planting",
       "name_ja": "しゅう動板・苗のせ台受け",
-      "name_ko": "슈도판(미끄럼판)·모대 받침",
+      "name_ko": "미끄럼판·모대 받침",
       "actions": [
         {"type": "inspect", "type_ko": "점검", "interval_ko": "시즌 전후"},
         {"type": "replace", "type_ko": "교환", "interval_ko": "1mm 이상 마모 시"}
@@ -387,7 +387,7 @@
       "id": "IN-028",
       "section_id": "fertilizer",
       "name_ja": "ロート・ロール",
-      "name_ko": "로트·롤",
+      "name_ko": "로터·롤",
       "actions": [
         {"type": "clean", "type_ko": "청소", "interval_ko": "작업 전후"}
       ],
