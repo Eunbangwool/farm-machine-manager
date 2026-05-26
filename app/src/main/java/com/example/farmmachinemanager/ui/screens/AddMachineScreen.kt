@@ -76,6 +76,7 @@ fun AddMachineScreen(
     var customTypeName by remember { mutableStateOf("") }
     var horsepowerText by remember { mutableStateOf("") }
     var hoursText by remember { mutableStateOf("0") }
+    var manualId by remember { mutableStateOf<String?>(null) }
     var isSaving by remember { mutableStateOf(false) }
 
     val isValid = name.isNotBlank() &&
@@ -189,6 +190,14 @@ fun AddMachineScreen(
                 )
             }
 
+            FormField(
+                label = "매뉴얼 모델",
+                required = false,
+                hint = "선택하면 정기 정비·점검 항목을 매뉴얼에서 불러옵니다",
+            ) {
+                ManualPickerChips(selected = manualId, onSelect = { manualId = it })
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -210,6 +219,7 @@ fun AddMachineScreen(
                             else null,
                             horsepower = horsepowerText.toIntOrNull(),
                             operatingHours = hoursText.toDoubleOrNull() ?: 0.0,
+                            manualId = manualId,
                             status = MachineStatus.NORMAL,
                             statusNote = null
                         )
@@ -316,6 +326,39 @@ private fun MachineTypeChips(
                     fontSize = 13.sp,
                     fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                     color = if (isSelected) SurfacePrimary else TextPrimary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ManualPickerChips(selected: String?, onSelect: (String?) -> Unit) {
+    val options: List<Pair<String?, String>> = listOf(null to "없음") +
+        com.example.farmmachinemanager.data.manual.ManualCatalog.entries.map { it.id to it.label }
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { (id, label) ->
+            val isSelected = selected == id
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isSelected) TextPrimary else SurfacePrimary)
+                    .border(
+                        width = 0.5.dp,
+                        color = if (isSelected) TextPrimary else BorderColor,
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                    .clickable { onSelect(id) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                    color = if (isSelected) SurfacePrimary else TextPrimary,
                 )
             }
         }

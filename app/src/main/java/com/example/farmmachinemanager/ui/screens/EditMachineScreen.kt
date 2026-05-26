@@ -82,6 +82,7 @@ fun EditMachineScreen(
     var operatingHoursText by remember {
         mutableStateOf(machine.operatingHours.toInt().toString())
     }
+    var manualId by remember { mutableStateOf(machine.manualId) }
     var isSaving by remember { mutableStateOf(false) }
 
     val isValid = name.isNotBlank() &&
@@ -184,6 +185,10 @@ fun EditMachineScreen(
                 )
             }
 
+            EditFormField(label = "매뉴얼 모델", required = false) {
+                EditManualPickerChips(selected = manualId, onSelect = { manualId = it })
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -201,7 +206,8 @@ fun EditMachineScreen(
                             horsepower = horsepowerText.toIntOrNull(),
                             year = yearText.toIntOrNull(),
                             serialNumber = serialNumber.trim().ifBlank { null },
-                            operatingHours = operatingHoursText.toDoubleOrNull() ?: machine.operatingHours
+                            operatingHours = operatingHoursText.toDoubleOrNull() ?: machine.operatingHours,
+                            manualId = manualId
                         )
                         try {
                             AppContainer.machineRepository.saveMachine(updated)
@@ -289,6 +295,39 @@ private fun EditMachineTypeChips(
                     fontSize = 13.sp,
                     fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                     color = if (isSelected) SurfacePrimary else TextPrimary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditManualPickerChips(selected: String?, onSelect: (String?) -> Unit) {
+    val options: List<Pair<String?, String>> = listOf(null to "없음") +
+        com.example.farmmachinemanager.data.manual.ManualCatalog.entries.map { it.id to it.label }
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { (id, label) ->
+            val isSelected = selected == id
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isSelected) TextPrimary else SurfacePrimary)
+                    .border(
+                        width = 0.5.dp,
+                        color = if (isSelected) TextPrimary else BorderColor,
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                    .clickable { onSelect(id) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                    color = if (isSelected) SurfacePrimary else TextPrimary,
                 )
             }
         }

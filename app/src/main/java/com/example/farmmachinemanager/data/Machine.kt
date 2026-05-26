@@ -64,7 +64,9 @@ data class Machine(
     val statusNote: String? = null,
     val lastMaintenanceDate: LocalDate? = null,
     val photoUrl: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    /** 연결된 매뉴얼 데이터셋 ID (ManualCatalog.Entry.id). null 이면 이름/종류로 자동 추론. */
+    val manualId: String? = null,
 ) {
     /** 화면에 표시할 종류 라벨. customTypeName이 있으면 우선 사용. */
     val typeDisplay: String

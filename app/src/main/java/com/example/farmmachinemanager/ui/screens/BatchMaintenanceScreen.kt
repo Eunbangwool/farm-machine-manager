@@ -89,6 +89,7 @@ fun BatchMaintenanceScreen(
         machineName = machine.name,
         isTractor = machine.type == MachineType.TRACTOR,
         isRicePlanter = machine.type == MachineType.RICE_TRANSPLANTER,
+        manualId = machine.manualId,
     )
 
     LaunchedEffect(machine.id, intervalKey) {
