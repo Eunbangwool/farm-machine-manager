@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +58,7 @@ fun AllConsumablesScreen(
 ) {
     BackHandler { onBack() }
 
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val consumables by AppContainer.consumableRepository
         .observeConsumablesFor(machine.id)
@@ -114,21 +116,29 @@ fun AllConsumablesScreen(
                             today = today,
                             onQuickReplaceClick = {
                                 coroutineScope.launch {
-                                    val updated = c.copy(
-                                        lastReplacedDate = today,
-                                        lastReplacedHours = machine.operatingHours
-                                    )
-                                    AppContainer.consumableRepository.saveConsumable(updated)
-                                    val record = MaintenanceRecord(
-                                        id = "record_${System.currentTimeMillis()}",
-                                        machineId = machine.id,
-                                        date = today,
-                                        type = MaintenanceType.CONSUMABLE_REPLACE,
-                                        title = "${c.name} 교체",
-                                        operatingHoursAtMaintenance = machine.operatingHours,
-                                        replacedConsumableIds = listOf(c.id)
-                                    )
-                                    AppContainer.maintenanceRepository.addMaintenance(record)
+                                    try {
+                                        val updated = c.copy(
+                                            lastReplacedDate = today,
+                                            lastReplacedHours = machine.operatingHours
+                                        )
+                                        AppContainer.consumableRepository.saveConsumable(updated)
+                                        val record = MaintenanceRecord(
+                                            id = "record_${System.currentTimeMillis()}",
+                                            machineId = machine.id,
+                                            date = today,
+                                            type = MaintenanceType.CONSUMABLE_REPLACE,
+                                            title = "${c.name} 교체",
+                                            operatingHoursAtMaintenance = machine.operatingHours,
+                                            replacedConsumableIds = listOf(c.id)
+                                        )
+                                        AppContainer.maintenanceRepository.addMaintenance(record)
+                                    } catch (t: Throwable) {
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            "교체 기록 저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                            android.widget.Toast.LENGTH_LONG
+                                        ).show()
+                                    }
                                 }
                             }
                         )

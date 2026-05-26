@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +75,7 @@ fun DailyInspectionScreen(
 ) {
     BackHandler { onCancel() }
 
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val today = remember { LocalDate.now() }
     val checkpoints = remember(machine.type) {
@@ -167,20 +169,29 @@ fun DailyInspectionScreen(
                         .clickable(enabled = canSave) {
                             isSaving = true
                             coroutineScope.launch {
-                                val checkedNamesText = checkpoints
-                                    .filter { it.name in checkedNames }
-                                    .joinToString("\n") { "✓ ${it.name}" }
-                                val record = MaintenanceRecord(
-                                    id = "insp_${System.currentTimeMillis()}",
-                                    machineId = machine.id,
-                                    date = today,
-                                    type = MaintenanceType.INSPECTION,
-                                    title = "일일 점검 (${checkedNames.size}항목)",
-                                    description = checkedNamesText,
-                                    operatingHoursAtMaintenance = machine.operatingHours
-                                )
-                                AppContainer.maintenanceRepository.addMaintenance(record)
-                                onSaveComplete()
+                                try {
+                                    val checkedNamesText = checkpoints
+                                        .filter { it.name in checkedNames }
+                                        .joinToString("\n") { "✓ ${it.name}" }
+                                    val record = MaintenanceRecord(
+                                        id = "insp_${System.currentTimeMillis()}",
+                                        machineId = machine.id,
+                                        date = today,
+                                        type = MaintenanceType.INSPECTION,
+                                        title = "일일 점검 (${checkedNames.size}항목)",
+                                        description = checkedNamesText,
+                                        operatingHoursAtMaintenance = machine.operatingHours
+                                    )
+                                    AppContainer.maintenanceRepository.addMaintenance(record)
+                                    onSaveComplete()
+                                } catch (t: Throwable) {
+                                    isSaving = false
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
                         }
                         .padding(vertical = 14.dp),
