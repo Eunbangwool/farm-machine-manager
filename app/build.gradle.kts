@@ -19,7 +19,7 @@ val ciRunNumber: Int = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 // 디버그 패키지 분리 — `-PdebugBuild=true` 로 빌드하면:
 //  - applicationId 에 ".debug" suffix → 운영 앱과 별개로 동시 설치 가능
 //  - versionName 에 "-debug" suffix → 식별 쉽게
-//  - app_name "농기계 관리 디버그" → 홈 화면 라벨 구분
+//  - app_name "농돌이 디버그" → 홈 화면 라벨 구분
 //  - BuildConfig.IS_DEBUG_APP=true → 설정 화면에서 진단 카드 노출
 val debugBuild: Boolean = (project.findProperty("debugBuild") as? String)?.toBoolean() ?: false
 
@@ -48,7 +48,7 @@ android {
         buildConfigField("boolean", "IS_DEBUG_APP", debugBuild.toString())
 
         // app_name 기본값 (운영 빌드). 디버그 빌드는 buildType 에서 덮어씀.
-        resValue("string", "app_name", "농기계 관리")
+        resValue("string", "app_name", "농돌이")
     }
 
     // CI 빌드마다 같은 keystore를 사용하여 APK 서명.
@@ -68,7 +68,7 @@ android {
             if (debugBuild) {
                 applicationIdSuffix = ".debug"
                 versionNameSuffix = "-debug"
-                resValue("string", "app_name", "농기계 관리 디버그")
+                resValue("string", "app_name", "농돌이 디버그")
             }
         }
         release {
@@ -80,7 +80,7 @@ android {
             if (debugBuild) {
                 applicationIdSuffix = ".debug"
                 versionNameSuffix = "-debug"
-                resValue("string", "app_name", "농기계 관리 디버그")
+                resValue("string", "app_name", "농돌이 디버그")
             }
         }
     }

@@ -115,7 +115,7 @@ fun SettingsScreen(
                 InfoRow(
                     icon = Icons.Outlined.Info,
                     label = "앱 이름",
-                    value = if (BuildConfig.IS_DEBUG_APP) "농기계 관리 (디버그)" else "농기계 관리"
+                    value = if (BuildConfig.IS_DEBUG_APP) "농돌이 (디버그)" else "농돌이"
                 )
                 Divider()
                 InfoRow(
