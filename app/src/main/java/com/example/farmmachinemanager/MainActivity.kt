@@ -138,6 +138,7 @@ private sealed interface AppScreen {
     data object Specifications : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
+    data class BatchMaintenance(val machine: Machine, val intervalKey: String) : AppScreen
 }
 
 @Composable
@@ -170,7 +171,10 @@ private fun AppRoot() {
             onViewAllMaintenance = { screen = AppScreen.AllMaintenance(current.machine) },
             onEditMaintenanceClick = { record ->
                 screen = AppScreen.EditMaintenance(current.machine, record)
-            }
+            },
+            onBatchMaintenanceClick = { intervalKey ->
+                screen = AppScreen.BatchMaintenance(current.machine, intervalKey)
+            },
         )
         is AppScreen.AddMaintenance -> AddMaintenanceRecordScreen(
             machine = current.machine,
@@ -232,6 +236,12 @@ private fun AppRoot() {
         is AppScreen.AllConsumables -> AllConsumablesScreen(
             machine = current.machine,
             onBack = { screen = AppScreen.Detail(current.machine) }
+        )
+        is AppScreen.BatchMaintenance -> com.example.farmmachinemanager.ui.screens.BatchMaintenanceScreen(
+            machine = current.machine,
+            intervalKey = current.intervalKey,
+            onCancel = { screen = AppScreen.Detail(current.machine) },
+            onSaveComplete = { screen = AppScreen.Detail(current.machine) },
         )
     }
 }
