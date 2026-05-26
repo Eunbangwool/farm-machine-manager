@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -112,8 +113,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** 메인 화면 상단 탭. 농작이의 '작업 / 농지 / 설정' 처럼 농돌이는 '기계 관리 / 설정'. */
+private enum class MainTab(val label: String) {
+    Machines("기계 관리"),
+    Settings("설정"),
+}
+
 private sealed interface AppScreen {
-    data object List : AppScreen
+    data class Main(val tab: MainTab) : AppScreen
     data class Detail(val machine: Machine) : AppScreen
     data class AddMaintenance(val machine: Machine) : AppScreen
     /** 기존 정비기록 수정 (existingRecord와 함께 화면 진입) */
@@ -122,7 +129,6 @@ private sealed interface AppScreen {
     data object AddMachine : AppScreen
     data class EditMachine(val machine: Machine) : AppScreen
     data class DailyInspection(val machine: Machine) : AppScreen
-    data object Settings : AppScreen
     data object Statistics : AppScreen
     data object Troubleshooting : AppScreen
     data object InspectionChecklist : AppScreen
@@ -136,22 +142,29 @@ private sealed interface AppScreen {
 
 @Composable
 private fun AppRoot() {
-    var screen: AppScreen by remember { mutableStateOf(AppScreen.List) }
+    var screen: AppScreen by remember { mutableStateOf<AppScreen>(AppScreen.Main(MainTab.Machines)) }
 
     when (val current = screen) {
-        is AppScreen.List -> MachineListScreen(
+        is AppScreen.Main -> MainTabsScreen(
+            currentTab = current.tab,
+            onTabChange = { newTab -> screen = AppScreen.Main(newTab) },
             onMachineClick = { machine -> screen = AppScreen.Detail(machine) },
             onUpdateHoursClick = { screen = AppScreen.UpdateHours },
             onAddMachineClick = { screen = AppScreen.AddMachine },
-            onSettingsClick = { screen = AppScreen.Settings },
-            onStatisticsClick = { screen = AppScreen.Statistics }
+            onStatisticsClick = { screen = AppScreen.Statistics },
+            onTroubleshootingClick = { screen = AppScreen.Troubleshooting },
+            onInspectionChecklistClick = { screen = AppScreen.InspectionChecklist },
+            onPartsListClick = { screen = AppScreen.PartsList },
+            onFuseGuideClick = { screen = AppScreen.FuseGuide },
+            onLubricationClick = { screen = AppScreen.Lubrication },
+            onSpecificationsClick = { screen = AppScreen.Specifications },
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
-            onBackClick = { screen = AppScreen.List },
+            onBackClick = { screen = AppScreen.Main(MainTab.Machines) },
             onEditClick = { screen = AppScreen.EditMachine(current.machine) },
             onAddMaintenanceClick = { screen = AppScreen.AddMaintenance(current.machine) },
-            onMarkRepairComplete = { screen = AppScreen.List },
+            onMarkRepairComplete = { screen = AppScreen.Main(MainTab.Machines) },
             onDailyInspectionClick = { screen = AppScreen.DailyInspection(current.machine) },
             onViewAllConsumables = { screen = AppScreen.AllConsumables(current.machine) },
             onViewAllMaintenance = { screen = AppScreen.AllMaintenance(current.machine) },
@@ -171,52 +184,43 @@ private fun AppRoot() {
             existingRecord = current.record
         )
         is AppScreen.UpdateHours -> UpdateOperatingHoursScreen(
-            onCancel = { screen = AppScreen.List },
-            onSaveComplete = { screen = AppScreen.List }
+            onCancel = { screen = AppScreen.Main(MainTab.Machines) },
+            onSaveComplete = { screen = AppScreen.Main(MainTab.Machines) }
         )
         is AppScreen.AddMachine -> AddMachineScreen(
-            onCancel = { screen = AppScreen.List },
-            onSaveComplete = { screen = AppScreen.List }
+            onCancel = { screen = AppScreen.Main(MainTab.Machines) },
+            onSaveComplete = { screen = AppScreen.Main(MainTab.Machines) }
         )
         is AppScreen.EditMachine -> EditMachineScreen(
             machine = current.machine,
             onCancel = { screen = AppScreen.Detail(current.machine) },
-            onSaveComplete = { screen = AppScreen.List }
+            onSaveComplete = { screen = AppScreen.Main(MainTab.Machines) }
         )
         is AppScreen.DailyInspection -> DailyInspectionScreen(
             machine = current.machine,
             onCancel = { screen = AppScreen.Detail(current.machine) },
             onSaveComplete = { screen = AppScreen.Detail(current.machine) }
         )
-        is AppScreen.Settings -> SettingsScreen(
-            onBack = { screen = AppScreen.List },
-            onTroubleshootingClick = { screen = AppScreen.Troubleshooting },
-            onInspectionChecklistClick = { screen = AppScreen.InspectionChecklist },
-            onPartsListClick = { screen = AppScreen.PartsList },
-            onFuseGuideClick = { screen = AppScreen.FuseGuide },
-            onLubricationClick = { screen = AppScreen.Lubrication },
-            onSpecificationsClick = { screen = AppScreen.Specifications }
-        )
         is AppScreen.Statistics -> StatisticsScreen(
-            onBack = { screen = AppScreen.List }
+            onBack = { screen = AppScreen.Main(MainTab.Machines) }
         )
         is AppScreen.Troubleshooting -> TroubleshootingScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.InspectionChecklist -> InspectionChecklistScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.PartsList -> PartsListScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.FuseGuide -> FuseGuideScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.Lubrication -> LubricationScheduleScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.Specifications -> SpecificationsScreen(
-            onBack = { screen = AppScreen.Settings }
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
         is AppScreen.AllMaintenance -> AllMaintenanceScreen(
             machine = current.machine,
@@ -229,5 +233,69 @@ private fun AppRoot() {
             machine = current.machine,
             onBack = { screen = AppScreen.Detail(current.machine) }
         )
+    }
+}
+
+/**
+ * 메인 화면 — 상단 TabRow ("기계 관리" / "설정") + 선택된 탭의 콘텐츠.
+ * 농작이의 작업/농지/설정 탭 구조와 동일 패턴.
+ *
+ * 두 탭 모두 화면 안에 자체 TopBar / 헤더를 그리므로, TabRow 는 단순한 네비게이션
+ * 라인 역할만 한다.
+ */
+@Composable
+private fun MainTabsScreen(
+    currentTab: MainTab,
+    onTabChange: (MainTab) -> Unit,
+    onMachineClick: (Machine) -> Unit,
+    onUpdateHoursClick: () -> Unit,
+    onAddMachineClick: () -> Unit,
+    onStatisticsClick: () -> Unit,
+    onTroubleshootingClick: () -> Unit,
+    onInspectionChecklistClick: () -> Unit,
+    onPartsListClick: () -> Unit,
+    onFuseGuideClick: () -> Unit,
+    onLubricationClick: () -> Unit,
+    onSpecificationsClick: () -> Unit,
+) {
+    androidx.compose.foundation.layout.Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        androidx.compose.material3.TabRow(
+            selectedTabIndex = currentTab.ordinal,
+            containerColor = com.example.farmmachinemanager.ui.theme.SurfacePrimary,
+            contentColor = com.example.farmmachinemanager.ui.theme.TextPrimary,
+        ) {
+            MainTab.values().forEach { tab ->
+                androidx.compose.material3.Tab(
+                    selected = tab == currentTab,
+                    onClick = { onTabChange(tab) },
+                    text = {
+                        androidx.compose.material3.Text(
+                            text = tab.label,
+                            fontSize = 14.sp,
+                        )
+                    },
+                )
+            }
+        }
+        when (currentTab) {
+            MainTab.Machines -> MachineListScreen(
+                onMachineClick = onMachineClick,
+                onUpdateHoursClick = onUpdateHoursClick,
+                onAddMachineClick = onAddMachineClick,
+                onSettingsClick = { onTabChange(MainTab.Settings) },
+                onStatisticsClick = onStatisticsClick,
+            )
+            MainTab.Settings -> SettingsScreen(
+                onBack = { onTabChange(MainTab.Machines) },
+                onTroubleshootingClick = onTroubleshootingClick,
+                onInspectionChecklistClick = onInspectionChecklistClick,
+                onPartsListClick = onPartsListClick,
+                onFuseGuideClick = onFuseGuideClick,
+                onLubricationClick = onLubricationClick,
+                onSpecificationsClick = onSpecificationsClick,
+            )
+        }
     }
 }
