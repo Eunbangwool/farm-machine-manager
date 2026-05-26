@@ -446,6 +446,7 @@ private fun FirebaseSyncSection() {
                 hint = if (currentCode == null) "이 폰을 새 농장의 첫 폰으로" else "기존 코드를 버리고 새로 시작"
             ) {
                 val code = farmCodeManager.generateNewCode()
+                com.example.farmmachinemanager.AppContainer.refreshSyncMode()
                 currentCode = code
                 showRestartDialog = true
             }
@@ -496,6 +497,7 @@ private fun FirebaseSyncSection() {
                     onClick = {
                         if (joinCodeInput.length == 6) {
                             farmCodeManager?.setCode(joinCodeInput)
+                            com.example.farmmachinemanager.AppContainer.refreshSyncMode()
                             currentCode = joinCodeInput
                             showJoinDialog = false
                             showRestartDialog = true

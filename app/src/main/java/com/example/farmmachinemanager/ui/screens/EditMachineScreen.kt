@@ -36,10 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.example.farmmachinemanager.AppContainer
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MachineType
@@ -65,6 +67,7 @@ fun EditMachineScreen(
     BackHandler { onCancel() }
 
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var name by remember { mutableStateOf(machine.name) }
     var manufacturer by remember { mutableStateOf(machine.manufacturer) }
@@ -181,8 +184,17 @@ fun EditMachineScreen(
                             year = yearText.toIntOrNull(),
                             serialNumber = serialNumber.trim().ifBlank { null }
                         )
-                        AppContainer.machineRepository.saveMachine(updated)
-                        onSaveComplete()
+                        try {
+                            AppContainer.machineRepository.saveMachine(updated)
+                            onSaveComplete()
+                        } catch (t: Throwable) {
+                            isSaving = false
+                            Toast.makeText(
+                                context,
+                                "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
