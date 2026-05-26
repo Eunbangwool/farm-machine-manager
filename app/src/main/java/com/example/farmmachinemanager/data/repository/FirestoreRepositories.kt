@@ -1,16 +1,42 @@
 package com.example.farmmachinemanager.data.repository
 
+import android.util.Log
+import com.example.farmmachinemanager.AppContainer
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MachineStatus
 import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.data.MaintenanceRecord
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.MetadataChanges
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+
+private const val TAG = "FirestoreRepo"
+
+/**
+ * Firestore observer 가 받은 에러를 사람이 읽기 쉬운 한 줄로 변환.
+ * 권한 규칙이 게시 안 됐거나 네트워크가 끊기는 등 흔한 케이스를 식별.
+ */
+private fun describeFirestoreError(e: Throwable): String {
+    if (e is FirebaseFirestoreException) {
+        val codeName = e.code.name
+        val hint = when (e.code) {
+            FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                "Firestore 보안 규칙이 이 농장 코드의 읽기/쓰기를 차단했습니다. 콘솔의 규칙을 확인하세요."
+            FirebaseFirestoreException.Code.UNAVAILABLE ->
+                "Firestore 서비스에 접근할 수 없습니다. 네트워크/방화벽 확인 필요."
+            FirebaseFirestoreException.Code.UNAUTHENTICATED ->
+                "인증되지 않은 요청입니다."
+            else -> e.message ?: codeName
+        }
+        return "$codeName · $hint"
+    }
+    return e.message ?: e::class.java.simpleName
+}
 
 /**
  * Firestore 기반 Machine Repository.
@@ -34,12 +60,22 @@ class FirestoreMachineRepository(
         .collection("machines")
 
     override fun observeMachines(): Flow<List<Machine>> = callbackFlow {
+        var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                // 권한 오류·네트워크 오류 등은 마지막으로 본 데이터를 유지한다.
-                // 빈 리스트를 emit 하면 UI 가 깜빡거린다.
+                val msg = describeFirestoreError(error)
+                Log.w(TAG, "observeMachines error: $msg", error)
+                AppContainer.reportFirestoreError(msg)
+                // 첫 응답 전이라면 빈 리스트라도 emit 해서 UI 가 영구 로딩 상태에 갇히지 않게 한다.
+                // 첫 정상 응답 이후의 에러는 마지막 데이터를 유지하여 깜빡임을 막는다.
+                if (!receivedFirstSnapshot) {
+                    receivedFirstSnapshot = true
+                    trySend(emptyList())
+                }
                 return@addSnapshotListener
             }
+            AppContainer.clearFirestoreError()
+            receivedFirstSnapshot = true
             val machines = snapshot?.documents
                 ?.mapNotNull { doc -> doc.data?.let { mapToMachine(doc.id, it) } }
                 ?: emptyList()
@@ -128,13 +164,22 @@ class FirestoreMaintenanceRepository(
         .collection("maintenance")
 
     override fun observeMaintenanceFor(machineId: String): Flow<List<MaintenanceRecord>> = callbackFlow {
+        var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    // 마지막 데이터 유지
+                    val msg = describeFirestoreError(error)
+                    Log.w(TAG, "observeMaintenanceFor($machineId) error: $msg", error)
+                    AppContainer.reportFirestoreError(msg)
+                    if (!receivedFirstSnapshot) {
+                        receivedFirstSnapshot = true
+                        trySend(emptyList())
+                    }
                     return@addSnapshotListener
                 }
+                AppContainer.clearFirestoreError()
+                receivedFirstSnapshot = true
                 val records = snapshot?.documents
                     ?.mapNotNull { doc -> doc.data?.let { recordFromMap(doc.id, it) } }
                     ?.sortedByDescending { it.date }
@@ -145,11 +190,20 @@ class FirestoreMaintenanceRepository(
     }
 
     override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> = callbackFlow {
+        var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                // 마지막 데이터 유지
+                val msg = describeFirestoreError(error)
+                Log.w(TAG, "observeAllMaintenance error: $msg", error)
+                AppContainer.reportFirestoreError(msg)
+                if (!receivedFirstSnapshot) {
+                    receivedFirstSnapshot = true
+                    trySend(emptyList())
+                }
                 return@addSnapshotListener
             }
+            AppContainer.clearFirestoreError()
+            receivedFirstSnapshot = true
             val records = snapshot?.documents
                 ?.mapNotNull { doc -> doc.data?.let { recordFromMap(doc.id, it) } }
                 ?.sortedByDescending { it.date }
@@ -234,13 +288,22 @@ class FirestoreConsumableRepository(
         .collection("consumables")
 
     override fun observeConsumablesFor(machineId: String): Flow<List<com.example.farmmachinemanager.data.Consumable>> = callbackFlow {
+        var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    // 마지막 데이터 유지
+                    val msg = describeFirestoreError(error)
+                    Log.w(TAG, "observeConsumablesFor($machineId) error: $msg", error)
+                    AppContainer.reportFirestoreError(msg)
+                    if (!receivedFirstSnapshot) {
+                        receivedFirstSnapshot = true
+                        trySend(emptyList())
+                    }
                     return@addSnapshotListener
                 }
+                AppContainer.clearFirestoreError()
+                receivedFirstSnapshot = true
                 val consumables = snapshot?.documents
                     ?.mapNotNull { doc -> doc.data?.let { consumableFromMap(doc.id, it) } }
                     ?: emptyList()

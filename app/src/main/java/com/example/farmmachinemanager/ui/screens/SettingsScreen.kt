@@ -42,6 +42,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -453,6 +454,8 @@ private fun FirebaseSyncSection() {
     var currentCode by remember {
         mutableStateOf(farmCodeManager?.farmCode)
     }
+    val lastError by com.example.farmmachinemanager.AppContainer.lastFirestoreError
+        .collectAsState()
     var showJoinDialog by remember { mutableStateOf(false) }
     var joinCodeInput by remember { mutableStateOf("") }
     var showLeaveDialog by remember { mutableStateOf(false) }
@@ -514,6 +517,39 @@ private fun FirebaseSyncSection() {
                     fontSize = 11.sp,
                     color = TextSecondary
                 )
+            }
+        }
+
+        // 최근 Firestore 에러를 사용자에게 노출. PERMISSION_DENIED 같은 콘솔 규칙 문제를 침묵 처리하지 않는다.
+        lastError?.let { err ->
+            Divider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(StatusInspectionBg)
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.BugReport,
+                    contentDescription = null,
+                    tint = StatusRepairText,
+                    modifier = Modifier.size(18.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "최근 동기화 오류",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = StatusRepairText
+                    )
+                    Text(
+                        text = err,
+                        fontSize = 11.sp,
+                        color = TextPrimary
+                    )
+                }
             }
         }
         Divider()

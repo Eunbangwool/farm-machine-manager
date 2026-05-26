@@ -13,6 +13,8 @@ import com.example.farmmachinemanager.data.repository.MaintenanceRepository
 import com.example.farmmachinemanager.data.repository.SampleConsumableRepository
 import com.example.farmmachinemanager.data.repository.SampleMachineRepository
 import com.example.farmmachinemanager.data.repository.SampleMaintenanceRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 서비스 로케이터.
@@ -41,6 +43,22 @@ object AppContainer {
     @Volatile
     var currentMode: SyncMode = SyncMode.LOCAL_ONLY
         private set
+
+    /**
+     * Firestore observer 가 받은 가장 최근 에러. UI 에서 사용자에게 노출한다.
+     * 권한 거부·네트워크 오류 등은 침묵하지 않고 여기 적재되어 설정 화면에 표시된다.
+     * 정상 응답이 들어오면 null 로 초기화 (recoverFromError).
+     */
+    private val _lastFirestoreError = MutableStateFlow<String?>(null)
+    val lastFirestoreError: StateFlow<String?> get() = _lastFirestoreError
+
+    fun reportFirestoreError(message: String?) {
+        _lastFirestoreError.value = message
+    }
+
+    fun clearFirestoreError() {
+        _lastFirestoreError.value = null
+    }
 
     fun init(context: Context) {
         if (initialized) return
