@@ -224,11 +224,7 @@ private fun CategoryHeader(category: LubricationCategory) {
     }
 }
 
-private data class CategoryVisual(val icon: ImageVector, val tint: Color, val bg: Color) {
-    operator fun component1() = icon
-    operator fun component2() = tint
-    operator fun component3() = bg
-}
+private data class CategoryVisual(val icon: ImageVector, val tint: Color, val bg: Color)
 
 private fun categoryVisual(id: String): CategoryVisual = when (id) {
     "fuel" -> CategoryVisual(Icons.Outlined.LocalGasStation, StatusRepairText, StatusRepairBg)
