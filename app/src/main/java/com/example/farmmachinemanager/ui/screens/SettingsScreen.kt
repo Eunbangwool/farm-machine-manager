@@ -174,7 +174,7 @@ fun SettingsScreen(
             // 알림 카드 (NotificationSection 내부에 헤더 포함)
             NotificationSection()
 
-            // 매뉴얼 카드
+            // 매뉴얼 카드 — 농작이 StatsMenuCard 풍 (이모지 + 라벨 + 설명 + chevron)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,40 +184,46 @@ fun SettingsScreen(
             ) {
                 CardHeader(title = "매뉴얼")
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 트러블슈팅",
-                    enabled = true,
-                    onClick = onTroubleshootingClick
+                ManualMenuRow(
+                    emoji = "🛠️",
+                    title = "쿠보타 이앙기 트러블슈팅",
+                    subtitle = "고장 증상 → 원인 → 처치",
+                    onClick = onTroubleshootingClick,
                 )
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 정기점검 일람",
-                    enabled = true,
-                    onClick = onInspectionChecklistClick
+                ManualMenuRow(
+                    emoji = "📋",
+                    title = "쿠보타 이앙기 정기점검 일람",
+                    subtitle = "시간/시즌별 점검 일정",
+                    onClick = onInspectionChecklistClick,
                 )
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 소모품 부품",
-                    enabled = true,
-                    onClick = onPartsListClick
+                ManualMenuRow(
+                    emoji = "⚙️",
+                    title = "쿠보타 이앙기 소모품 부품",
+                    subtitle = "부품번호 + 모델별 수량",
+                    onClick = onPartsListClick,
                 )
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 퓨즈 가이드",
-                    enabled = true,
-                    onClick = onFuseGuideClick
+                ManualMenuRow(
+                    emoji = "🔌",
+                    title = "쿠보타 이앙기 퓨즈 가이드",
+                    subtitle = "회로별 퓨즈 위치·정격",
+                    onClick = onFuseGuideClick,
                 )
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 급유·주유 일람",
-                    enabled = true,
-                    onClick = onLubricationClick
+                ManualMenuRow(
+                    emoji = "🛢️",
+                    title = "쿠보타 이앙기 급유·주유 일람",
+                    subtitle = "오일·그리스 주입 위치",
+                    onClick = onLubricationClick,
                 )
                 Divider()
-                NavRow(
-                    label = "쿠보타 이앙기 주요 제원",
-                    enabled = true,
-                    onClick = onSpecificationsClick
+                ManualMenuRow(
+                    emoji = "📐",
+                    title = "쿠보타 이앙기 주요 제원",
+                    subtitle = "모델별 사양",
+                    onClick = onSpecificationsClick,
                 )
             }
 
@@ -369,6 +375,48 @@ private fun InfoRow(
     }
 }
 
+/**
+ * 농작이 StatsMenuCard 풍의 메뉴 행 — 이모지 + 라벨 + 부제 + chevron.
+ * 매뉴얼 항목처럼 "탭하면 화면 이동" 패턴에 사용.
+ */
+@Composable
+private fun ManualMenuRow(
+    emoji: String,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(emoji, fontSize = 20.sp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary,
+            )
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                color = TextSecondary,
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+            contentDescription = null,
+            tint = TextTertiary,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
 @Composable
 private fun NavRow(label: String, enabled: Boolean, onClick: (() -> Unit)? = null) {
     val rowModifier = Modifier
@@ -412,29 +460,17 @@ private fun Divider() {
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 private fun SettingsTopBar(onBack: () -> Unit) {
+    // 농작이 Header() 패턴: 뒤로가기 없이 큰 페이지 타이틀만.
+    // 뒤로가기는 시스템 백버튼(BackHandler) 으로 처리.
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(SurfacePrimary)
-            .padding(horizontal = 12.dp, vertical = 14.dp),
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .clickable(onClick = onBack),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "뒤로",
-                tint = TextPrimary,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        Spacer(modifier = Modifier.size(4.dp))
         Text(
             text = "설정",
             fontSize = 22.sp,
@@ -445,17 +481,17 @@ private fun SettingsTopBar(onBack: () -> Unit) {
 }
 
 /**
- * 카드 안에서 그 카드의 그룹 라벨을 표시하는 헤더 행.
- * 농작이 패턴: 카드 위 별도 SectionHeader 없이 카드 안 첫 행으로 흡수.
+ * 카드 안 첫 행의 그룹 라벨. 농작이의 FontScaleSection 같은 카드 헤더 패턴 매칭.
+ * 카드 헤더 + Divider + 본문 행 구조.
  */
 @Composable
 private fun CardHeader(title: String) {
     Text(
         text = title,
-        fontSize = 15.sp,
+        fontSize = 17.sp,
         fontWeight = FontWeight.SemiBold,
         color = TextPrimary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+        modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
     )
 }
 
