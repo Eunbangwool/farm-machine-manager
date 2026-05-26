@@ -41,13 +41,22 @@ jobs:
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
 
-      # 빌드 stdout / stderr 을 모두 build.log 로 캡쳐. fail 해도 다음 step 으로 진행.
-      - name: APK 빌드
+      # 운영 APK (FarmManager.apk) → IS_DEBUG_APP=false, app_name "농돌이"
+      # 디버그 APK (FarmManager-debug.apk) → IS_DEBUG_APP=true, app_name "농돌이 디버그",
+      #                                        applicationId .debug suffix 라 운영과 동시 설치 가능
+      - name: APK 빌드 (운영 + 디버그)
         id: build
         continue-on-error: true
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
+          {
+            echo '=== 운영 APK 빌드 ==='
+            ./gradlew assembleDebug --parallel -x lint
+            cp app/build/outputs/apk/debug/app-debug.apk FarmManager.apk
+            echo '=== 디버그 APK 빌드 (clean + -PdebugBuild=true) ==='
+            ./gradlew clean assembleDebug -PdebugBuild=true --parallel -x lint
+            cp app/build/outputs/apk/debug/app-debug.apk FarmManager-debug.apk
+          } 2>&1 | tee build.log
 
       - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
         if: always()
@@ -85,11 +94,13 @@ jobs:
       - name: 빌드 성공 시 release body 작성
         if: steps.build.outcome == 'success'
         run: |
+          REPO="${{ github.repository }}"
           {
-            echo '**자동 빌드된 디버그 APK**'
+            echo '**자동 빌드된 농돌이 APK**'
             echo
             echo '## 📲 폰에서 직접 설치'
-            echo '아래 Assets의 `FarmManager.apk` 탭하여 다운로드.'
+            echo "- 운영 앱: [FarmManager.apk](https://github.com/$REPO/releases/latest/download/FarmManager.apk) — 일반 사용자용"
+            echo "- 디버그 앱: [FarmManager-debug.apk](https://github.com/$REPO/releases/latest/download/FarmManager-debug.apk) — 진단/등급 카드 노출, applicationId .debug suffix 라 운영과 동시 설치 가능"
             echo
             echo '## 🔖 빌드 정보'
             echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
@@ -97,12 +108,9 @@ jobs:
             echo "- 빌드 번호: \`${{ github.run_number }}\`"
             echo
             echo '## 🔗 폰 북마크용 직접 설치 URL'
-            echo "https://github.com/${{ github.repository }}/releases/latest/download/FarmManager.apk"
+            echo "- 운영: https://github.com/$REPO/releases/latest/download/FarmManager.apk"
+            echo "- 디버그: https://github.com/$REPO/releases/latest/download/FarmManager-debug.apk"
           } > release_body.md
-
-      - name: APK 이름 변경 (성공 시)
-        if: steps.build.outcome == 'success'
-        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FarmManager.apk
 
       - name: 최신 빌드 Release 업데이트
         if: always()
@@ -112,7 +120,8 @@ jobs:
           name: "📱 최신 빌드"
           body_path: release_body.md
           files: |
-            app/build/outputs/apk/debug/FarmManager.apk
+            FarmManager.apk
+            FarmManager-debug.apk
             build.log
           prerelease: false
           make_latest: "true"
