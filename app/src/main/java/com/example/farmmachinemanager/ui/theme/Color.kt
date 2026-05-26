@@ -3,21 +3,23 @@ package com.example.farmmachinemanager.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // ============================================================
-// 농돌이 컬러 팔레트 — 농작이와 같은 sage 농업 톤.
-// (농기계 도메인 전용 색상은 아래 별도 섹션에서 유지)
+// 농돌이 컬러 팔레트 — 디자인은 농작이와 동일한 cream/카드 톤.
+// 다른 점: 농기계 정체성을 위해 액션·강조 색을 sage 그린이 아닌
+// 차콜 그레이로 사용한다.
+// 농기계 도메인 전용 색상은 아래 별도 섹션에서 유지.
 // ============================================================
 
-// 농작이 공유 톤 -----------------------------------------------
-val Forest = Color(0xFF14301E)
-val Primary = Color(0xFF2F5D3D)
-val Fresh = Color(0xFF5E8F66)
+// 농작이와 공유하는 액센트 톤 (sage → 차콜 그레이) -------------
+val Forest = Color(0xFF1F1F1F)
+val Primary = Color(0xFF4A4A4A)
+val Fresh = Color(0xFF8F8F8F)
 val Tint = Color(0xFFEFEEE6)
 
-val ActionPrimary = Color(0xFF2F5D3D)
+val ActionPrimary = Color(0xFF4A4A4A)
 val ActionPrimaryText = Color(0xFFFAF9F4)
 val ActionDanger = Color(0xFF8C3A33)
 
-// 표면 / 텍스트 / 보더 -----------------------------------------
+// 표면 / 텍스트 / 보더 (농작이와 동일한 cream 톤 유지) ---------
 val SurfacePrimary = Color(0xFFFAF9F4)
 val SurfaceSecondary = Color(0xFFEFEEE6)
 val TextPrimary = Color(0xFF1F2421)
