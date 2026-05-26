@@ -32,8 +32,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Gradle 설정 (빌드 캐시 + Gradle 홈 캐시)
+      - name: Gradle 설정 (캐시 일시 비활성 — Actions cache 서비스 장애 회피)
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
