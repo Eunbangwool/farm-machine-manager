@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
@@ -53,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -104,6 +107,8 @@ fun SettingsScreen(
 
     var showBusiness by remember { mutableStateOf(false) }
     var showAttributions by remember { mutableStateOf(false) }
+    var planterManualExpanded by remember { mutableStateOf(false) }
+    var tractorManualExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -165,7 +170,7 @@ fun SettingsScreen(
             // 알림 카드 (NotificationSection 내부에 헤더 포함)
             NotificationSection()
 
-            // 매뉴얼 카드 — 농작이 StatsMenuCard 풍 (이모지 + 라벨 + 설명 + chevron)
+            // 매뉴얼 카드 (통합) — 브랜드·기종별 접기 그룹
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -173,116 +178,121 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
-                CardHeader(title = "매뉴얼 · 쿠보타 이앙기")
+                CardHeader(title = "매뉴얼")
                 Divider()
-                ManualMenuRow(
-                    emoji = "🛠️",
-                    title = "쿠보타 이앙기 트러블슈팅",
-                    subtitle = "고장 증상 → 원인 → 처치",
-                    onClick = onTroubleshootingClick,
-                )
+                ManualBrandGroup(
+                    emoji = "🌾",
+                    title = "쿠보타 이앙기",
+                    expanded = planterManualExpanded,
+                    onToggle = { planterManualExpanded = !planterManualExpanded },
+                ) {
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🛠️",
+                        title = "트러블슈팅",
+                        subtitle = "고장 증상 → 원인 → 처치",
+                        onClick = onTroubleshootingClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "📋",
+                        title = "정기점검 일람",
+                        subtitle = "시간/시즌별 점검 일정",
+                        onClick = onInspectionChecklistClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "⚙️",
+                        title = "소모품 부품",
+                        subtitle = "부품번호 + 모델별 수량",
+                        onClick = onPartsListClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🔌",
+                        title = "퓨즈 가이드",
+                        subtitle = "회로별 퓨즈 위치·정격",
+                        onClick = onFuseGuideClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🛢️",
+                        title = "급유·주유 일람",
+                        subtitle = "오일·그리스 주입 위치",
+                        onClick = onLubricationClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "📐",
+                        title = "주요 제원",
+                        subtitle = "모델별 사양",
+                        onClick = onSpecificationsClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🔗",
+                        title = "공식 점검 가이드",
+                        subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
+                        onClick = { openUrl(context, KUBOTA_TAUEKI_GUIDE_URL) },
+                    )
+                }
                 Divider()
-                ManualMenuRow(
-                    emoji = "📋",
-                    title = "쿠보타 이앙기 정기점검 일람",
-                    subtitle = "시간/시즌별 점검 일정",
-                    onClick = onInspectionChecklistClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "⚙️",
-                    title = "쿠보타 이앙기 소모품 부품",
-                    subtitle = "부품번호 + 모델별 수량",
-                    onClick = onPartsListClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🔌",
-                    title = "쿠보타 이앙기 퓨즈 가이드",
-                    subtitle = "회로별 퓨즈 위치·정격",
-                    onClick = onFuseGuideClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🛢️",
-                    title = "쿠보타 이앙기 급유·주유 일람",
-                    subtitle = "오일·그리스 주입 위치",
-                    onClick = onLubricationClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "📐",
-                    title = "쿠보타 이앙기 주요 제원",
-                    subtitle = "모델별 사양",
-                    onClick = onSpecificationsClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🔗",
-                    title = "쿠보타 이앙기 공식 점검 가이드",
-                    subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
-                    onClick = { openUrl(context, KUBOTA_TAUEKI_GUIDE_URL) },
-                )
-            }
-
-            // 매뉴얼 카드 — 쿠보타 트랙터 (MR1050·MR1157)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfacePrimary)
-                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            ) {
-                CardHeader(title = "매뉴얼 · 쿠보타 트랙터")
-                Divider()
-                ManualMenuRow(
-                    emoji = "🛠️",
-                    title = "쿠보타 트랙터 트러블슈팅",
-                    subtitle = "고장 증상 → 원인 → 처치 + 에러코드",
-                    onClick = onTractorTroubleshootingClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "📋",
-                    title = "쿠보타 트랙터 정기점검 일람",
-                    subtitle = "시간/시즌별 점검 일정",
-                    onClick = onTractorInspectionChecklistClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "⚙️",
-                    title = "쿠보타 트랙터 소모품 부품",
-                    subtitle = "부품번호 + 모델별 수량",
-                    onClick = onTractorPartsListClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🛢️",
-                    title = "쿠보타 트랙터 급유·주유 일람",
-                    subtitle = "오일·그리스 주입 위치",
-                    onClick = onTractorLubricationClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🚨",
-                    title = "쿠보타 트랙터 경고등 가이드",
-                    subtitle = "계기판 경고등 의미·대처",
-                    onClick = onTractorWarningLightsClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "📐",
-                    title = "쿠보타 트랙터 주요 제원",
-                    subtitle = "모델별 사양",
-                    onClick = onTractorSpecificationsClick,
-                )
-                Divider()
-                ManualMenuRow(
-                    emoji = "🔗",
-                    title = "쿠보타 트랙터 공식 점검 가이드",
-                    subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
-                    onClick = { openUrl(context, KUBOTA_TRACTOR_GUIDE_URL) },
-                )
+                ManualBrandGroup(
+                    emoji = "🚜",
+                    title = "쿠보타 트랙터",
+                    expanded = tractorManualExpanded,
+                    onToggle = { tractorManualExpanded = !tractorManualExpanded },
+                ) {
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🛠️",
+                        title = "트러블슈팅",
+                        subtitle = "고장 증상 → 원인 → 처치 + 에러코드",
+                        onClick = onTractorTroubleshootingClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "📋",
+                        title = "정기점검 일람",
+                        subtitle = "시간/시즌별 점검 일정",
+                        onClick = onTractorInspectionChecklistClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "⚙️",
+                        title = "소모품 부품",
+                        subtitle = "부품번호 + 모델별 수량",
+                        onClick = onTractorPartsListClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🛢️",
+                        title = "급유·주유 일람",
+                        subtitle = "오일·그리스 주입 위치",
+                        onClick = onTractorLubricationClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🚨",
+                        title = "경고등 가이드",
+                        subtitle = "계기판 경고등 의미·대처",
+                        onClick = onTractorWarningLightsClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "📐",
+                        title = "주요 제원",
+                        subtitle = "모델별 사양",
+                        onClick = onTractorSpecificationsClick,
+                    )
+                    Divider()
+                    ManualMenuRow(
+                        emoji = "🔗",
+                        title = "공식 점검 가이드",
+                        subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
+                        onClick = { openUrl(context, KUBOTA_TRACTOR_GUIDE_URL) },
+                    )
+                }
             }
 
             // 준비 중 카드
@@ -649,6 +659,54 @@ private fun ManualMenuRow(
             tint = TextTertiary,
             modifier = Modifier.size(16.dp),
         )
+    }
+}
+
+/**
+ * 매뉴얼 카드 안의 기종별 접기 그룹.
+ * 헤더(이모지 + 제목 + 회전 chevron)를 탭하면 하위 매뉴얼 항목이 펼쳐진다.
+ */
+@Composable
+private fun ManualBrandGroup(
+    emoji: String,
+    title: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 90f else 0f,
+        label = "manual_chevron",
+    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(emoji, fontSize = 20.sp)
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = if (expanded) "접기" else "펼치기",
+                tint = TextSecondary,
+                modifier = Modifier
+                    .size(20.dp)
+                    .rotate(rotation),
+            )
+        }
+        AnimatedVisibility(visible = expanded) {
+            Column(modifier = Modifier.fillMaxWidth()) { content() }
+        }
     }
 }
 
