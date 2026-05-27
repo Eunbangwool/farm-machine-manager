@@ -21,6 +21,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.farmmachinemanager.data.UpdateChecker
+import kotlinx.coroutines.launch
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -74,6 +77,7 @@ class MainActivity : ComponentActivity() {
         NotificationHelper.ensureChannel(applicationContext)
         scheduleConsumableCheck()
         requestNotificationPermissionIfNeeded()
+        checkForAppUpdate()
 
         enableEdgeToEdge()
         setContent {
@@ -104,6 +108,24 @@ class MainActivity : ComponentActivity() {
             ExistingPeriodicWorkPolicy.KEEP, // 이미 등록되어 있으면 유지
             request
         )
+    }
+
+    /**
+     * 앱 시작 시 GitHub release 의 최신 빌드를 확인.
+     * 현재 설치본보다 새 버전이면 알림 1회. 같은 버전 중복 알림은 막는다.
+     * 네트워크 실패/구버전이면 조용히 무시.
+     */
+    private fun checkForAppUpdate() {
+        lifecycleScope.launch {
+            val info = UpdateChecker.check() ?: return@launch
+            val prefs = getSharedPreferences("update_check", MODE_PRIVATE)
+            if (info.buildNumber > prefs.getInt("last_notified_build", 0)) {
+                NotificationHelper.showUpdateAlert(
+                    applicationContext, info.versionName, info.apkUrl
+                )
+                prefs.edit().putInt("last_notified_build", info.buildNumber).apply()
+            }
+        }
     }
 
     /** Android 13+ 에서 알림 권한 필요. 거부해도 앱은 동작 (알림만 안 옴). */

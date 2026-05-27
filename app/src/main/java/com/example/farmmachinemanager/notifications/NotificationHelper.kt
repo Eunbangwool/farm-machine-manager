@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -22,18 +23,32 @@ object NotificationHelper {
     const val CHANNEL_NAME = "소모품 교체 알림"
     const val NOTIFICATION_ID_CONSUMABLE = 1001
 
+    const val CHANNEL_ID_UPDATE = "app_update_alerts"
+    const val CHANNEL_NAME_UPDATE = "앱 업데이트 알림"
+    const val NOTIFICATION_ID_UPDATE = 1002
+
     /** 앱 시작 시 또는 첫 발송 전에 호출. 이미 만들어진 채널은 중복 등록 무시됨. */
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID_CONSUMABLE,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "엔진오일/필터 등 소모품 교체 시기가 다가오면 알림"
-            }
             val nm = ContextCompat.getSystemService(context, NotificationManager::class.java)
-            nm?.createNotificationChannel(channel)
+            nm?.createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID_CONSUMABLE,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description = "엔진오일/필터 등 소모품 교체 시기가 다가오면 알림"
+                }
+            )
+            nm?.createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID_UPDATE,
+                    CHANNEL_NAME_UPDATE,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description = "새 앱 버전이 배포되면 알림"
+                }
+            )
         }
     }
 
@@ -68,5 +83,37 @@ object NotificationHelper {
 
         val nm = ContextCompat.getSystemService(context, NotificationManager::class.java)
         nm?.notify(NOTIFICATION_ID_CONSUMABLE, notification)
+    }
+
+    /**
+     * 새 앱 버전 알림. 탭하면 APK 다운로드 페이지/파일을 브라우저로 연다.
+     */
+    fun showUpdateAlert(
+        context: Context,
+        versionName: String,
+        apkUrl: String
+    ) {
+        ensureChannel(context)
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 1, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val message = "새 버전 $versionName 이(가) 나왔습니다. 탭하여 설치하세요."
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_UPDATE)
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setContentTitle("농돌이 업데이트")
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        val nm = ContextCompat.getSystemService(context, NotificationManager::class.java)
+        nm?.notify(NOTIFICATION_ID_UPDATE, notification)
     }
 }
