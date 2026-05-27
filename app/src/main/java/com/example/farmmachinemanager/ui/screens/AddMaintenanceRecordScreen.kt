@@ -294,14 +294,25 @@ fun AddMaintenanceRecordScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 영수증 스캔 — 갤러리 사진 OCR 로 금액·업체·날짜 자동 채움
+            // 영수증 스캔 — 갤러리 사진 OCR 로 금액·업체·날짜·품목 자동 채움
             ReceiptScanButton(
                 onScanned = { parsed ->
                     parsed.cost?.let { costText = it.toString() }
                     parsed.vendor?.let { v -> if (shopName.isBlank()) shopName = v }
                     parsed.date?.let { date = it }
-                    if (title.isBlank()) title = "영수증 정비"
-                    if (description.isBlank()) description = parsed.rawText.take(300)
+                    parsed.suggestedType?.let { type = it }
+                    if (parsed.items.isNotEmpty()) {
+                        if (title.isBlank()) {
+                            title = parsed.items.first() +
+                                if (parsed.items.size > 1) " 외 ${parsed.items.size - 1}건" else ""
+                        }
+                        if (description.isBlank()) {
+                            description = parsed.items.joinToString("\n") { "• $it" }
+                        }
+                    } else {
+                        if (title.isBlank()) title = "영수증 정비"
+                        if (description.isBlank()) description = parsed.rawText.take(300)
+                    }
                 },
             )
 
