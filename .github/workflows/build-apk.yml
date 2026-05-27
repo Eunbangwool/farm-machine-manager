@@ -119,6 +119,16 @@ jobs:
           make_latest: "true"
           fail_on_unmatched_files: false
 
+      - name: 옛 파일명 asset 정리 (FarmManager.apk)
+        if: steps.build.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # APK 파일명을 FarmMachineManager.apk 로 변경하기 전 빌드가 남긴
+          # 구버전 자산 제거. 없으면 무시.
+          gh release delete-asset latest FarmManager.apk \
+            --repo "${{ github.repository }}" --yes || true
+
       - name: 빌드 실패면 워크플로우도 실패로 마감
         if: steps.build.outcome != 'success'
         run: |
