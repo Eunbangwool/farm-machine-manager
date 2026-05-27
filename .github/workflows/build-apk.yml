@@ -2,10 +2,10 @@
 # Farm Machine Manager - 자동 APK 빌드 (운영만)
 # ===================================================================
 # 매 main push 마다:
-#  - FarmManager.apk (운영) 빌드 → release latest 첨부
+#  - FarmMachineManager.apk (운영) 빌드 → release latest 첨부
 #  - 빌드 실패 시 로그 마지막 200줄이 release body 와 artifact 로 노출
 #
-# 디버그 APK (FarmManager-debug.apk) 는 Firebase 콘솔에 디버그 패키지
+# 디버그 APK (FarmMachineManager-debug.apk) 는 Firebase 콘솔에 디버그 패키지
 # (com.example.farmmachinemanager.debug) 추가 후 다시 활성화.
 
 name: Build APK
@@ -51,7 +51,7 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
-          cp app/build/outputs/apk/debug/app-debug.apk FarmManager.apk
+          cp app/build/outputs/apk/debug/app-debug.apk FarmMachineManager.apk
 
       - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
         if: always()
@@ -94,7 +94,7 @@ jobs:
             echo '**자동 빌드된 농돌이 APK**'
             echo
             echo '## 📲 폰에서 직접 설치'
-            echo "[FarmManager.apk](https://github.com/$REPO/releases/latest/download/FarmManager.apk) 탭하여 다운로드."
+            echo "[FarmMachineManager.apk](https://github.com/$REPO/releases/latest/download/FarmMachineManager.apk) 탭하여 다운로드."
             echo
             echo '## 🔖 빌드 정보'
             echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
@@ -102,7 +102,7 @@ jobs:
             echo "- 빌드 번호: \`${{ github.run_number }}\`"
             echo
             echo '## 🔗 폰 북마크용 직접 설치 URL'
-            echo "https://github.com/$REPO/releases/latest/download/FarmManager.apk"
+            echo "https://github.com/$REPO/releases/latest/download/FarmMachineManager.apk"
           } > release_body.md
 
       - name: 최신 빌드 Release 업데이트
@@ -113,7 +113,7 @@ jobs:
           name: "📱 최신 빌드"
           body_path: release_body.md
           files: |
-            FarmManager.apk
+            FarmMachineManager.apk
             build.log
           prerelease: false
           make_latest: "true"

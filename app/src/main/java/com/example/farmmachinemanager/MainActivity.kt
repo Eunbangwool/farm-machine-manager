@@ -45,6 +45,12 @@ import com.example.farmmachinemanager.ui.screens.PartsListScreen
 import com.example.farmmachinemanager.ui.screens.SettingsScreen
 import com.example.farmmachinemanager.ui.screens.SpecificationsScreen
 import com.example.farmmachinemanager.ui.screens.StatisticsScreen
+import com.example.farmmachinemanager.ui.screens.TractorInspectionChecklistScreen
+import com.example.farmmachinemanager.ui.screens.TractorLubricationScheduleScreen
+import com.example.farmmachinemanager.ui.screens.TractorPartsListScreen
+import com.example.farmmachinemanager.ui.screens.TractorSpecificationsScreen
+import com.example.farmmachinemanager.ui.screens.TractorTroubleshootingScreen
+import com.example.farmmachinemanager.ui.screens.TractorWarningLightsScreen
 import com.example.farmmachinemanager.ui.screens.TroubleshootingScreen
 import com.example.farmmachinemanager.ui.screens.UpdateOperatingHoursScreen
 import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
@@ -136,6 +142,12 @@ private sealed interface AppScreen {
     data object FuseGuide : AppScreen
     data object Lubrication : AppScreen
     data object Specifications : AppScreen
+    data object TractorTroubleshooting : AppScreen
+    data object TractorInspectionChecklist : AppScreen
+    data object TractorPartsList : AppScreen
+    data object TractorLubrication : AppScreen
+    data object TractorSpecifications : AppScreen
+    data object TractorWarningLights : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
     data class BatchMaintenance(val machine: Machine, val intervalKey: String) : AppScreen
@@ -159,6 +171,12 @@ private fun AppRoot() {
             onFuseGuideClick = { screen = AppScreen.FuseGuide },
             onLubricationClick = { screen = AppScreen.Lubrication },
             onSpecificationsClick = { screen = AppScreen.Specifications },
+            onTractorTroubleshootingClick = { screen = AppScreen.TractorTroubleshooting },
+            onTractorInspectionChecklistClick = { screen = AppScreen.TractorInspectionChecklist },
+            onTractorPartsListClick = { screen = AppScreen.TractorPartsList },
+            onTractorLubricationClick = { screen = AppScreen.TractorLubrication },
+            onTractorSpecificationsClick = { screen = AppScreen.TractorSpecifications },
+            onTractorWarningLightsClick = { screen = AppScreen.TractorWarningLights },
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
@@ -226,6 +244,24 @@ private fun AppRoot() {
         is AppScreen.Specifications -> SpecificationsScreen(
             onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
+        is AppScreen.TractorTroubleshooting -> TractorTroubleshootingScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
+        is AppScreen.TractorInspectionChecklist -> TractorInspectionChecklistScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
+        is AppScreen.TractorPartsList -> TractorPartsListScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
+        is AppScreen.TractorLubrication -> TractorLubricationScheduleScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
+        is AppScreen.TractorSpecifications -> TractorSpecificationsScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
+        is AppScreen.TractorWarningLights -> TractorWarningLightsScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) }
+        )
         is AppScreen.AllMaintenance -> AllMaintenanceScreen(
             machine = current.machine,
             onBack = { screen = AppScreen.Detail(current.machine) },
@@ -267,6 +303,12 @@ private fun MainTabsScreen(
     onFuseGuideClick: () -> Unit,
     onLubricationClick: () -> Unit,
     onSpecificationsClick: () -> Unit,
+    onTractorTroubleshootingClick: () -> Unit,
+    onTractorInspectionChecklistClick: () -> Unit,
+    onTractorPartsListClick: () -> Unit,
+    onTractorLubricationClick: () -> Unit,
+    onTractorSpecificationsClick: () -> Unit,
+    onTractorWarningLightsClick: () -> Unit,
 ) {
     androidx.compose.foundation.layout.Column(
         modifier = Modifier.fillMaxSize()
@@ -305,6 +347,12 @@ private fun MainTabsScreen(
                 onFuseGuideClick = onFuseGuideClick,
                 onLubricationClick = onLubricationClick,
                 onSpecificationsClick = onSpecificationsClick,
+                onTractorTroubleshootingClick = onTractorTroubleshootingClick,
+                onTractorInspectionChecklistClick = onTractorInspectionChecklistClick,
+                onTractorPartsListClick = onTractorPartsListClick,
+                onTractorLubricationClick = onTractorLubricationClick,
+                onTractorSpecificationsClick = onTractorSpecificationsClick,
+                onTractorWarningLightsClick = onTractorWarningLightsClick,
             )
         }
     }

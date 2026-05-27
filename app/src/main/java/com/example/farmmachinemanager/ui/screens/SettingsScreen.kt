@@ -1,7 +1,9 @@
 package com.example.farmmachinemanager.ui.screens
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageInfo
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -88,6 +90,12 @@ fun SettingsScreen(
     onFuseGuideClick: () -> Unit = {},
     onLubricationClick: () -> Unit = {},
     onSpecificationsClick: () -> Unit = {},
+    onTractorTroubleshootingClick: () -> Unit = {},
+    onTractorInspectionChecklistClick: () -> Unit = {},
+    onTractorPartsListClick: () -> Unit = {},
+    onTractorLubricationClick: () -> Unit = {},
+    onTractorSpecificationsClick: () -> Unit = {},
+    onTractorWarningLightsClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -165,7 +173,7 @@ fun SettingsScreen(
                     .background(SurfacePrimary)
                     .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
             ) {
-                CardHeader(title = "매뉴얼")
+                CardHeader(title = "매뉴얼 · 쿠보타 이앙기")
                 Divider()
                 ManualMenuRow(
                     emoji = "🛠️",
@@ -207,6 +215,73 @@ fun SettingsScreen(
                     title = "쿠보타 이앙기 주요 제원",
                     subtitle = "모델별 사양",
                     onClick = onSpecificationsClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "🔗",
+                    title = "쿠보타 이앙기 공식 점검 가이드",
+                    subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
+                    onClick = { openUrl(context, KUBOTA_TAUEKI_GUIDE_URL) },
+                )
+            }
+
+            // 매뉴얼 카드 — 쿠보타 트랙터 (MR1050·MR1157)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            ) {
+                CardHeader(title = "매뉴얼 · 쿠보타 트랙터")
+                Divider()
+                ManualMenuRow(
+                    emoji = "🛠️",
+                    title = "쿠보타 트랙터 트러블슈팅",
+                    subtitle = "고장 증상 → 원인 → 처치 + 에러코드",
+                    onClick = onTractorTroubleshootingClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "📋",
+                    title = "쿠보타 트랙터 정기점검 일람",
+                    subtitle = "시간/시즌별 점검 일정",
+                    onClick = onTractorInspectionChecklistClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "⚙️",
+                    title = "쿠보타 트랙터 소모품 부품",
+                    subtitle = "부품번호 + 모델별 수량",
+                    onClick = onTractorPartsListClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "🛢️",
+                    title = "쿠보타 트랙터 급유·주유 일람",
+                    subtitle = "오일·그리스 주입 위치",
+                    onClick = onTractorLubricationClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "🚨",
+                    title = "쿠보타 트랙터 경고등 가이드",
+                    subtitle = "계기판 경고등 의미·대처",
+                    onClick = onTractorWarningLightsClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "📐",
+                    title = "쿠보타 트랙터 주요 제원",
+                    subtitle = "모델별 사양",
+                    onClick = onTractorSpecificationsClick,
+                )
+                Divider()
+                ManualMenuRow(
+                    emoji = "🔗",
+                    title = "쿠보타 트랙터 공식 점검 가이드",
+                    subtitle = "agriculture.kubota.co.jp (외부 브라우저)",
+                    onClick = { openUrl(context, KUBOTA_TRACTOR_GUIDE_URL) },
                 )
             }
 
@@ -1096,5 +1171,20 @@ private fun NotificationSection() {
                 }
             )
         }
+    }
+}
+
+// 쿠보타 공식 셀프 점검 가이드 (자가정비) — 외부 브라우저로 연결.
+private const val KUBOTA_TRACTOR_GUIDE_URL =
+    "https://agriculture.kubota.co.jp/after-support/self-maintenance/tractor/"
+private const val KUBOTA_TAUEKI_GUIDE_URL =
+    "https://agriculture.kubota.co.jp/after-support/self-maintenance/taueki/"
+
+private fun openUrl(context: Context, url: String) {
+    runCatching {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
     }
 }
