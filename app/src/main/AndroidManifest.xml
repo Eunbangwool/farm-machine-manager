@@ -4,6 +4,8 @@
 
     <!-- Android 13+ 알림 권한 (소모품 교체 임박 알림용) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 앱 업데이트 확인 (GitHub release 조회). Firestore 가 이미 요구하지만 명시. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
