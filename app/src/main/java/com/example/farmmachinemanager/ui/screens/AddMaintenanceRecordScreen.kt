@@ -108,7 +108,7 @@ private fun ReceiptScanButton(onScanned: (com.example.farmmachinemanager.data.Re
                 } catch (t: Throwable) {
                     android.widget.Toast.makeText(
                         context,
-                        "인식 실패: ${t.message ?: "알 수 없는 오류"}",
+                        "인식 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}",
                         android.widget.Toast.LENGTH_LONG,
                     ).show()
                 } finally {
@@ -264,7 +264,7 @@ fun AddMaintenanceRecordScreen(
                 isSaving = false
                 android.widget.Toast.makeText(
                     context,
-                    "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                    "저장 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}",
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }
@@ -497,7 +497,7 @@ fun AddMaintenanceRecordScreen(
                             showDeleteDialog = false
                             android.widget.Toast.makeText(
                                 context,
-                                "삭제 실패: ${t.message ?: "알 수 없는 오류"}",
+                                "삭제 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}",
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         }

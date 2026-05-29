@@ -18,10 +18,11 @@ import java.time.LocalDate
 private const val TAG = "FirestoreRepo"
 
 /**
- * Firestore observer 가 받은 에러를 사람이 읽기 쉬운 한 줄로 변환.
+ * Firestore observer 또는 catch 에서 받은 에러를 사람이 읽기 쉬운 한 줄로 변환.
  * 권한 규칙이 게시 안 됐거나 네트워크가 끊기는 등 흔한 케이스를 식별.
+ * UI 의 catch 블록에서도 사용 가능 (public).
  */
-private fun describeFirestoreError(e: Throwable): String {
+fun describeFirestoreError(e: Throwable): String {
     if (e is FirebaseFirestoreException) {
         val codeName = e.code.name
         val hint = when (e.code) {

@@ -216,7 +216,7 @@ fun EditMachineScreen(
                             isSaving = false
                             Toast.makeText(
                                 context,
-                                "저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                "저장 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}",
                                 Toast.LENGTH_LONG
                             ).show()
                         }

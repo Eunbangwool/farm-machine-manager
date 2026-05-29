@@ -206,7 +206,7 @@ fun MachineDetailScreen(
                 AppContainer.maintenanceRepository.deleteMaintenance(undo.recordId)
                 AppContainer.consumableRepository.saveConsumable(undo.previousConsumable)
             } catch (t: Throwable) {
-                snackbarHostState.showSnackbar("실행 취소 실패: ${t.message ?: "알 수 없는 오류"}")
+                snackbarHostState.showSnackbar("실행 취소 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}")
             }
         }
         pendingUndo = null  // 다시 null로 → Snackbar 사라짐
@@ -257,7 +257,7 @@ fun MachineDetailScreen(
                                     onMarkRepairComplete()
                                 } catch (t: Throwable) {
                                     snackbarHostState.showSnackbar(
-                                        "수리 완료 처리 실패: ${t.message ?: "알 수 없는 오류"}"
+                                        "수리 완료 처리 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}"
                                     )
                                 }
                             }
@@ -313,7 +313,7 @@ fun MachineDetailScreen(
                                                 )
                                             } catch (t: Throwable) {
                                                 snackbarHostState.showSnackbar(
-                                                    "교체 처리 실패: ${t.message ?: "알 수 없는 오류"}"
+                                                    "교체 처리 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}"
                                                 )
                                             }
                                         }
