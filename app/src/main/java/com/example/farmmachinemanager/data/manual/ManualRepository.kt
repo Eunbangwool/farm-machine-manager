@@ -22,7 +22,8 @@ class ManualRepository(private val context: Context) {
         coerceInputValues = true
     }
 
-    private val planterBase = "manuals/kubota_planter"
+    // MASTER_INDEX 의 정식 ID. 이전 'kubota_planter' 폴더는 삭제됨.
+    private val planterBase = "manuals/kubota_transplanter_nw50_80"
     private val tractorMr1050Base = "manuals/kubota_tractor_mr1050"
 
     // ----- 이앙기 캐시 -----
@@ -139,6 +140,26 @@ class ManualRepository(private val context: Context) {
         val text = context.assets.open("$basePath/$fileName").bufferedReader().use { it.readText() }
         return json.decodeFromString(text)
     }
+
+    /**
+     * 임의 머신의 index.json 원문을 읽어 JsonElement 로 반환.
+     * 머신별 스키마가 자유롭기 때문에(콤바인 통합 index, 트랙터 메타 index 등)
+     * 대백과 화면은 일반 트리 구조로 표시하기 위해 raw 노드를 받아간다.
+     */
+    suspend fun loadMachineIndexElement(machineId: String): kotlinx.serialization.json.JsonElement? =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val text = context.assets.open("manuals/$machineId/index.json")
+                    .bufferedReader().use { it.readText() }
+                json.parseToJsonElement(text)
+            }.getOrNull()
+        }
+
+    /** 임의 머신·데이터셋 파일 존재 확인 (예: "inspection_schedule.json"). */
+    fun hasDataset(machineId: String, fileName: String): Boolean = runCatching {
+        context.assets.open("manuals/$machineId/$fileName").close()
+        true
+    }.getOrDefault(false)
 }
 
 enum class ManualKey {
