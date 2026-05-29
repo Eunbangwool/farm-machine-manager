@@ -16,12 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,10 +45,17 @@ import com.example.farmmachinemanager.ui.theme.SurfaceSecondary
 import com.example.farmmachinemanager.ui.theme.TextPrimary
 import com.example.farmmachinemanager.ui.theme.TextSecondary
 import com.example.farmmachinemanager.ui.theme.TextTertiary
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
 /**
- * 농기계 대백과의 머신 상세 (단순 — PR-E 에서 탭으로 확장 예정).
- * 현재는 메타데이터 + 보유 데이터셋 목록 표시.
+ * 농기계 대백과의 머신 상세 — 데이터셋별 탭으로 구성.
+ *
+ * 데이터셋 스키마가 머신마다 자유로워 정형 화면 없이도 의미 있는 정보를
+ * 제공하기 위해 raw JsonElement 트리 표시(JsonTreeView). 일관된 UX 로 9개
+ * 머신 모두 동일 패턴.
  */
 @Composable
 fun ManualMachineDetailScreen(
@@ -60,38 +68,80 @@ fun ManualMachineDetailScreen(
     LaunchedEffect(machineId) {
         entry = ManualMachineCatalog.byId(context, machineId)
     }
+    val e = entry
 
     Column(modifier = Modifier.fillMaxSize().background(SurfaceSecondary)) {
         TopBar(
-            title = entry?.modelKo ?: machineId,
-            subtitle = entry?.let { "${it.manufacturerKo} · ${it.categoryKo}" } ?: "불러오는 중",
+            title = e?.modelKo ?: machineId,
+            subtitle = e?.let { "${it.manufacturerKo} · ${it.categoryKo}" } ?: "불러오는 중",
             onBack = onBack,
         )
-        val e = entry ?: return@Column
+        if (e == null) {
+            Hint("불러오는 중…")
+            return@Column
+        }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        // 탭 순서: 정기점검 → 급유 → 트러블슈팅 → 경고등 → 소모품 → 제원 → 인덱스
+        val tabOrder = listOf(
+            "inspection_schedule" to "정기점검",
+            "lubrication_schedule" to "급유",
+            "troubleshooting" to "트러블슈팅",
+            "warning_lights" to "경고등",
+            "consumables" to "소모품",
+            "specifications" to "제원",
+            "fuse_circuits" to "퓨즈",
+            "index" to "인덱스",
+        )
+        val availableTabs = tabOrder.filter { (ds, _) -> ds in e.datasets }
+        if (availableTabs.isEmpty()) {
+            Hint("이 모델에는 등록된 데이터셋이 없습니다")
+            return@Column
+        }
+        var selected by remember(machineId) { mutableStateOf(0) }
+        ScrollableTabRow(
+            selectedTabIndex = selected.coerceAtMost(availableTabs.lastIndex),
+            containerColor = SurfacePrimary,
+            contentColor = TextPrimary,
+            edgePadding = 12.dp,
         ) {
-            item {
-                InfoCard(entry = e)
-            }
-            item {
-                SectionLabel("보유 데이터셋")
-            }
-            items(e.datasets) { ds ->
-                DatasetRow(name = ds, available = e.has(ds))
-            }
-            e.noteKo?.let { note ->
-                item { SectionLabel("비고") }
-                item { NoteCard(note = note) }
-            }
-            e.compatibleKo?.let { compat ->
-                item { SectionLabel("호환 모델") }
-                item { NoteCard(note = compat) }
+            availableTabs.forEachIndexed { i, (_, label) ->
+                Tab(
+                    selected = i == selected,
+                    onClick = { selected = i },
+                    text = { Text(label, fontSize = 13.sp) },
+                )
             }
         }
+
+        val currentDataset = availableTabs[selected.coerceAtMost(availableTabs.lastIndex)].first
+        DatasetPane(machineId = machineId, dataset = currentDataset, entry = e)
+    }
+}
+
+@Composable
+private fun DatasetPane(machineId: String, dataset: String, entry: MachineCatalogEntry) {
+    val context = LocalContext.current
+    var jsonRoot by remember(machineId, dataset) { mutableStateOf<JsonElement?>(null) }
+    LaunchedEffect(machineId, dataset) {
+        jsonRoot = withContext(Dispatchers.IO) {
+            runCatching {
+                val text = context.assets
+                    .open("manuals/$machineId/$dataset.json")
+                    .bufferedReader().use { it.readText() }
+                Json { ignoreUnknownKeys = true; isLenient = true }.parseToJsonElement(text)
+            }.getOrNull()
+        }
+    }
+    val root = jsonRoot ?: run { Hint("불러오는 중…"); return }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        item { HeaderCard(entry = entry, dataset = dataset) }
+        item { Spacer(Modifier.height(8.dp)) }
+        item { JsonTreeView(element = root) }
     }
 }
 
@@ -122,87 +172,45 @@ private fun TopBar(title: String, subtitle: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun InfoCard(entry: MachineCatalogEntry) {
+private fun HeaderCard(entry: MachineCatalogEntry, dataset: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(SurfacePrimary)
             .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(entry.emoji, fontSize = 30.sp)
-            Spacer(Modifier.size(10.dp))
-            Column {
-                Text(entry.modelKo, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                Text(
-                    text = "${entry.manufacturerKo} · ${entry.categoryKo}",
-                    fontSize = 12.sp,
-                    color = TextSecondary,
-                )
-            }
+            Text(entry.emoji, fontSize = 24.sp)
+            Spacer(Modifier.size(8.dp))
+            Text(
+                text = datasetLabel(dataset),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextPrimary,
+            )
         }
-        entry.cropKo?.let {
-            Spacer(Modifier.height(4.dp))
-            Text(text = "주요 작물: $it", fontSize = 12.sp, color = TextSecondary)
-        }
-        Text(text = "데이터셋 ${entry.datasets.size}종 · 언어 ${entry.language}", fontSize = 11.sp, color = TextTertiary)
-    }
-}
-
-@Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = TextSecondary,
-        modifier = Modifier.padding(start = 4.dp, top = 4.dp),
-    )
-}
-
-@Composable
-private fun DatasetRow(name: String, available: Boolean) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(SurfacePrimary)
-            .border(0.5.dp, BorderColor, RoundedCornerShape(10.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
         Text(
-            text = datasetLabel(name),
-            fontSize = 13.sp,
-            color = TextPrimary,
-            modifier = Modifier.padding(end = 8.dp),
-        )
-        Text(
-            text = if (available) "보유" else "없음",
+            text = "${entry.manufacturerKo} · ${entry.modelKo}",
             fontSize = 11.sp,
-            color = if (available) TextSecondary else TextTertiary,
+            color = TextSecondary,
         )
+        entry.noteKo?.let { Text(it, fontSize = 11.sp, color = TextTertiary) }
     }
 }
 
 @Composable
-private fun NoteCard(note: String) {
+private fun Hint(text: String) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(SurfacePrimary)
-            .border(0.5.dp, BorderColor, RoundedCornerShape(10.dp))
-            .padding(14.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(text = note, fontSize = 12.sp, color = TextSecondary, lineHeight = 16.sp)
+        Text(text = text, fontSize = 13.sp, color = TextSecondary)
     }
 }
 
-/** "inspection_schedule" → "정기점검 일람" 같은 한글 라벨. */
 private fun datasetLabel(name: String): String = when (name) {
     "index" -> "전체 인덱스"
     "inspection_schedule" -> "정기점검 일람"
