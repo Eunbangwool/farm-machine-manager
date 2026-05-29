@@ -46,6 +46,7 @@ import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
 import com.example.farmmachinemanager.ui.screens.ManualEncyclopediaScreen
 import com.example.farmmachinemanager.ui.screens.ManualMachineDetailScreen
+import com.example.farmmachinemanager.ui.screens.ManualSearchScreen
 import com.example.farmmachinemanager.ui.screens.PartsListScreen
 import com.example.farmmachinemanager.ui.screens.SettingsScreen
 import com.example.farmmachinemanager.ui.screens.SpecificationsScreen
@@ -173,6 +174,7 @@ private sealed interface AppScreen {
     data object TractorSpecifications : AppScreen
     data object TractorWarningLights : AppScreen
     data object ManualEncyclopedia : AppScreen
+    data object ManualSearch : AppScreen
     data class ManualMachine(val machineId: String) : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
@@ -291,6 +293,11 @@ private fun AppRoot() {
         )
         is AppScreen.ManualEncyclopedia -> ManualEncyclopediaScreen(
             onBack = { screen = AppScreen.Main(MainTab.Settings) },
+            onMachineClick = { id -> screen = AppScreen.ManualMachine(id) },
+            onSearchClick = { screen = AppScreen.ManualSearch },
+        )
+        is AppScreen.ManualSearch -> ManualSearchScreen(
+            onBack = { screen = AppScreen.ManualEncyclopedia },
             onMachineClick = { id -> screen = AppScreen.ManualMachine(id) },
         )
         is AppScreen.ManualMachine -> ManualMachineDetailScreen(
