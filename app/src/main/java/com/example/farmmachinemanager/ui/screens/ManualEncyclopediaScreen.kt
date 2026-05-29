@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ import com.example.farmmachinemanager.ui.theme.TextTertiary
 fun ManualEncyclopediaScreen(
     onBack: () -> Unit,
     onMachineClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     BackHandler(onBack = onBack)
     val context = LocalContext.current
@@ -62,7 +64,12 @@ fun ManualEncyclopediaScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().background(SurfaceSecondary)) {
-        TopBar(title = "농기계 대백과", subtitle = "${entries.size}개 모델", onBack = onBack)
+        TopBar(
+            title = "농기계 대백과",
+            subtitle = "${entries.size}개 모델",
+            onBack = onBack,
+            onSearch = onSearchClick,
+        )
         if (entries.isEmpty()) {
             LoadingOrEmpty()
         } else {
@@ -86,7 +93,7 @@ fun ManualEncyclopediaScreen(
 }
 
 @Composable
-private fun TopBar(title: String, subtitle: String, onBack: () -> Unit) {
+private fun TopBar(title: String, subtitle: String, onBack: () -> Unit, onSearch: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -104,9 +111,18 @@ private fun TopBar(title: String, subtitle: String, onBack: () -> Unit) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "뒤로", tint = TextPrimary)
         }
         Spacer(modifier = Modifier.size(8.dp))
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Text(subtitle, fontSize = 12.sp, color = TextSecondary)
+        }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onSearch),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Outlined.Search, contentDescription = "검색", tint = TextPrimary)
         }
     }
 }
