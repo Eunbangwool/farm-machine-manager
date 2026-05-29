@@ -1,0 +1,109 @@
+{
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "category": "rice_planter",
+    "category_ko": "이앙기",
+    "models": ["NW50N", "NW50S", "NW60N", "NW60S", "NW80N", "NW80S"],
+    "manual_ref": "PW600-9751-4"
+  },
+  "troubleshooting": [
+    {
+      "id": "missing_plant_001",
+      "category": "missing_plant",
+      "category_ko": "결주(欠株) - 빈 그루 발생",
+      "symptom_ja": "植付けの本数がバラついたり欠株が出る",
+      "symptom_ko": "심는 본수가 들쭉날쭉하거나 빈 그루(결주)가 발생함",
+      "cause_ja": "苗に生育ムラや生育していない部分がある苗",
+      "cause_ko": "모에 생육 편차가 있거나 생육되지 않은 부분이 있음",
+      "remedies": [
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "생육이 나쁜 부분이나 자라지 않은 부분을 잘라내고 심는다.",
+          "action_ja": "生育の悪い部分や生育していないところを切取って植え付ける"
+        },
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "나쁜 모는 사용하지 않는다 (보식용으로 사용).",
+          "action_ja": "悪い苗は、使用しない（補植えに使用する）"
+        }
+      ],
+      "page_ref": 240
+    },
+    {
+      "id": "missing_plant_002",
+      "category": "missing_plant",
+      "category_ko": "결주(欠株) - 빈 그루 발생",
+      "symptom_ja": "植付け本数が少なくなり欠株が出る",
+      "symptom_ko": "심는 본수가 적어지고 빈 그루가 발생함",
+      "cause_ja": "播種量が少ない苗",
+      "cause_ko": "파종량이 적은 모",
+      "remedies": [
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "중묘용·성묘용 육묘 지침을 지켜 파종 편차가 없는 모를 만든다."
+        },
+        {
+          "type": "machine",
+          "type_ko": "기계 처치",
+          "action_ko": "취묘량(苗取量)은 많게, 횡송 횟수는 적게 한다 (횡송량을 많게).",
+          "manual_page_ref": 169
+        }
+      ],
+      "page_ref": 240
+    },
+    {
+      "id": "missing_plant_003",
+      "category": "missing_plant",
+      "category_ko": "결주(欠株) - 빈 그루 발생",
+      "symptom_ko": "모판이 흙에서 무너져 심을 수 없음",
+      "cause_ko": "모판이 얇고 뿌리 활착이 나쁜 모 / 모판이 너무 부드러운 모",
+      "remedies": [
+        {
+          "type": "machine",
+          "type_ko": "기계 처치",
+          "action_ko": "모 스테이(苗ステー)와 모 사이의 간격을 좁혀 모판으로부터의 미끄러짐·붕괴를 방지한다.",
+          "manual_page_ref": 174
+        },
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "모판 두께가 2cm 이상인 모를 사용한다."
+        },
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "모판을 건조시켜 단단하게 한다."
+        }
+      ],
+      "page_ref": 240
+    },
+    {
+      "id": "missing_plant_004",
+      "category": "missing_plant",
+      "category_ko": "결주(欠株) - 빈 그루 발생",
+      "symptom_ko": "이앙 시 모가 식부조(植付爪)에서 떨어지지 않아 결주 발생",
+      "cause_ko": "상토가 점토질로 점도가 강한 모 / 점토질 논에 물이 적음",
+      "remedies": [
+        {
+          "type": "seedling",
+          "type_ko": "모 처치",
+          "action_ko": "모판을 약간 건조시키거나 물에 담가 수분을 충분히 머금게 한다."
+        },
+        {
+          "type": "field",
+          "type_ko": "논 처치",
+          "action_ko": "논에 물을 1~3cm 정도 채워 모가 식부조에서 잘 떨어지도록 한다."
+        },
+        {
+          "type": "machine",
+          "type_ko": "기계 처치",
+          "action_ko": "클리너(밀어내기 금구)를 장착한다."
+        }
+      ],
+      "page_ref": 241
+    }
+  ]
+}

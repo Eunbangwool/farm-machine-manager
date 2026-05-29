@@ -1,0 +1,111 @@
+{
+  "$schema": "farm_machine_manager_master_index_v1",
+  "version": "1.0.0",
+  "created_at": "2026-05-29",
+  "total_machines": 9,
+  "machines": [
+    {
+      "id": "kubota_transplanter_nw50_80",
+      "manufacturer_ko": "쿠보타",
+      "category_ko": "이앙기",
+      "model_ko": "나비웰 NW50N/50S/60N/60S/80N/80S",
+      "language": "ja→ko",
+      "datasets": ["index","inspection_schedule","lubrication_schedule","consumables","fuse_circuits","specifications","troubleshooting"],
+      "dataset_count": 7,
+      "status": "complete"
+    },
+    {
+      "id": "kubota_transplanter_nw6s_8s",
+      "manufacturer_ko": "쿠보타",
+      "category_ko": "이앙기",
+      "model_ko": "나비웰 NW6S/NW8S (6조/8조)",
+      "language": "ja→ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "NW50~80과 트러블슈팅·정기점검 공유. 부품번호·제원 별도.",
+      "status": "complete"
+    },
+    {
+      "id": "kubota_tractor_mr1050",
+      "manufacturer_ko": "쿠보타",
+      "category_ko": "트랙터",
+      "model_ko": "MR800H/900H/1000H/1050H (반장궤식)",
+      "language": "ja→ko",
+      "datasets": ["index","inspection_schedule","lubrication_schedule","consumables","specifications","troubleshooting","warning_lights"],
+      "dataset_count": 7,
+      "compatible_ko": "MR1157 (엔진 외 구조 동일)",
+      "status": "complete"
+    },
+    {
+      "id": "kubota_combine_arh430",
+      "manufacturer_ko": "쿠보타",
+      "category_ko": "콤바인 (보통형)",
+      "model_ko": "에어로스타-GP ARH430 (H/G/CG)",
+      "language": "ja→ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "스캔본 OCR 처리. 정기점검·급유·제원·트러블슈팅 통합(index.json)",
+      "crop_ko": "대두·소바·밀",
+      "status": "complete"
+    },
+    {
+      "id": "daedong_tractor_nx500_600",
+      "manufacturer_ko": "대동공업",
+      "category_ko": "트랙터",
+      "model_ko": "NX500/550/600 (C/SC 포함)",
+      "language": "ko",
+      "datasets": ["index","inspection_schedule","lubrication_schedule","specifications","troubleshooting"],
+      "dataset_count": 5,
+      "status": "complete"
+    },
+    {
+      "id": "daedong_tractor_nx550c",
+      "manufacturer_ko": "대동공업",
+      "category_ko": "트랙터",
+      "model_ko": "NX550C (부품목록)",
+      "language": "ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "부품 카탈로그 전용. 취급설명서는 daedong_tractor_nx500_600 참조.",
+      "status": "complete"
+    },
+    {
+      "id": "km_combine_kc100",
+      "manufacturer_ko": "국제종합기계",
+      "category_ko": "콤바인",
+      "model_ko": "KC100",
+      "language": "ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "부품명세서 전용 (2013년). 190개 어셈블리 그룹.",
+      "status": "complete"
+    },
+    {
+      "id": "km_combine_kc1200",
+      "manufacturer_ko": "국제종합기계",
+      "category_ko": "콤바인",
+      "model_ko": "KC1200A / KC1200CXA",
+      "language": "ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "정비지침서 (2018년, 1002p). 정기점검·급유·제원·트러블슈팅 통합.",
+      "status": "complete"
+    },
+    {
+      "id": "km_combine_kc6130",
+      "manufacturer_ko": "국제종합기계",
+      "category_ko": "콤바인",
+      "model_ko": "KC6130 (KC105A/C/CXA)",
+      "language": "ko",
+      "datasets": ["index"],
+      "dataset_count": 1,
+      "note_ko": "부품명세서 (2018년, 675p). 엔진(E1~E44) + 본체(1~189+) 구성.",
+      "status": "complete"
+    }
+  ],
+  "app_integration_hint_ko": {
+    "base_path": "app/src/main/assets/manuals/",
+    "structure": "base_path/{machine_id}/{dataset_id}.json",
+    "example": "app/src/main/assets/manuals/kubota_tractor_mr1050/troubleshooting.json"
+  }
+}
