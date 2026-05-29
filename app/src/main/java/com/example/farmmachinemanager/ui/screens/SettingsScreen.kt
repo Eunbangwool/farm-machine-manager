@@ -104,6 +104,7 @@ fun SettingsScreen(
     onTractorLubricationClick: () -> Unit = {},
     onTractorSpecificationsClick: () -> Unit = {},
     onTractorWarningLightsClick: () -> Unit = {},
+    onEncyclopediaClick: () -> Unit = {},
 ) {
     BackHandler { onBack() }
 
@@ -192,6 +193,22 @@ fun SettingsScreen(
 
             // 알림 카드 (NotificationSection 내부에 헤더 포함)
             NotificationSection()
+
+            // 농기계 대백과 진입 카드 — 9개 머신 카탈로그 탐색
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            ) {
+                ManualMenuRow(
+                    emoji = "🌐",
+                    title = "농기계 대백과",
+                    subtitle = "쿠보타·대동공업·국제종합기계 9개 모델 매뉴얼",
+                    onClick = onEncyclopediaClick,
+                )
+            }
 
             // 매뉴얼 카드 (통합) — 브랜드·기종별 접기 그룹
             Column(

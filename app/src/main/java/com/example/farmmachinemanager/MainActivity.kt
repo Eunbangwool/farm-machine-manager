@@ -44,6 +44,8 @@ import com.example.farmmachinemanager.ui.screens.InspectionChecklistScreen
 import com.example.farmmachinemanager.ui.screens.LubricationScheduleScreen
 import com.example.farmmachinemanager.ui.screens.MachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.MachineListScreen
+import com.example.farmmachinemanager.ui.screens.ManualEncyclopediaScreen
+import com.example.farmmachinemanager.ui.screens.ManualMachineDetailScreen
 import com.example.farmmachinemanager.ui.screens.PartsListScreen
 import com.example.farmmachinemanager.ui.screens.SettingsScreen
 import com.example.farmmachinemanager.ui.screens.SpecificationsScreen
@@ -170,6 +172,8 @@ private sealed interface AppScreen {
     data object TractorLubrication : AppScreen
     data object TractorSpecifications : AppScreen
     data object TractorWarningLights : AppScreen
+    data object ManualEncyclopedia : AppScreen
+    data class ManualMachine(val machineId: String) : AppScreen
     data class AllMaintenance(val machine: Machine) : AppScreen
     data class AllConsumables(val machine: Machine) : AppScreen
     data class BatchMaintenance(val machine: Machine, val intervalKey: String) : AppScreen
@@ -199,6 +203,7 @@ private fun AppRoot() {
             onTractorLubricationClick = { screen = AppScreen.TractorLubrication },
             onTractorSpecificationsClick = { screen = AppScreen.TractorSpecifications },
             onTractorWarningLightsClick = { screen = AppScreen.TractorWarningLights },
+            onEncyclopediaClick = { screen = AppScreen.ManualEncyclopedia },
         )
         is AppScreen.Detail -> MachineDetailScreen(
             machine = current.machine,
@@ -284,6 +289,14 @@ private fun AppRoot() {
         is AppScreen.TractorWarningLights -> TractorWarningLightsScreen(
             onBack = { screen = AppScreen.Main(MainTab.Settings) }
         )
+        is AppScreen.ManualEncyclopedia -> ManualEncyclopediaScreen(
+            onBack = { screen = AppScreen.Main(MainTab.Settings) },
+            onMachineClick = { id -> screen = AppScreen.ManualMachine(id) },
+        )
+        is AppScreen.ManualMachine -> ManualMachineDetailScreen(
+            machineId = current.machineId,
+            onBack = { screen = AppScreen.ManualEncyclopedia },
+        )
         is AppScreen.AllMaintenance -> AllMaintenanceScreen(
             machine = current.machine,
             onBack = { screen = AppScreen.Detail(current.machine) },
@@ -331,6 +344,7 @@ private fun MainTabsScreen(
     onTractorLubricationClick: () -> Unit,
     onTractorSpecificationsClick: () -> Unit,
     onTractorWarningLightsClick: () -> Unit,
+    onEncyclopediaClick: () -> Unit,
 ) {
     androidx.compose.foundation.layout.Column(
         modifier = Modifier.fillMaxSize()
@@ -375,6 +389,7 @@ private fun MainTabsScreen(
                 onTractorLubricationClick = onTractorLubricationClick,
                 onTractorSpecificationsClick = onTractorSpecificationsClick,
                 onTractorWarningLightsClick = onTractorWarningLightsClick,
+                onEncyclopediaClick = onEncyclopediaClick,
             )
         }
     }
