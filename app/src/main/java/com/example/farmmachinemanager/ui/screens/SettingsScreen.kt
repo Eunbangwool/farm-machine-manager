@@ -58,10 +58,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.BuildConfig
+import com.example.farmmachinemanager.data.UpdateChecker
+import com.example.farmmachinemanager.data.UpdateDownloader
 import com.example.farmmachinemanager.ui.theme.ActionDanger
 import com.example.farmmachinemanager.ui.theme.ActionPrimary
 import com.example.farmmachinemanager.ui.theme.ActionPrimaryText
@@ -77,6 +81,7 @@ import com.example.farmmachinemanager.ui.theme.TextTertiary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 /**
  * 설정 화면.
@@ -105,10 +110,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     val info = remember { collectAppInfo(context) }
 
+    val coroutineScope = rememberCoroutineScope()
     var showBusiness by remember { mutableStateOf(false) }
     var showAttributions by remember { mutableStateOf(false) }
     var planterManualExpanded by remember { mutableStateOf(false) }
     var tractorManualExpanded by remember { mutableStateOf(false) }
+    var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
 
     Column(
         modifier = Modifier
@@ -156,6 +163,22 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Update,
                     label = "패키지명",
                     value = info.packageName
+                )
+                Divider()
+                NavRow(
+                    label = when (updateState) {
+                        is UpdateState.Checking -> "확인 중…"
+                        else -> "최신 버전 확인"
+                    },
+                    enabled = updateState !is UpdateState.Checking,
+                    onClick = {
+                        updateState = UpdateState.Checking
+                        coroutineScope.launch {
+                            val result = UpdateChecker.check()
+                            updateState = result?.let { UpdateState.NewVersion(it) }
+                                ?: UpdateState.Latest
+                        }
+                    },
                 )
             }
 
@@ -412,6 +435,49 @@ fun SettingsScreen(
             }
         )
     }
+
+    // 업데이트 확인 결과 → 최신이면 토스트, 새 버전이면 다이얼로그(다운로드/나중에)
+    LaunchedEffect(updateState) {
+        if (updateState is UpdateState.Latest) {
+            android.widget.Toast.makeText(
+                context, "이미 최신 버전입니다", android.widget.Toast.LENGTH_SHORT
+            ).show()
+            updateState = UpdateState.Idle
+        }
+    }
+    (updateState as? UpdateState.NewVersion)?.let { state ->
+        AlertDialog(
+            onDismissRequest = { updateState = UpdateState.Idle },
+            title = { Text("새 버전 ${state.info.versionName}") },
+            text = {
+                Text(
+                    "빌드 #${state.info.buildNumber} 이(가) 나왔습니다. " +
+                        "지금 다운로드하시겠어요?\n\n다운로드 후 시스템 알림에서 APK 를 탭하면 설치 화면이 열립니다."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    UpdateDownloader.startDownload(context, state.info)
+                    android.widget.Toast.makeText(
+                        context, "다운로드를 시작했습니다. 알림에서 진행 상황을 확인하세요.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    updateState = UpdateState.Idle
+                }) { Text("다운로드") }
+            },
+            dismissButton = {
+                TextButton(onClick = { updateState = UpdateState.Idle }) { Text("나중에") }
+            },
+        )
+    }
+}
+
+/** "최신 버전 확인" 행의 진행/결과 상태. */
+private sealed interface UpdateState {
+    data object Idle : UpdateState
+    data object Checking : UpdateState
+    data object Latest : UpdateState
+    data class NewVersion(val info: UpdateChecker.UpdateInfo) : UpdateState
 }
 
 /**
