@@ -1,7 +1,8 @@
 {
-  "$schema": "kubota_tractor_mr1050_master_index_v1",
-  "version": "1.0.0",
+  "$schema": "kubota_tractor_mr1050_master_index_v2",
+  "version": "1.1.0",
   "created_at": "2026-05-22",
+  "updated_at": "2026-05-26",
   "source_pdf": "download.pdf (MR1050H 取扱説明書)",
   "machine": {
     "manufacturer": "KUBOTA",
@@ -20,57 +21,75 @@
       "id": "inspection_schedule",
       "file": "inspection_schedule.json",
       "name_ko": "정기점검 일람표",
-      "description_ko": "시간/시즌 기준 점검·교환·청소 일정. 50h/100h/200h/400h/600h/800h/1500h/3000h/8000h/1~2개월/3개월/1년/2년/필요시.",
       "items_count": 77,
-      "manual_pages": "217-219, 254-255 (파워크롤러)",
-      "use_case_ko": "예방 정비 알림, 점검 체크리스트"
+      "manual_pages": "217-219"
     },
     {
       "id": "lubrication_schedule",
       "file": "lubrication_schedule.json",
       "name_ko": "급유·주유 일람표",
-      "description_ko": "연료, 요소수, 냉각수, 워셔액, 엔진 오일, 미션 오일, 기어 오일, 그리스 주입 위치와 규정량.",
       "items_count": 16,
-      "manual_pages": "220-221",
-      "use_case_ko": "오일·그리스 주입 시기와 종류 확인. DPF 탑재기 전용 오일 강조."
+      "manual_pages": "220-221"
     },
     {
       "id": "consumables",
       "file": "consumables.json",
       "name_ko": "소모품 부품 일람표",
-      "description_ko": "퓨즈 (미니 6종 + 슬로우 블로우 3종), 전구 7종, 와이퍼 블레이드 2종.",
       "parts_count": 18,
-      "manual_pages": "283-284",
-      "use_case_ko": "퓨즈 끊김·전구 끊김 시 부품번호 조회"
+      "manual_pages": "283-284"
     },
     {
       "id": "specifications",
       "file": "specifications.json",
       "name_ko": "주요 제원",
-      "description_ko": "4개 모델 (MR800H, MR900H, MR1000H, MR1050H) + PCAT 사양 상세 제원. KVT 무단변속, V3800-TIEF4 엔진.",
       "models_count": 5,
-      "spec_variants_count": 12,
-      "manual_pages": "270-279",
-      "use_case_ko": "모델 비교, 보유 트랙터 스펙 등록"
+      "manual_pages": "270-279"
+    },
+    {
+      "id": "warning_lights",
+      "file": "warning_lights.json",
+      "name_ko": "경고등 일람 (이지체커)",
+      "description_ko": "12개 경고등과 점등 의미·조치법. DPF 경고 4단계, 오버히트 응급 처치 포함.",
+      "warning_lights_count": 12,
+      "dpf_levels_count": 7,
+      "manual_pages": "56, 99, 123, 224, 263",
+      "priority_ko": "안전 운전 필수",
+      "use_case_ko": "운전 중 경고등 점등 시 신속 진단·조치"
+    },
+    {
+      "id": "troubleshooting",
+      "file": "troubleshooting.json",
+      "name_ko": "불조와 처치 (트러블슈팅)",
+      "description_ko": "엔진 시동·출력·정지·배기·고온 등 7개 카테고리 17개 케이스. 전자 제어 시스템 에러 코드 12개 카테고리.",
+      "categories_count": 7,
+      "cases_count": 17,
+      "error_code_categories_count": 12,
+      "manual_pages": "263-269",
+      "use_case_ko": "문제 발생 시 진단·해결 가이드, 에러 코드 의미·조치"
     }
   ],
-  "data_schema_design": {
-    "principles_ko": [
-      "모든 텍스트 필드는 일본어 원문(_ja)과 한국어 번역(_ko)을 함께 제공",
-      "page_ref로 매뉴얼 원문 페이지 추적 가능",
-      "applies_to / applies_to_spec 필드로 모델·사양별 필터링 가능",
-      "ID 체계: IN-XXX(점검), LU-XXX(급유), PT-XXX(부품) prefix",
-      "이앙기 데이터와 동일 구조 → 공통 ManualRepository로 처리 가능"
-    ]
+  "id_system_ko": {
+    "IN-XXX": "정기점검 (Inspection)",
+    "LU-XXX": "급유·주유 (Lubrication)",
+    "PT-XXX": "부품 (Part)",
+    "WL-XXX": "경고등 (Warning Light)",
+    "TS-XXX": "트러블슈팅 (Troubleshooting)"
   },
   "app_integration_hint_ko": {
     "import_path_suggestion": "app/src/main/assets/manuals/kubota_tractor_mr1050/",
-    "load_method_ko": "이앙기와 동일한 ManualRepository 패턴 재사용. 머신 타입(rice_planter / tractor)에 따라 데이터셋 디렉토리 자동 선택.",
-    "shared_with_other_machines_ko": "MR1050 데이터는 MR1157에도 적용 가능 (엔진만 다름). 머신 등록 시 'MR1050' 또는 'MR1157' 선택 → 동일 데이터 로드."
+    "shared_with_models_ko": ["MR1050H", "MR1157 (엔진 외 동일)"],
+    "recommended_screens_ko": [
+      "WarningLightsScreen: 경고등 시각화 (대시보드 아이콘 → 의미·조치법)",
+      "DpfStatusScreen: DPF 경고 레벨별 대응법",
+      "TroubleshootingScreen: 증상 → 원인 → 처치 흐름",
+      "ErrorCodeSearchScreen: SPN-FMI 에러 코드 검색"
+    ]
   },
+  "safety_priority_ko": "warning_lights.json은 안전 운전 직결 정보. 앱 UI에서 가장 접근하기 쉬운 위치 배치 권장",
   "notes_ko": [
     "본 매뉴얼은 일본 시장용 MR 시리즈 트랙터 (반장궤식/하프크롤러).",
     "한국 시장에서도 동일 모델 판매 중.",
-    "이앙기 데이터(kubota_planter)와 동일한 JSON 구조로 만들어져 ManualRepository 공유 가능."
+    "이앙기 데이터(kubota_planter)와 동일 JSON 구조로 ManualRepository 공유 가능.",
+    "경고등 및 트러블슈팅 정보 추가로 데이터셋이 6개로 확장됨 (v1.0 → v1.1)."
   ]
 }

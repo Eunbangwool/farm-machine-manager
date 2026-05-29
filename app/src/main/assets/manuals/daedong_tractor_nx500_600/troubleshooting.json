@@ -1,0 +1,372 @@
+{
+  "$schema": "daedong_tractor_nx500_troubleshooting_v1",
+  "machine": {
+    "manufacturer": "DAEDONG",
+    "manufacturer_ko": "대동공업",
+    "series_name_ko": "NX 시리즈",
+    "models": ["NX500", "NX550", "NX600", "NX500C", "NX550C", "NX600C", "NX500SC", "NX550SC", "NX600SC"]
+  },
+  "info_ko": "본 고장진단 차트는 비교적 간단한 정비사항만을 나타냅니다. 복잡한 정비사항은 대동 지정 대리점과 상의하세요.",
+  "categories": [
+    {"id": "engine_start", "name_ko": "엔진 시동 불량", "page_ref": "9-1"},
+    {"id": "engine_power", "name_ko": "출력 부족", "page_ref": "9-2"},
+    {"id": "exhaust_color", "name_ko": "배기색 불량", "page_ref": "9-2"},
+    {"id": "tractor_drive", "name_ko": "트랙터 주행 불량", "page_ref": "9-3"},
+    {"id": "clutch", "name_ko": "클러치 불량", "page_ref": "9-3"},
+    {"id": "brake", "name_ko": "브레이크 불량", "page_ref": "9-3"},
+    {"id": "steering", "name_ko": "핸들(조향) 불량", "page_ref": "9-3"},
+    {"id": "hydraulic", "name_ko": "유압장치 불량", "page_ref": "9-4"},
+    {"id": "electrical", "name_ko": "전기장치 불량", "page_ref": "9-4"},
+    {"id": "hvac", "name_ko": "히터/에어컨 불량", "page_ref": "9-5"}
+  ],
+  "cases": [
+    {
+      "id": "TS-001",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 시동이 어려운 경우",
+      "cause_ko": "연료가 탁하거나 흐르지 않음",
+      "remedies": [
+        {"action_ko": "연료 탱크와 연료 필터 점검"},
+        {"action_ko": "수분, 오염 및 기타 이물질 제거"},
+        {"action_ko": "모든 연료를 필터로 정제하고 필터에 이물질이 있으면 교환"}
+      ]
+    },
+    {
+      "id": "TS-002",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 시동이 어려운 경우",
+      "cause_ko": "연료장치 내 공기나 물 유입",
+      "remedies": [
+        {"action_ko": "연료 필터나 분사라인에 공기가 있으면 연료 펌프가 적절하게 작동하지 않으므로 점검"},
+        {"action_ko": "연료 필터와 연료 분사펌프 위 에어 벤트 스크류를 풀고 연료장치 내 공기를 모두 빼냄"}
+      ]
+    },
+    {
+      "id": "TS-003",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 시동이 어려운 경우",
+      "cause_ko": "분사노즐 또는 인젝터 주위에 두꺼운 탄소 퇴적",
+      "remedies": [
+        {"action_ko": "연료 내 물과 오염 혼합 여부 확인. 분사노즐 또는 인젝터 손상 점검"},
+        {"action_ko": "노즐 작동 점검 후 작동 불량 시 신형 노즐 장착"}
+      ]
+    },
+    {
+      "id": "TS-004",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 시동이 어려운 경우",
+      "cause_ko": "밸브 간격 불일치",
+      "remedies": [
+        {
+          "action_ko": "밸브 간격 조정 (엔진이 냉각된 상태에서)",
+          "spec_ko": "NX500/550/600 흡기: 0.20mm / 배기: 0.20mm"
+        }
+      ]
+    },
+    {
+      "id": "TS-005",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 시동이 어려운 경우",
+      "cause_ko": "겨울철 엔진오일이 탁하고 엔진 회전 느림",
+      "remedies": [
+        {"action_ko": "날씨(온도)에 따라 오일 등급 변경 (-10℃ 이하: SAE 10W30 → 낮은 점도 적합 오일 사용)"}
+      ]
+    },
+    {
+      "id": "TS-006",
+      "category_id": "engine_start",
+      "symptom_ko": "시동키를 돌려도 시동 모터가 돌아가지 않음",
+      "cause_ko": "시동 안전장치 또는 전기 문제",
+      "remedies": [
+        {"action_ko": "클러치 페달을 밟지 않은 경우 클러치 페달을 밟음"},
+        {"action_ko": "PTO 스위치를 OFF로 함"},
+        {"action_ko": "스위치 및 시동 모터 고장인 경우 정비공장에서 수리"},
+        {"action_ko": "각부 단자가 풀렸거나 부식된 경우 청소 또는 확실하게 고정"}
+      ]
+    },
+    {
+      "id": "TS-007",
+      "category_id": "engine_start",
+      "symptom_ko": "엔진 체크 램프 점등",
+      "cause_ko": "엔진 제어 시스템 이상",
+      "remedies": [
+        {"action_ko": "엔진 체크 램프 점등 확인 후 가까운 대동 대리점에 문의"}
+      ]
+    },
+    {
+      "id": "TS-008",
+      "category_id": "engine_power",
+      "symptom_ko": "출력이 부족한 경우",
+      "cause_ko": "밸브 조정 불량",
+      "remedies": [
+        {"action_ko": "대동 대리점에 문의", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-009",
+      "category_id": "engine_power",
+      "symptom_ko": "출력이 부족한 경우",
+      "cause_ko": "에어클리너 오염",
+      "remedies": [
+        {"action_ko": "가동 후 100~200시간마다 엘리먼트 청소 또는 교환"}
+      ]
+    },
+    {
+      "id": "TS-010",
+      "category_id": "engine_power",
+      "symptom_ko": "출력이 부족한 경우",
+      "cause_ko": "연료 분사 압력 불일치",
+      "remedies": [
+        {"action_ko": "대동 대리점에 문의", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-011",
+      "category_id": "exhaust_color",
+      "symptom_ko": "배기 색깔이 특별히 불량한 경우",
+      "cause_ko": "연료 품질 불량",
+      "remedies": [
+        {
+          "action_ko": "양질의 연료 선택",
+          "spec_ko": "-10℃ 이상: No.2 디젤 / -10℃ 이하: No.1 디젤"
+        }
+      ]
+    },
+    {
+      "id": "TS-012",
+      "category_id": "exhaust_color",
+      "symptom_ko": "배기 색깔이 특별히 불량한 경우",
+      "cause_ko": "노즐 불량",
+      "remedies": [
+        {"action_ko": "필요시 신형 노즐로 교환"}
+      ]
+    },
+    {
+      "id": "TS-013",
+      "category_id": "tractor_drive",
+      "symptom_ko": "엔진이 가동되는데 트랙터가 움직이지 않음",
+      "cause_ko": "변속 레버가 중립 또는 주차 브레이크 걸림",
+      "remedies": [
+        {"action_ko": "변속 레버 위치 점검"},
+        {"action_ko": "주차 브레이크 해제"}
+      ]
+    },
+    {
+      "id": "TS-014",
+      "category_id": "clutch",
+      "symptom_ko": "클러치가 미끄러짐 (헛돔)",
+      "cause_ko": "클러치 페달 유격 불량 또는 라이닝 마모",
+      "remedies": [
+        {"action_ko": "클러치 페달 유격 점검 및 조정"},
+        {"action_ko": "클러치 라이닝 마모 및 소착 시 정비공장에서 교환", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-015",
+      "category_id": "clutch",
+      "symptom_ko": "클러치가 끊기지 않음",
+      "cause_ko": "클러치 라이닝 녹 또는 페달 조정 불량",
+      "remedies": [
+        {"action_ko": "클러치 라이닝에 녹이 슨 경우 정비공장에서 수리", "service_required": true},
+        {"action_ko": "페달 조정 불량 시 페달 유격 조정"}
+      ]
+    },
+    {
+      "id": "TS-016",
+      "category_id": "brake",
+      "symptom_ko": "브레이크 작동 불량 또는 편브레이크 작동",
+      "cause_ko": "브레이크 페달 유격 과다 또는 라이닝 마모",
+      "remedies": [
+        {"action_ko": "브레이크 페달 유격이 많은 경우 유격 조정"},
+        {"action_ko": "브레이크 라이닝 마모 및 소착 시 정비공장에서 교환", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-017",
+      "category_id": "brake",
+      "symptom_ko": "브레이크 페달 리턴 불량",
+      "cause_ko": "리턴 스프링 손상 또는 그리스 부족",
+      "remedies": [
+        {"action_ko": "브레이크 리턴 스프링 손상 시 교환"},
+        {"action_ko": "각 접합부에 그리스 부족 시 녹 제거 후 그리스 도포"}
+      ]
+    },
+    {
+      "id": "TS-018",
+      "category_id": "steering",
+      "symptom_ko": "핸들이 무겁거나 떨림",
+      "cause_ko": "토우인 불정확 또는 타이어 공기압 불균형",
+      "remedies": [
+        {"action_ko": "토우인이 부정확한 경우 재조정"},
+        {"action_ko": "타이어 공기압이 좌/우 다를 경우 규정압으로 동일하게 주입"},
+        {"action_ko": "각 연결부에 흔들림이 있을 경우 재체결 및 부품 교환"}
+      ]
+    },
+    {
+      "id": "TS-019",
+      "category_id": "steering",
+      "symptom_ko": "핸들 유격이 많음",
+      "cause_ko": "핸들 샤프트 또는 각종 메탈 마모",
+      "remedies": [
+        {"action_ko": "핸들 샤프트 마모 시 정비공장에서 수리", "service_required": true},
+        {"action_ko": "각종 메탈류 마모 시 정비공장에서 수리", "service_required": true},
+        {"action_ko": "각 연결부 유격 시 재체결"}
+      ]
+    },
+    {
+      "id": "TS-020",
+      "category_id": "hydraulic",
+      "symptom_ko": "파이프 또는 호스에서 오일 누유",
+      "cause_ko": "파이프 클램프 이완 또는 균열",
+      "remedies": [
+        {"action_ko": "각 파이프 클램프 이완 시 재체결"},
+        {"action_ko": "파이프 균열 시 정비공장에서 수리", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-021",
+      "category_id": "hydraulic",
+      "symptom_ko": "3점히치가 내려가지 않음",
+      "cause_ko": "하강속도 조정손잡이 정지 위치 또는 밸브/실린더 고장",
+      "remedies": [
+        {"action_ko": "하강속도 조정손잡이가 정지 위치인 경우 내림 위치로 조정"},
+        {"action_ko": "밸브 고장 및 실린더 파손 시 정비공장에서 수리", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-022",
+      "category_id": "hydraulic",
+      "symptom_ko": "3점히치가 올라가지 않음",
+      "cause_ko": "미션오일 부족 또는 흡입파이프 공기 유입 또는 오일필터 막힘",
+      "remedies": [
+        {"action_ko": "미션오일이 부족한 경우 규정량까지 보충"},
+        {"action_ko": "흡입파이프 내 공기 유입 시 파이프 내 공기빼기 실시"},
+        {"action_ko": "오일필터가 막힌 경우 청소 또는 교환"},
+        {"action_ko": "유압필터 및 밸브, 실린더 고장 시 정비공장에서 수리", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-023",
+      "category_id": "hydraulic",
+      "symptom_ko": "3점히치가 자동으로 요동침",
+      "cause_ko": "드래프트 레버 설정 문제",
+      "remedies": [
+        {"action_ko": "드래프트 레버를 깊게로 조정"},
+        {"action_ko": "톱링크 사용 구멍을 최상단으로 이동"}
+      ]
+    },
+    {
+      "id": "TS-024",
+      "category_id": "electrical",
+      "symptom_ko": "전조등 점등 불량 또는 어두움",
+      "cause_ko": "퓨즈 단선, 전구 단선, 접지 불량 또는 배터리 부족",
+      "remedies": [
+        {"action_ko": "퓨즈가 단선된 경우 배선 점검 후 퓨즈 교환"},
+        {"action_ko": "전구가 단선된 경우 전구 교환"},
+        {"action_ko": "접지 및 단자 배선 접촉불량 시 점검 및 청소"},
+        {"action_ko": "배터리 용량 부족 시 재충전"}
+      ]
+    },
+    {
+      "id": "TS-025",
+      "category_id": "electrical",
+      "symptom_ko": "배터리가 충전되지 않음",
+      "cause_ko": "배터리 또는 발전기 이상",
+      "remedies": [
+        {"action_ko": "배터리 및 발전기 점검"}
+      ]
+    },
+    {
+      "id": "TS-026",
+      "category_id": "electrical",
+      "symptom_ko": "혼이 울리지 않음",
+      "cause_ko": "혼 스위치 고장 또는 배선 불량",
+      "remedies": [
+        {"action_ko": "혼 스위치 고장 시 교환"},
+        {"action_ko": "배선 불량 시 수리"},
+        {"action_ko": "혼 손상 시 수리 또는 교환"}
+      ]
+    },
+    {
+      "id": "TS-027",
+      "category_id": "electrical",
+      "symptom_ko": "방향지시등 점멸 불량",
+      "cause_ko": "전구 단선, 점멸장치 고장 또는 접지 불량",
+      "remedies": [
+        {"action_ko": "전구 단선 시 교환"},
+        {"action_ko": "점멸장치 고장 시 수리 및 교환"},
+        {"action_ko": "접지 및 단자 배선 접촉불량 시 점검 및 청소"}
+      ]
+    },
+    {
+      "id": "TS-028",
+      "category_id": "electrical",
+      "symptom_ko": "작업등 점등 불량",
+      "cause_ko": "전구 단선 또는 접지 불량",
+      "remedies": [
+        {"action_ko": "전구 단선 시 교환"},
+        {"action_ko": "접지 및 단자 배선 접촉불량 시 점검 및 청소"}
+      ]
+    },
+    {
+      "id": "TS-029",
+      "category_id": "hvac",
+      "symptom_ko": "히터/에어컨 풍량이 약하거나 전혀 없음",
+      "cause_ko": "풍량 조절 스위치/모터 고장 또는 필터 막힘",
+      "remedies": [
+        {"action_ko": "풍량 조절 스위치 및 모터 고장 시 수리 또는 교환"},
+        {"action_ko": "공기 흡입필터 막힘 확인 후 청소 또는 교환"},
+        {"action_ko": "배선 단락 시 점검 및 수리"}
+      ]
+    },
+    {
+      "id": "TS-030",
+      "category_id": "hvac",
+      "symptom_ko": "에어컨 성능 불량 - 비정상 소음",
+      "cause_ko": "내부 윤활 부족, 벨트 장력 이완, 브라켓 이완 또는 부품 파손",
+      "remedies": [
+        {"action_ko": "내부 윤활 부족 시 윤활제 보충"},
+        {"action_ko": "벨트 장력 이완 시 재조정"},
+        {"action_ko": "브라켓 이완 시 볼트 재체결"},
+        {"action_ko": "내·외부 부품 파손 시 점검 및 수리"}
+      ]
+    },
+    {
+      "id": "TS-031",
+      "category_id": "hvac",
+      "symptom_ko": "에어컨 냉매 또는 오일 누유",
+      "cause_ko": "씰링 와셔 파손 또는 체결 볼트 이완",
+      "remedies": [
+        {"action_ko": "씰링 와셔 파손 시 교환"},
+        {"action_ko": "체결 볼트 이완 시 재체결"}
+      ]
+    },
+    {
+      "id": "TS-032",
+      "category_id": "hvac",
+      "symptom_ko": "에어컨 고온 및 저압 발생",
+      "cause_ko": "냉매량 부족 또는 콤프레셔 이상",
+      "remedies": [
+        {"action_ko": "냉매량 부족 시 보충 (전문가 시행)"},
+        {"action_ko": "콤프레셔 이상 시 수리 또는 교환", "service_required": true}
+      ]
+    },
+    {
+      "id": "TS-033",
+      "category_id": "hvac",
+      "symptom_ko": "에어컨 콤프레셔 클러치가 작동하지 않음",
+      "cause_ko": "배선 결함, 클러치 간극 과다 또는 전압 저하",
+      "remedies": [
+        {"action_ko": "배선 결함 시 점검 및 교환"},
+        {"action_ko": "클러치 간극이 클 경우 재조정"},
+        {"action_ko": "전압이 낮을 경우 배터리 교환"},
+        {"action_ko": "내부 고장 시 교환", "service_required": true}
+      ]
+    }
+  ],
+  "general_notes_ko": [
+    "문의사항이 있으면 대동 대리점으로 연락하세요.",
+    "service_required: true 항목은 반드시 정비공장(대리점)에서 수리해야 합니다.",
+    "냉매는 고압 상태이므로 자격증을 소지한 전문가에게 정비 의뢰 필수."
+  ]
+}

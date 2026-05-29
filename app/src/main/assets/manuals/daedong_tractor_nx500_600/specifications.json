@@ -1,0 +1,139 @@
+{
+  "$schema": "daedong_tractor_nx500_specifications_v1",
+  "machine": {
+    "manufacturer": "DAEDONG",
+    "manufacturer_ko": "대동공업",
+    "series_name_ko": "NX 시리즈",
+    "manual_ref": "TE130(NX450,490,530,580)-합본"
+  },
+  "dimensions_cabin_mm": {
+    "note_ko": "캐빈형 표준 타이어 장착 기준",
+    "items": [
+      {"no": 1, "name_ko": "전장 A1 (웨이트 포함)", "NX500": 3742, "NX550": 3742, "NX600": 3742},
+      {"no": 2, "name_ko": "전장 A2 (웨이트 제외)", "NX500": 3547, "NX550": 3547, "NX600": 3547},
+      {"no": 3, "name_ko": "전폭 B", "NX500": 1665, "NX550": 1669, "NX600": 1665},
+      {"no": 4, "name_ko": "전고 C (캐빈)", "NX500": 2415, "NX550": 2440, "NX600": 2415},
+      {"no": 5, "name_ko": "축거 D", "NX500": 1920, "NX550": 1920, "NX600": 1920},
+      {"no": 6, "name_ko": "전륜 륜거 E1", "NX500": 1352, "NX550": 1355, "NX600": 1352},
+      {"no": 7, "name_ko": "후륜 륜거 E2", "NX500": 1324, "NX550": 1334, "NX600": 1324},
+      {"no": 8, "name_ko": "최저지상고 F", "NX500": 376, "NX550": 400, "NX600": 376}
+    ]
+  },
+  "dimensions_rops_mm": {
+    "note_ko": "ROPS형 표준 타이어 장착 기준 (일반형/저상형)",
+    "items": [
+      {"no": 4, "name_ko": "전고 C (ROPS 일반형)", "NX500": 2618, "NX550": 2628, "NX600": 2618},
+      {"no": 4, "name_ko": "전고 C (ROPS 저상형)", "NX500": 2618, "NX550_low": 2618, "NX600_low": 2618}
+    ]
+  },
+  "models": [
+    {
+      "model": "NX500 / NX500C / NX500SC",
+      "name_ko": "대동 NX500",
+      "engine": {
+        "model_ko": "3FT-TM4-D",
+        "type_ko": "3기통 디젤",
+        "displacement_cc": 1826,
+        "bore_x_stroke_mm": "87 × 102.4",
+        "power_kw": 37.5,
+        "power_ps": 51,
+        "pto_power_kw": 33,
+        "rated_rpm": 2600,
+        "fuel_tank_L": 56.0
+      },
+      "speed_km_h": {
+        "forward_range": "0.18 ~ 26.60",
+        "reverse_range": "0.16 ~ 23.64"
+      }
+    },
+    {
+      "model": "NX550 / NX550C / NX550SC",
+      "name_ko": "대동 NX550",
+      "engine": {
+        "model_ko": "3FT-TM4-D",
+        "type_ko": "3기통 디젤",
+        "displacement_cc": 1826,
+        "bore_x_stroke_mm": "87 × 102.4",
+        "power_kw": 41.0,
+        "power_ps": 56,
+        "pto_power_kw": 36,
+        "rated_rpm": 2600,
+        "fuel_tank_L": 56.0
+      },
+      "speed_km_h": {
+        "forward_range": "0.19 ~ 27.93",
+        "reverse_range": "0.17 ~ 24.82"
+      }
+    },
+    {
+      "model": "NX600 / NX600C / NX600SC",
+      "name_ko": "대동 NX600",
+      "engine": {
+        "model_ko": "3FT-TM4-D",
+        "type_ko": "3기통 디젤",
+        "displacement_cc": 1826,
+        "bore_x_stroke_mm": "87 × 102.4",
+        "power_kw": 43.0,
+        "power_ps": 58,
+        "pto_power_kw": 39,
+        "rated_rpm": 2600,
+        "fuel_tank_L": 56.0
+      },
+      "speed_km_h": {
+        "forward_range": "0.19 ~ 27.93",
+        "reverse_range": "0.17 ~ 24.82"
+      }
+    }
+  ],
+  "common_specs": {
+    "capacities_L": {
+      "transmission_oil": 55.0,
+      "front_axle_oil": 7.0,
+      "engine_oil_with_filter": 6.0,
+      "coolant_with_radiator": 7.7
+    },
+    "clutch_ko": "건식 단판",
+    "shuttle_ko": "전/후진 셔틀: 동기물림식",
+    "transmission_ko": "부변속: 상시물림식 6단 / 단수: 24×24",
+    "drive_4wd_ko": "유압 다판 클러치",
+    "brake_ko": "습식 다판식",
+    "differential_lock_ko": "뒤차축 기본장치",
+    "steering_ko": "전유압식 파워 스티어링",
+    "hydraulic_control": {
+      "NX500_550_600_ko": "기계식 유압 승강제어",
+      "NX500SC_550SC_600SC_ko": "전자식 유압 승강제어"
+    },
+    "pump_capacity_lpm": {
+      "NX500_note": "전체 62.4 (메인 36.4 + 조향 26)",
+      "NX550_600_note": "전체 67.6 (메인 41.6 + 조향 26)"
+    },
+    "remote_valve_count": {
+      "NX550SC_600SC_ko": "3개 (6포트)",
+      "NX500C_550C_600C_ko": "2개 (4포트)"
+    },
+    "three_point_hitch_ko": {
+      "NX500SC_ko": "SAE 카테고리 Ⅰ",
+      "NX550_600_ko": "SAE 카테고리 Ⅰ, Ⅱ"
+    },
+    "max_lift_capacity_kgf": {
+      "610mm_rear_ko": 1441,
+      "lower_link_bottom_ko": 1605
+    },
+    "pto_ko": {
+      "type_ko": "독립식",
+      "shaft_spec_ko": "SAE 1-3/8\", 6스플라인",
+      "speeds_rpm": [540, 1000]
+    },
+    "tires": {
+      "NX500_front_ko": "9.5-16 (농용)",
+      "NX500_rear_ko": "13.6-26 (농용)",
+      "NX550_600_front_ko": "9.5-18 (농용)",
+      "NX550_600_rear_ko": "13.6-28 (농용)"
+    }
+  },
+  "notes_ko": [
+    "사양은 사전 예고 없이 변경될 수 있습니다.",
+    "NX450/490/530/580도 이 매뉴얼 합본에 포함됩니다.",
+    "출력 수치는 그로스(총) 출력 기준입니다."
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "$schema": "kubota_combine_arh430_master_v1",
+  "version": "1.0.0",
+  "created_at": "2026-05-29",
+  "source_pdf": "arh430_설명서.pdf",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "manufacturer_ko": "쿠보타",
+    "category": "combine",
+    "category_ko": "콤바인 (보통형)",
+    "series_name_ja": "エアロスター-GP ARH430",
+    "series_name_ko": "에어로스타-GP ARH430",
+    "models": ["ARH430H", "ARH430G", "ARH430CG"],
+    "total_pages": 312,
+    "language": "ja",
+    "crop_ko": "대두·소바·밀 수확 전용",
+    "note_ko": "스캔 PDF (이미지 기반) - OCR로 데이터 추출"
+  },
+  "model_variants_ko": {
+    "H": "호퍼(H) 사양 - 그레인탱크 없음",
+    "G": "그레인탱크(G) 사양",
+    "CG": "캐빈(C) + 그레인탱크(G) 사양",
+    "C": "캐빈 사양 (에어컨 탑재)",
+    "spec_table_ko": "표준장비(H,G,CG): 자동 예취높이/리얼높이제어·예취오토클러치·차체수평제어·앙로다자동선회제어·엔진정역류팬·클린팬·예취백업리프트·포지비타·방향미조정·리얼상하전후스위치"
+  },
+  "specifications": {
+    "by_model": {
+      "ARH430H": {
+        "length_mm": 4825,
+        "width_mm": 1970,
+        "height_mm": 2410,
+        "mass_kg": 2330,
+        "avg_ground_pressure_kpa": 21.2
+      },
+      "ARH430G": {
+        "length_mm": 4825,
+        "width_mm": 1970,
+        "height_mm": 2560,
+        "mass_kg": 2520,
+        "avg_ground_pressure_kpa": 22.9
+      },
+      "ARH430CG": {
+        "length_mm": 4825,
+        "width_mm": 2010,
+        "height_mm": 2560,
+        "mass_kg": 2670,
+        "avg_ground_pressure_kpa": 24.2
+      }
+    },
+    "common": {
+      "engine_model": "D1803-M-TE3-C-2",
+      "engine_type_ko": "수냉 4사이클 3기통 직립형 디젤 (터보 부착)",
+      "displacement_cc": 1826,
+      "power_kw_ps_rpm": "32.0kW (43.5PS) / 2700rpm",
+      "fuel_ko": "디젤 경유",
+      "fuel_tank_L": 55,
+      "battery_ko": "12V·55Ah (80D26L-MF)",
+      "crawler_center_distance_mm": 980,
+      "crawler_mm": "360×1500",
+      "transmission_ko": "유압 모터식 (HST) / 전진무단·후진무단 (부변속 각 3단)",
+      "speed_m_s": "저속: 0~0.85 / 표준: 0~1.38 / 주행: 0~2.40",
+      "turning_ko": "브레이크·소프트턴, 소프트턴 (스위치 전환식)",
+      "reel_drive_ko": "리얼 인기식",
+      "reel_diameter_x_width_mm": "1000×1322",
+      "reel_speed_ko": "벨트 무단 변속",
+      "reel_updown_ko": "유압식",
+      "cutting_width_mm": 1546,
+      "knife_width_mm": 1446,
+      "cutting_height_range_mm": "-50~770 (칼날 선단 기준)",
+      "threshing_method_ko": "축류식 (바 타입)",
+      "threshing_drum_teeth_ko": "투스",
+      "threshing_drum_diameter_x_width_mm": "542×1700",
+      "threshing_drum_rpm": "316 (대두·소바) / 836 (밀)",
+      "second_return_ko": "스크류+슬랫 컨베이어",
+      "separation_ko": "요동, 풍선 (3단 기류 선별)",
+      "concave_area_m2": 1.17
+    }
+  },
+  "lubrication": {
+    "items": [
+      {"id":"LU-001","name_ko":"연료 탱크","capacity_L":55,"fluid_type_ko":"디젤 경유","check_interval_ko":"수시","page_ref":157},
+      {"id":"LU-002","name_ko":"엔진 오일","capacity_L_range":"4.2~6.0","fluid_type_ko":"쿠보타 순정 오일 D10W-30 슈퍼 CD","replace_interval_ko":"초회 50h / 이후 100h마다","page_ref":158},
+      {"id":"LU-003","name_ko":"트랜스미션 케이스 오일","capacity_L":6.8,"fluid_type_ko":"쿠보타 순정 오일 슈퍼 UDT-2","replace_interval_ko":"100h마다 (초회 50h 후)","check_interval_ko":"100h마다","page_ref":160},
+      {"id":"LU-004","name_ko":"유압 오일 탱크","capacity_L_range":"20.0~21.3","fluid_type_ko":"쿠보타 순정 오일 슈퍼 UDT-2","replace_interval_ko":"초회 50h / 이후 300h마다","page_ref":162},
+      {"id":"LU-005","name_ko":"칼날 구동 케이스","capacity_L":0.4,"fluid_type_ko":"쿠보타 순정 오일 슈퍼 UDT-2 (교환 불필요)","page_ref":161},
+      {"id":"LU-006","name_ko":"코기통 구동 기어 케이스","capacity_L":0.15,"fluid_type_ko":"쿠보타 순정 오일 M80B 또는 M90","check_interval_ko":"100h마다","page_ref":163},
+      {"id":"LU-007","name_ko":"칼날 / 핑거 축 (주유)","fluid_type_ko":"쿠보타 순정 오일 D10W-30 또는 M80B 또는 M90","apply_interval_ko":"작업 전 / 시즌 종료 후","page_ref":147},
+      {"id":"LU-008","name_ko":"냉각수 (리저브 탱크)","capacity_L_range":"L:0.15 ~ F:1.1","fluid_type_ko":"청수","replace_interval_ko":"2년 또는 겨울 보관 시 배출","page_ref":165}
+    ]
+  },
+  "inspection_schedule": {
+    "legend": {"조정":"조정","교환":"교환","掃除":"청소","掃除·청소":"청소","締付":"체결"},
+    "sections": ["엔진부","주행·조작부","예취부","탈곡부"],
+    "items": [
+      {"id":"IN-001","section":"엔진부","name_ko":"팬 구동 벨트","adjust_interval_ko":"초회·교환 후 50h, 이후 100h마다","replace_interval_ko":"250h마다","page_ref":183},
+      {"id":"IN-002","section":"엔진부","name_ko":"역류 팬 전환 와이어","replace_interval_ko":"500h마다"},
+      {"id":"IN-003","section":"엔진부","name_ko":"에어 클리너 엘리먼트","clean_interval_ko":"50h마다","replace_interval_ko":"300h마다 (6회 청소 후)","page_ref":167},
+      {"id":"IN-004","section":"엔진부","name_ko":"인렛 파이프 (에어 클리너)","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-005","section":"엔진부","name_ko":"인렛 파이프 (터보)","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-006","section":"엔진부","name_ko":"연료 필터 엘리먼트","clean_interval_ko":"100h마다","replace_interval_ko":"400h마다","page_ref":172},
+      {"id":"IN-007","section":"엔진부","name_ko":"연료 필터 카트리지","replace_interval_ko":"400h마다","page_ref":172},
+      {"id":"IN-008","section":"엔진부","name_ko":"엔진 오일 필터 카트리지","replace_interval_ko":"초회 50h, 이후 200h마다 (엔진 오일 2회차 교환 시 동시 교환)","page_ref":174},
+      {"id":"IN-009","section":"엔진부","name_ko":"연료 파이프","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-010","section":"엔진부","name_ko":"오일 드레인 고무 호스","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-011","section":"엔진부","name_ko":"라디에이터 호스","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-012","section":"엔진부","name_ko":"배수 호스","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-013","section":"엔진부","name_ko":"오일 쿨러 호스","check_interval_ko":"150h 또는 6개월마다","replace_interval_ko":"300h 또는 2년마다","page_ref":169},
+      {"id":"IN-014","section":"엔진부","name_ko":"방진망·라디에이터 핀·오일 쿨러 핀","clean_interval_ko":"50h마다","page_ref":171},
+      {"id":"IN-015","section":"엔진부","name_ko":"콘덴서 핀 [C 사양]","clean_interval_ko":"50h마다","page_ref":171},
+      {"id":"IN-016","section":"주행·조작부","name_ko":"미션 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":186},
+      {"id":"IN-017","section":"주행·조작부","name_ko":"기어 케이스 구동 벨트 [G 사양]","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":187},
+      {"id":"IN-018","section":"주행·조작부","name_ko":"오일 펌프 구동 벨트 [G 사양]","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"500h마다","page_ref":188},
+      {"id":"IN-019","section":"주행·조작부","name_ko":"HST 오일 필터 카트리지","replace_interval_ko":"초회 50h, 이후 300h마다 (유압 오일 탱크 오일과 동시 교환)","page_ref":176},
+      {"id":"IN-020","section":"주행·조작부","name_ko":"미션 흡입 필터","replace_interval_ko":"300h마다","page_ref":"☆"},
+      {"id":"IN-021","section":"주행·조작부","name_ko":"유압 오일 탱크 필터","clean_interval_ko":"초회·교환 후 50h, 이후 300h마다","replace_interval_ko":"600h마다","page_ref":176},
+      {"id":"IN-022","section":"주행·조작부","name_ko":"주차 브레이크 와이어","adjust_interval_ko":"초회·교환 후 50h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":178},
+      {"id":"IN-023","section":"주행·조작부","name_ko":"리릴프 와이어","adjust_interval_ko":"초회·교환 후 50h, 이후 100h마다","replace_interval_ko":"500h 또는 2년마다"},
+      {"id":"IN-024","section":"주행·조작부","name_ko":"크롤러","adjust_interval_ko":"초회·교환 후 20 및 50h, 이후 100h마다","replace_interval_ko":"500h마다","page_ref":220},
+      {"id":"IN-025","section":"주행·조작부","name_ko":"반사기","replace_interval_ko":"파손 시","page_ref":220},
+      {"id":"IN-026","section":"주행·조작부","name_ko":"드라이브 스프로켓·가동 롤러","replace_interval_ko":"300h마다"},
+      {"id":"IN-027","section":"주행·조작부","name_ko":"트랙 롤러","check_interval_ko":"100h마다","replace_interval_ko":"500h마다 또는 리브 두께 2mm 이하 시","page_ref":222},
+      {"id":"IN-028","section":"주행·조작부","name_ko":"텐션 롤러(후륜)·캐리어 롤러·크롤러 가이드(전·후)","replace_interval_ko":"500h마다"},
+      {"id":"IN-029","section":"예취부","name_ko":"칼날 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":184},
+      {"id":"IN-030","section":"예취부","name_ko":"리얼 변속 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":184},
+      {"id":"IN-031","section":"예취부","name_ko":"피더 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":191},
+      {"id":"IN-032","section":"예취부","name_ko":"오거 구동 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":197},
+      {"id":"IN-033","section":"예취부","name_ko":"리얼 카운터 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":197},
+      {"id":"IN-034","section":"예취부","name_ko":"리얼 구동 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":197},
+      {"id":"IN-035","section":"예취부","name_ko":"예취 구동 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":198},
+      {"id":"IN-036","section":"예취부","name_ko":"피더 반송 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 50h마다","replace_interval_ko":"300h마다","page_ref":198},
+      {"id":"IN-037","section":"예취부","name_ko":"칼날","adjust_interval_ko":"100h마다","replace_interval_ko":"500h마다","page_ref":204},
+      {"id":"IN-038","section":"예취부","name_ko":"칼날 로드 엔드·핑거 축·핑거 가이드","replace_interval_ko":"250h마다","page_ref":205},
+      {"id":"IN-039","section":"예취부","name_ko":"유압 호스","replace_interval_ko":"500h마다"},
+      {"id":"IN-040","section":"탈곡부","name_ko":"탈곡 입력 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":186},
+      {"id":"IN-041","section":"탈곡부","name_ko":"탈곡 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":188},
+      {"id":"IN-042","section":"탈곡부","name_ko":"탈곡 카운터 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":189},
+      {"id":"IN-043","section":"탈곡부","name_ko":"코기통 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":192},
+      {"id":"IN-044","section":"탈곡부","name_ko":"요동 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":193},
+      {"id":"IN-045","section":"탈곡부","name_ko":"1번·2번 스크류 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":192},
+      {"id":"IN-046","section":"탈곡부","name_ko":"토우미 구동 벨트","adjust_interval_ko":"초회·교환 후 20h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":192},
+      {"id":"IN-047","section":"탈곡부","name_ko":"1번 배출 스크류 구동 벨트 [G 사양]","adjust_interval_ko":"초회·교환 후 20h, 이후 50h마다","replace_interval_ko":"300h마다","page_ref":193},
+      {"id":"IN-048","section":"탈곡부","name_ko":"1번 버킷 컨베이어 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 50h마다","replace_interval_ko":"300h마다","page_ref":200},
+      {"id":"IN-049","section":"탈곡부","name_ko":"2번 슬랫 컨베이어 체인","adjust_interval_ko":"초회·교환 후 20h, 이후 50h마다","replace_interval_ko":"300h마다","page_ref":200},
+      {"id":"IN-050","section":"탈곡부","name_ko":"1번 버킷 컵","adjust_interval_ko":"초회·교환 후 50h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":136},
+      {"id":"IN-051","section":"탈곡부","name_ko":"2번 반송 플레이트","adjust_interval_ko":"초회·교환 후 50h, 이후 100h마다","replace_interval_ko":"300h마다","page_ref":136},
+      {"id":"IN-052","section":"탈곡부","name_ko":"코기 바","replace_interval_ko":"500h마다"},
+      {"id":"IN-053","section":"탈곡부","name_ko":"받음 망 (컨케이브)","replace_interval_ko":"750h마다","page_ref":130},
+      {"id":"IN-054","section":"탈곡부","name_ko":"1번 스크류·2번 스크류","replace_interval_ko":"1000h마다"},
+      {"id":"IN-055","section":"탈곡부","name_ko":"각 펌프·스펀지","replace_interval_ko":"300h마다"},
+      {"id":"IN-056","section":"탈곡부","name_ko":"시브 케이스 베어링","replace_interval_ko":"500h마다"},
+      {"id":"IN-057","section":"탈곡부","name_ko":"차프 시브 립 가이드","replace_interval_ko":"1000h마다"},
+      {"id":"IN-058","section":"탈곡부","name_ko":"차프 조작 와이어","adjust_interval_ko":"100h마다","replace_interval_ko":"500h마다"},
+      {"id":"IN-059","section":"탈곡부","name_ko":"배터리","check_interval_ko":"교환 후 20h, 이후 100h마다","replace_interval_ko":"필요시","page_ref":211},
+      {"id":"IN-060","section":"탈곡부","name_ko":"냉매 (가스)량 [C 사양]","check_interval_ko":"필요시","page_ref":209}
+    ]
+  },
+  "troubleshooting": {
+    "categories": [
+      {"id":"reaping","name_ko":"예취부 불량"},
+      {"id":"threshing","name_ko":"탈곡부 불량 (코기 잔류·사사리로스)"},
+      {"id":"grain_loss","name_ko":"곡물 손실 (손상립·미탈곡립)"},
+      {"id":"separation","name_ko":"선별 불량"},
+      {"id":"clogging_reaping","name_ko":"예취부 막힘"},
+      {"id":"clogging_momi","name_ko":"모미 막힘"}
+    ],
+    "cases": [
+      {"id":"TS-001","category_id":"reaping","symptom_ko":"예취부 헤드로스가 많음","causes_and_remedies_ko":[
+        {"cause":"리얼 회전속도 빠름","remedy":"리얼 변속 다이얼로 회전 낮춤","page":28},
+        {"cause":"작물 중에 타인이 끼어듦","remedy":"리얼 상하 스위치로 높이 높임","page":98},
+        {"cause":"타인 각도 큼","remedy":"타인 각도 작게","page":109},
+        {"cause":"리얼 높이·전후 위치 부적합","remedy":"리얼 상하·전후 스위치로 적정 위치로","page":"98,99"}
+      ]},
+      {"id":"TS-002","category_id":"reaping","symptom_ko":"예취부에서 작물이 체류함","causes_and_remedies_ko":[
+        {"cause":"리얼 회전속도 느림","remedy":"리얼 변속 다이얼로 회전 높임","page":28},
+        {"cause":"오거 드럼과 바닥판 간격 넓음","remedy":"적정 간격으로","page":205}
+      ]},
+      {"id":"TS-003","category_id":"reaping","symptom_ko":"주를 뽑아 작물을 말아 올려 쓰러뜨림","causes_and_remedies_ko":[
+        {"cause":"작업속도 빠름","remedy":"작물·논 조건에 맞는 속도로","page":"12,90"},
+        {"cause":"디바이다 위치 낮음 (주 근원에 꽂힘)","remedy":"SF 원레버로 디바이다 선단을 지면에서 5~10cm 범위로 조정","page":96},
+        {"cause":"예취부와 반송부에 이물질 끼임","remedy":"이물질 제거 후 예취·반송부 재점검","page":136},
+        {"cause":"예취 구동 벨트 슬립","remedy":"교환 또는 텐션 스프링 조정","page":184}
+      ]},
+      {"id":"TS-004","category_id":"threshing","symptom_ko":"코기 잔류·사사리로스 있음","causes_and_remedies_ko":[
+        {"cause":"코기 이가 마모·변형","remedy":"코기 이 교환","page":207},
+        {"cause":"코기 통 송진 밸브 너무 열림","remedy":"코기 통 송진 레버 닫음 방향으로","page":86},
+        {"cause":"엔진 회전수 낮음","remedy":"엔진 회전수 올림","page":"11,90"},
+        {"cause":"엔진 회전수 높음","remedy":"엔진 회전수 낮춤","page":"11,90"},
+        {"cause":"토우미 풍력 강함","remedy":"토우미 조절 레버 약(弱) 방향으로","page":18}
+      ]},
+      {"id":"TS-005","category_id":"separation","symptom_ko":"선별 불량 (코쿠 립 날림 많음)","causes_and_remedies_ko":[
+        {"cause":"코기 통 송진 밸브 너무 열림","remedy":"닫음 방향으로 조정","page":86},
+        {"cause":"토우미 풍력 강함","remedy":"약(弱) 방향으로","page":18},
+        {"cause":"차프 시브 전·후 개도가 큼","remedy":"앞뒤 모두 크게","page":86},
+        {"cause":"그렌 시브 목합 안 맞음","remedy":"알맞은 목합으로 교환","page":255},
+        {"cause":"그렌 시브 막힘","remedy":"청소","page":136}
+      ]},
+      {"id":"TS-006","category_id":"clogging_reaping","symptom_ko":"예취부에 작물이 막힘","causes_and_remedies_ko":[
+        {"cause":"예취 역전 핸들 사용 후 처치","remedy":"예취 역전 핸들 사용하여 이물질 제거","page":232}
+      ]},
+      {"id":"TS-007","category_id":"clogging_momi","symptom_ko":"앙로다에서 모미가 배출되지 않음 [G 사양]","causes_and_remedies_ko":[
+        {"cause":"이물질 끼임","remedy":"각 청소 개구부 점검하여 이물질 제거 (136~147p 참조)","page":"136-147"},
+        {"cause":"바닥 스크류 구동 벨트 슬립","remedy":"샤타 당겨 모미 배출 후, 그렌 탱크 열어 텐션 스프링 조정. 조정 후도 슬립 시 벨트 교환","page":"134,194"}
+      ]}
+    ]
+  }
+}

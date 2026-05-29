@@ -1,0 +1,100 @@
+{
+  "$schema": "kubota_planter_master_index_v1",
+  "version": "1.0.0",
+  "created_at": "2026-05-21",
+  "source_pdf": "kubota_planter.pdf",
+  "machine": {
+    "manufacturer": "KUBOTA",
+    "manufacturer_ko": "쿠보타",
+    "category": "rice_planter",
+    "category_ko": "이앙기",
+    "series_name_ja": "ナビウェル",
+    "series_name_ko": "나비웰",
+    "models": ["NW50N", "NW50S", "NW60N", "NW60S", "NW80N", "NW80S"],
+    "manual_ref": "PW600-9751-4",
+    "total_pages": 283
+  },
+  "datasets": [
+    {
+      "id": "troubleshooting",
+      "file": "troubleshooting.json",
+      "name_ko": "트러블슈팅 (고장 처치)",
+      "description_ko": "이앙 작업 중 발생하는 문제 증상과 원인·처치 방법. 결주·부묘·식부 흐트러짐·시비 불량·직진 키프 문제 등을 다룹니다.",
+      "categories_count": 7,
+      "cases_count": 32,
+      "manual_pages": "240-251",
+      "use_case_ko": "현장 문제 발생 시 빠른 진단·해결 가이드"
+    },
+    {
+      "id": "inspection_schedule",
+      "file": "inspection_schedule.json",
+      "name_ko": "정기점검 일람표",
+      "description_ko": "시간/시즌 기준 점검·교환 일정. 사용 시간(50h/100h/200h/400h/800h/1500h)과 연/년차 기준으로 정렬.",
+      "sections_count": 5,
+      "items_count": 34,
+      "manual_pages": "208-209",
+      "use_case_ko": "예방 정비 알림 및 점검 체크리스트"
+    },
+    {
+      "id": "lubrication_schedule",
+      "file": "lubrication_schedule.json",
+      "name_ko": "급유·주유 일람표",
+      "description_ko": "연료/엔진오일/미션오일/냉각수/그리스 등 유체 보급·교환 일정과 규정량.",
+      "items_count": 8,
+      "manual_pages": "210-212",
+      "use_case_ko": "오일·그리스 주입 시기와 종류 확인"
+    },
+    {
+      "id": "consumables",
+      "file": "consumables.json",
+      "name_ko": "소모품 부품 일람표",
+      "description_ko": "이앙발톱·램프·퓨즈·필터·벨트·배터리·시비 부품·모대 부품·차륜 등 정기 교환 부품 카탈로그. 부품번호와 모델별 수량 포함.",
+      "categories_count": 9,
+      "parts_count": 39,
+      "manual_pages": "263-268",
+      "use_case_ko": "부품 재고 관리, 주문 시 부품번호 조회"
+    },
+    {
+      "id": "fuse_circuits",
+      "file": "fuse_circuits.json",
+      "name_ko": "퓨즈 회로표",
+      "description_ko": "퓨즈 박스 1(25개 회로) + 퓨즈 박스 2(8개 회로) + 슬로우 블로우 퓨즈(4개)별 회로명과 용량.",
+      "boxes_count": 3,
+      "circuits_count": 37,
+      "manual_pages": "232-234",
+      "use_case_ko": "전기 이상 발생 시 회로 확인 및 퓨즈 교환"
+    },
+    {
+      "id": "specifications",
+      "file": "specifications.json",
+      "name_ko": "주요 제원",
+      "description_ko": "6개 모델별 기체 치수·중량·엔진·차륜·시비기 호퍼 용량·작업 능률 등 스펙. 사양 변형(F/GS/Q/Q2/PF/CY/Y/M/W) 설명 포함.",
+      "models_count": 6,
+      "spec_variants_count": 11,
+      "manual_pages": "252-255",
+      "use_case_ko": "모델 비교, 보유 기계 스펙 등록 및 호환 확인"
+    }
+  ],
+  "data_schema_design": {
+    "principles_ko": [
+      "모든 텍스트 필드는 일본어 원문(_ja)과 한국어 번역(_ko)을 함께 제공",
+      "page_ref로 매뉴얼 원문 페이지 추적 가능 (사용자가 원본 확인 가능)",
+      "applies_to (모델 배열) / applies_to_spec (사양) 필드로 모델별 필터링 가능",
+      "ID 체계: TS-XXX(트러블슈팅), IN-XXX(점검), LU-XXX(급유), PT-XXX(부품) 등 prefix로 구분",
+      "Room DB 매핑 시 평면(flat) 구조로 변환 용이"
+    ]
+  },
+  "app_integration_hint_ko": {
+    "import_path_suggestion": "app/src/main/assets/manuals/kubota_planter/",
+    "load_method_ko": "MachineDetailScreen에서 모델 선택 시 해당 모델의 데이터를 메모리에 로드 후, ViewModel 또는 Repository에서 카테고리별 필터링",
+    "search_feature_ko": "name_ja도 함께 인덱싱하면 일본어 부품명으로도 검색 가능 (예: '苗ステー' 검색)",
+    "android_class_structure_suggestion": [
+      "TroubleshootingCase (id, category, cause, symptoms, remedies, pageRef)",
+      "InspectionItem (id, section, name, actions[], appliesTo, pageRef)",
+      "LubricationItem (id, category, location, capacity, lubricantType, pageRef)",
+      "ConsumablePart (id, category, name, partNumber, quantitiesByModel, pageRef)",
+      "FuseCircuit (boxId, number, circuitName, capacityAmp, appliesToSpec)",
+      "MachineSpec (model, dimensions, engine, wheels, capacity, ...)"
+    ]
+  }
+}

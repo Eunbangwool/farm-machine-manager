@@ -1,0 +1,611 @@
+{
+  "$schema": "daedong_tractor_nx500_inspection_v1",
+  "machine": {
+    "manufacturer": "DAEDONG",
+    "manufacturer_ko": "대동공업",
+    "series_name_ko": "NX 시리즈",
+    "models": ["NX500", "NX550", "NX600", "NX500C", "NX550C", "NX600C", "NX500SC", "NX550SC", "NX600SC"],
+    "manual_ref": "TE130(NX450,490,530,580)-합본"
+  },
+  "legend": {
+    "symbols": {
+      "⊙": "초기 점검 (최초 10시간 또는 50시간)",
+      "○": "정기 점검·교환·청소"
+    },
+    "notes": [
+      "*1: 에어클리너는 먼지가 많은 조건에서는 더 자주 청소",
+      "*2: 매년 또는 6회 이상 청소 시 교체",
+      "*3: 필요시에만 교체",
+      "#: 미국 EPA 비포장도로 배기가스 관련 주요부품"
+    ]
+  },
+  "items": [
+    {
+      "id": "IN-001",
+      "no": 1,
+      "name_ko": "엔진오일 및 엔진오일 필터",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "50시간마다",
+          "code": "E"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환 (기계식 엔진)",
+          "interval_ko": "최초 10시간, 이후 100시간마다",
+          "code": "L",
+          "initial": true
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환 (전자식 DPF 미장착)",
+          "interval_ko": "200시간마다",
+          "code": "L"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환 (DPF 장착)",
+          "interval_ko": "250시간마다",
+          "code": "L"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-002",
+      "no": 2,
+      "name_ko": "트랜스미션 오일 필터",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "최초 50시간, 이후 100시간마다",
+          "code": "M",
+          "initial": true
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-003",
+      "no": 3,
+      "name_ko": "HST 오일 필터",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "최초 50시간, 이후 100시간마다",
+          "initial": true
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-004",
+      "no": 4,
+      "name_ko": "트랜스미션 오일",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "레벨 점검",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "D"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "500시간마다",
+          "code": "M"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-005",
+      "no": 5,
+      "name_ko": "앞차축 오일",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "레벨 점검",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "N"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "500시간마다",
+          "code": "N"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-006",
+      "no": 6,
+      "name_ko": "앞차축 피봇",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "조정",
+          "interval_ko": "250시간마다",
+          "code": "AD"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-007",
+      "no": 7,
+      "name_ko": "엔진 시동 장치",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "50시간마다"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-008",
+      "no": 8,
+      "name_ko": "그리스 주유",
+      "actions": [
+        {
+          "type": "lubricate",
+          "type_ko": "주유",
+          "interval_ko": "50시간마다",
+          "code": "P"
+        }
+      ],
+      "grease_points_ko": [
+        "앞차축케이스지지대",
+        "앞차축브라켓",
+        "브레이크 페달",
+        "브레이크 레버",
+        "톱링크 홀더",
+        "컨트롤 레버"
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-009",
+      "no": 9,
+      "name_ko": "휠 볼트/너트 토크",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "50시간마다",
+          "code": "Q"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-010",
+      "no": 10,
+      "name_ko": "배터리 상태",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "100시간마다 또는 1년마다",
+          "code": "W",
+          "note_ko": "*3: 필요시에만 교체"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-011",
+      "no": 11,
+      "name_ko": "에어클리너 엘리먼트",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "AF"
+        },
+        {
+          "type": "clean",
+          "type_ko": "청소",
+          "interval_ko": "100시간마다 (먼지 많은 환경은 더 자주)",
+          "code": "T",
+          "note_ko": "*1"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "200시간마다 또는 1년마다 (청소 6회 후)",
+          "code": "T, AF",
+          "note_ko": "*2"
+        }
+      ],
+      "page_ref": "7-3"
+    },
+    {
+      "id": "IN-012",
+      "no": 12,
+      "name_ko": "연료 필터 엘리먼트",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "200시간마다",
+          "code": "S",
+          "note_ko": "#: EPA 배기가스 관련 부품"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-013",
+      "no": 13,
+      "name_ko": "팬벨트 / 에어컨 벨트",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "장력 조정",
+          "interval_ko": "100시간마다 또는 1년마다",
+          "code": "V",
+          "note_ko": "*3"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-014",
+      "no": 14,
+      "name_ko": "클러치 페달 유격",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "조정",
+          "interval_ko": "최초 50시간, 이후 100시간마다",
+          "code": "R",
+          "initial": true
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-015",
+      "no": 15,
+      "name_ko": "브레이크 페달 유격",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "조정",
+          "interval_ko": "최초 50시간, 이후 100시간마다",
+          "code": "O",
+          "initial": true
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-016",
+      "no": 16,
+      "name_ko": "라디에이터 호스 클램프",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "100시간마다",
+          "code": "Z"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "2년마다"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-017",
+      "no": 17,
+      "name_ko": "라디에이터 그릴 청소",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검·청소",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "G"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-018",
+      "no": 18,
+      "name_ko": "파워스티어링 호스 오일라인",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "100시간마다",
+          "code": "AA"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "2년마다"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-019",
+      "no": 19,
+      "name_ko": "연료라인",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "100시간마다",
+          "code": "U",
+          "note_ko": "#: EPA 배기가스 관련 부품"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "2년마다"
+        }
+      ],
+      "page_ref": "7-4"
+    },
+    {
+      "id": "IN-020",
+      "no": 20,
+      "name_ko": "흡기 에어 호스",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "100시간마다",
+          "code": "X"
+        },
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "2년마다 또는 필요시",
+          "note_ko": "*3"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-021",
+      "no": 21,
+      "name_ko": "토우인",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "조정",
+          "interval_ko": "100시간마다",
+          "code": "Y"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-022",
+      "no": 22,
+      "name_ko": "엔진 밸브 간극",
+      "actions": [
+        {
+          "type": "adjust",
+          "type_ko": "조정",
+          "interval_ko": "500시간마다",
+          "code": "AE",
+          "spec_ko": "흡기: 0.20mm / 배기: 0.20mm (엔진 냉각 상태에서 측정)"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-023",
+      "no": 23,
+      "name_ko": "연료 분사 노즐 분사 압력",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "1000시간마다",
+          "note_ko": "#: EPA 배기가스 관련 부품. 대동 대리점 문의"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-024",
+      "no": 24,
+      "name_ko": "분사 펌프",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "3000시간마다",
+          "note_ko": "#: EPA 배기가스 관련 부품. 대동 대리점 문의"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-025",
+      "no": 25,
+      "name_ko": "냉각장치 (라디에이터)",
+      "actions": [
+        {
+          "type": "check_level",
+          "type_ko": "냉각수 레벨 점검",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "F"
+        },
+        {
+          "type": "flush",
+          "type_ko": "냉각장치 세척",
+          "interval_ko": "1년마다",
+          "code": "AJ"
+        },
+        {
+          "type": "replace",
+          "type_ko": "냉각수 교환",
+          "interval_ko": "1년마다",
+          "code": "AJ"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-026",
+      "no": 26,
+      "name_ko": "에어컨 필터",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "1년마다"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-027",
+      "no": 27,
+      "name_ko": "연료장치",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "필요시",
+          "code": "C",
+          "note_ko": "*3"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-028",
+      "no": 28,
+      "name_ko": "퓨즈",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "필요시",
+          "code": "AN, AP",
+          "note_ko": "*3"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-029",
+      "no": 29,
+      "name_ko": "전구",
+      "actions": [
+        {
+          "type": "replace",
+          "type_ko": "교환",
+          "interval_ko": "필요시",
+          "code": "AQ",
+          "note_ko": "*3"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-030",
+      "no": 30,
+      "name_ko": "안전벨트",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)",
+          "code": "K"
+        }
+      ],
+      "page_ref": "7-5"
+    },
+    {
+      "id": "IN-031",
+      "no": 31,
+      "name_ko": "타이어 공기압 및 손상",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)"
+        }
+      ],
+      "page_ref": "7-6"
+    },
+    {
+      "id": "IN-032",
+      "no": 32,
+      "name_ko": "주차브레이크 작동 상태",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)"
+        }
+      ],
+      "page_ref": "7-6"
+    },
+    {
+      "id": "IN-033",
+      "no": 33,
+      "name_ko": "PTO 축 및 가드 상태",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)"
+        }
+      ],
+      "page_ref": "7-6"
+    },
+    {
+      "id": "IN-034",
+      "no": 34,
+      "name_ko": "3점히치 및 드로우바 상태",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)"
+        }
+      ],
+      "page_ref": "7-6"
+    },
+    {
+      "id": "IN-035",
+      "no": 35,
+      "name_ko": "핀 체결 상태",
+      "actions": [
+        {
+          "type": "check",
+          "type_ko": "점검",
+          "interval_ko": "매일 (10시간마다)"
+        }
+      ],
+      "page_ref": "7-6"
+    }
+  ],
+  "general_notes_ko": [
+    "⊙ 표시 작업은 운전 후 최초 10시간 또는 50시간에 실시하세요.",
+    "상기 #표시 항목은 EPA 비포장도로 배기가스 관련 주요부품입니다.",
+    "오일·필터 교환 시 대동 순정 부품(Daedong UTF55 등)을 사용하세요.",
+    "정비코드(A, B, C...)는 매뉴얼 7-8페이지 이후 각 코드 설명을 참조하세요.",
+    "1년마다 대동 지정 대리점에서 정기점검을 받으세요."
+  ]
+}
