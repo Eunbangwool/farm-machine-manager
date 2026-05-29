@@ -135,7 +135,7 @@ fun AllConsumablesScreen(
                                     } catch (t: Throwable) {
                                         android.widget.Toast.makeText(
                                             context,
-                                            "교체 기록 저장 실패: ${t.message ?: "알 수 없는 오류"}",
+                                            "교체 기록 저장 실패: ${com.example.farmmachinemanager.data.repository.describeFirestoreError(t)}",
                                             android.widget.Toast.LENGTH_LONG
                                         ).show()
                                     }
