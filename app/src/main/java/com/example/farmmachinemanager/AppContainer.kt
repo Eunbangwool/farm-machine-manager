@@ -95,8 +95,10 @@ object AppContainer {
         if (FirebaseAvailability.isAvailable) {
             val code = farmCodeManager.farmCode?.takeIf { it.isNotBlank() }
             scope.launch {
-                ensureAuthReady()
-                if (code != null) ensureMachineMembership(code)
+                runCatching {
+                    ensureAuthReady()
+                    if (code != null) ensureMachineMembership(code)
+                }  // 실패는 reportFirestoreError 로 이미 가시화됨. crash 방지.
             }
         }
     }
@@ -127,9 +129,13 @@ object AppContainer {
             deferred.complete(Unit)
         } catch (t: Throwable) {
             authReady = null  // 재시도 가능하도록 초기화
-            reportFirestoreError("익명 로그인 실패: ${t.message ?: t::class.java.simpleName}")
+            val hint = if (t.message?.contains("OPERATION_NOT_ALLOWED", ignoreCase = true) == true ||
+                t.message?.contains("ADMIN_ONLY", ignoreCase = true) == true)
+                " (Firebase Console → Authentication → Sign-in method 에서 익명 인증 활성화 필요)"
+            else ""
+            reportFirestoreError("익명 로그인 실패: ${t.message ?: t::class.java.simpleName}$hint")
             deferred.complete(Unit)  // 대기자들이 영구 차단되지 않도록 풀어준다
-            throw t
+            // throw 제거 — 호출자 코루틴이 unhandled 예외로 크래시하는 것 방지.
         }
     }
 
