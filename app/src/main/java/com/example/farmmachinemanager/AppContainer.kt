@@ -13,8 +13,17 @@ import com.example.farmmachinemanager.data.repository.MaintenanceRepository
 import com.example.farmmachinemanager.data.repository.SampleConsumableRepository
 import com.example.farmmachinemanager.data.repository.SampleMachineRepository
 import com.example.farmmachinemanager.data.repository.SampleMaintenanceRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * 서비스 로케이터.
@@ -68,9 +77,7 @@ object AppContainer {
         refreshSyncMode()
     }
 
-    /**
-     * 농장 코드 또는 Firebase 상태가 바뀐 뒤 호출. mode 재평가 + repository 캐시 무효화.
-     */
+    /** 농장 코드 또는 Firebase 상태가 바뀐 뒤 호출. mode 재평가 + repository 캐시 무효화. */
     fun refreshSyncMode() {
         currentMode = when {
             !FirebaseAvailability.isAvailable -> SyncMode.FIREBASE_NOT_CONFIGURED
@@ -83,6 +90,71 @@ object AppContainer {
         cachedMachineRepository = null
         cachedMaintenanceRepository = null
         cachedConsumableRepository = null
+
+        // Firestore 사용 가능하면 익명 인증 + 농장 멤버 등록을 백그라운드로 보장.
+        if (FirebaseAvailability.isAvailable) {
+            val code = farmCodeManager.farmCode?.takeIf { it.isNotBlank() }
+            scope.launch {
+                ensureAuthReady()
+                if (code != null) ensureMachineMembership(code)
+            }
+        }
+    }
+
+    // ---- 익명 인증 + 농장 멤버 등록 ----------------------------------------
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /** 익명 인증이 끝났을 때 완료되는 deferred. 중복 호출은 같은 job 재사용. */
+    @Volatile private var authReady: CompletableDeferred<Unit>? = null
+
+    /**
+     * 익명 Firebase Auth 가 준비될 때까지 대기. 이미 로그인되어 있으면 즉시 반환.
+     * Firestore Repository 가 실제 read/write 직전에 await 해야 보안 규칙(isMachineMember)
+     * 게이트를 통과한다. 실패는 reportFirestoreError 로 사용자에게 노출.
+     */
+    suspend fun ensureAuthReady() {
+        val existing = authReady
+        if (existing != null) {
+            existing.await(); return
+        }
+        val deferred = CompletableDeferred<Unit>()
+        authReady = deferred
+        try {
+            val auth = FirebaseAuth.getInstance()
+            if (auth.currentUser == null) {
+                auth.signInAnonymously().await()
+            }
+            deferred.complete(Unit)
+        } catch (t: Throwable) {
+            authReady = null  // 재시도 가능하도록 초기화
+            reportFirestoreError("익명 로그인 실패: ${t.message ?: t::class.java.simpleName}")
+            deferred.complete(Unit)  // 대기자들이 영구 차단되지 않도록 풀어준다
+            throw t
+        }
+    }
+
+    /**
+     * 농장 코드 하위에 본인의 machineMembers 자기 doc 을 생성(없으면). Rules 의
+     * isMachineMember(farmCode) 가 통과하려면 이 doc 이 존재해야 한다.
+     * 코드 변경 시마다 한 번 호출.
+     */
+    suspend fun ensureMachineMembership(farmCode: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        try {
+            FirebaseFirestore.getInstance()
+                .collection("farms").document(farmCode)
+                .collection("machineMembers").document(uid)
+                .set(
+                    mapOf(
+                        "uid" to uid,
+                        "joinedAt" to FieldValue.serverTimestamp(),
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge(),
+                )
+                .await()
+        } catch (t: Throwable) {
+            reportFirestoreError("멤버 등록 실패: ${t.message ?: t::class.java.simpleName}")
+        }
     }
 
     // ---- repository 캐시 ----------------------------------------------------

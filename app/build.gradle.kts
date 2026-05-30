@@ -119,6 +119,9 @@ dependencies {
     // Firebase BoM이 모든 Firebase 의존성 버전을 통일.
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
+    // 익명 인증 — 보안 규칙이 isMember()/isMachineMember() 같은 게이트를 쓰므로
+    // 사용자가 농장 코드로 join 하기 전에 익명 UID 발급이 필요.
+    implementation(libs.firebase.auth)
     // Tasks API를 코루틴 .await()로 변환하기 위함
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.work.runtime.ktx)
