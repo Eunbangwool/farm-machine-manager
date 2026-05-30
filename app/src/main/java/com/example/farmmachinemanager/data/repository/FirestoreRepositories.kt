@@ -51,7 +51,7 @@ fun describeFirestoreError(e: Throwable): String {
  * LocalDate, Enum은 Firestore가 직접 지원 안 하므로 Map ↔ Object 수동 변환.
  */
 class FirestoreMachineRepository(
-    farmCode: String,
+    private val farmCode: String,
     db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : MachineRepository {
 
@@ -61,6 +61,10 @@ class FirestoreMachineRepository(
         .collection("machines")
 
     override fun observeMachines(): Flow<List<Machine>> = callbackFlow {
+        // Rules 가 isMachineMember(farmCode) 게이트라 익명 로그인 + 멤버 등록이 끝난
+        // 후에야 첫 snapshot 이 통과. listener 등록 전에 보장.
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
@@ -86,15 +90,21 @@ class FirestoreMachineRepository(
     }
 
     override suspend fun getMachine(id: String): Machine? {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         val doc = collection.document(id).get().await()
         return doc.data?.let { mapToMachine(doc.id, it) }
     }
 
     override suspend fun saveMachine(machine: Machine) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(machine.id).set(machineToMap(machine)).await()
     }
 
     override suspend fun deleteMachine(id: String) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(id).delete().await()
     }
 
@@ -157,7 +167,7 @@ class FirestoreMachineRepository(
  * machineId 필드로 필터링하여 특정 기계의 정비 기록만 조회.
  */
 class FirestoreMaintenanceRepository(
-    farmCode: String,
+    private val farmCode: String,
     db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : MaintenanceRepository {
 
@@ -167,6 +177,8 @@ class FirestoreMaintenanceRepository(
         .collection("maintenance")
 
     override fun observeMaintenanceFor(machineId: String): Flow<List<MaintenanceRecord>> = callbackFlow {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
@@ -193,6 +205,8 @@ class FirestoreMaintenanceRepository(
     }
 
     override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> = callbackFlow {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
@@ -217,14 +231,20 @@ class FirestoreMaintenanceRepository(
     }
 
     override suspend fun addMaintenance(record: MaintenanceRecord) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(record.id).set(recordToMap(record)).await()
     }
 
     override suspend fun updateMaintenance(record: MaintenanceRecord) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(record.id).set(recordToMap(record)).await()
     }
 
     override suspend fun deleteMaintenance(id: String) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(id).delete().await()
     }
 
@@ -291,6 +311,8 @@ class FirestoreConsumableRepository(
         .collection("consumables")
 
     override fun observeConsumablesFor(machineId: String): Flow<List<com.example.farmmachinemanager.data.Consumable>> = callbackFlow {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
@@ -316,10 +338,14 @@ class FirestoreConsumableRepository(
     }
 
     override suspend fun saveConsumable(consumable: com.example.farmmachinemanager.data.Consumable) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(consumable.id).set(consumableToMap(consumable)).await()
     }
 
     override suspend fun deleteConsumable(id: String) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         collection.document(id).delete().await()
     }
 
@@ -327,10 +353,11 @@ class FirestoreConsumableRepository(
         machineId: String,
         machineType: com.example.farmmachinemanager.data.MachineType
     ) {
+        AppContainer.ensureAuthReady()
+        AppContainer.ensureMachineMembership(farmCode)
         // 종류별 표준 소모품 템플릿 (Sample Repository와 동일한 데이터)
         val template = com.example.farmmachinemanager.data.MaintenanceTemplates
             .defaultConsumables(machineId, machineType)
-        // Firestore에 일괄 저장 (병렬 처리)
         template.forEach { consumable ->
             collection.document(consumable.id).set(consumableToMap(consumable)).await()
         }
