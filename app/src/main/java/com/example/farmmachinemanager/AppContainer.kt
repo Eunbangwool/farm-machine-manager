@@ -109,10 +109,13 @@ object AppContainer {
     /** 익명 인증이 끝났을 때 완료되는 deferred. 중복 호출은 같은 job 재사용. */
     @Volatile private var authReady: CompletableDeferred<Unit>? = null
 
+    /** 농장 코드별 멤버 등록 완료 deferred. cancel 안전을 위해 외부 scope 에서 실행. */
+    private val membershipReady = mutableMapOf<String, CompletableDeferred<Unit>>()
+
     /**
-     * 익명 Firebase Auth 가 준비될 때까지 대기. 이미 로그인되어 있으면 즉시 반환.
-     * Firestore Repository 가 실제 read/write 직전에 await 해야 보안 규칙(isMachineMember)
-     * 게이트를 통과한다. 실패는 reportFirestoreError 로 사용자에게 노출.
+     * 익명 Firebase Auth 가 준비될 때까지 대기. 실제 인증은 AppContainer.scope 에서
+     * 실행되므로 호출자(예: Compose callbackFlow) 가 cancel 돼도 인증은 백그라운드에서
+     * 계속 진행된다. 호출자는 await 만 cancel 됨.
      */
     suspend fun ensureAuthReady() {
         val existing = authReady
@@ -121,46 +124,63 @@ object AppContainer {
         }
         val deferred = CompletableDeferred<Unit>()
         authReady = deferred
-        try {
-            val auth = FirebaseAuth.getInstance()
-            if (auth.currentUser == null) {
-                auth.signInAnonymously().await()
+        scope.launch {
+            try {
+                val auth = FirebaseAuth.getInstance()
+                if (auth.currentUser == null) {
+                    auth.signInAnonymously().await()
+                }
+                deferred.complete(Unit)
+            } catch (t: Throwable) {
+                authReady = null
+                val hint = if (t.message?.contains("OPERATION_NOT_ALLOWED", ignoreCase = true) == true ||
+                    t.message?.contains("ADMIN_ONLY", ignoreCase = true) == true)
+                    " (Firebase Console → Authentication → Sign-in method 에서 익명 인증 활성화 필요)"
+                else ""
+                reportFirestoreError("익명 로그인 실패: ${t.message ?: t::class.java.simpleName}$hint")
+                deferred.complete(Unit)
             }
-            deferred.complete(Unit)
-        } catch (t: Throwable) {
-            authReady = null  // 재시도 가능하도록 초기화
-            val hint = if (t.message?.contains("OPERATION_NOT_ALLOWED", ignoreCase = true) == true ||
-                t.message?.contains("ADMIN_ONLY", ignoreCase = true) == true)
-                " (Firebase Console → Authentication → Sign-in method 에서 익명 인증 활성화 필요)"
-            else ""
-            reportFirestoreError("익명 로그인 실패: ${t.message ?: t::class.java.simpleName}$hint")
-            deferred.complete(Unit)  // 대기자들이 영구 차단되지 않도록 풀어준다
-            // throw 제거 — 호출자 코루틴이 unhandled 예외로 크래시하는 것 방지.
         }
+        deferred.await()
     }
 
     /**
-     * 농장 코드 하위에 본인의 machineMembers 자기 doc 을 생성(없으면). Rules 의
-     * isMachineMember(farmCode) 가 통과하려면 이 doc 이 존재해야 한다.
-     * 코드 변경 시마다 한 번 호출.
+     * 농장 코드 하위 본인 machineMembers 자기 doc 보장. 실제 set 은 AppContainer.scope
+     * 에서 실행되므로 호출자 cancel 영향 없음. CancellationException 은 propagate 해
+     * 정상적인 화면 이탈은 에러로 표시되지 않도록 한다.
      */
     suspend fun ensureMachineMembership(farmCode: String) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        try {
-            FirebaseFirestore.getInstance()
-                .collection("farms").document(farmCode)
-                .collection("machineMembers").document(uid)
-                .set(
-                    mapOf(
-                        "uid" to uid,
-                        "joinedAt" to FieldValue.serverTimestamp(),
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge(),
-                )
-                .await()
-        } catch (t: Throwable) {
-            reportFirestoreError("멤버 등록 실패: ${t.message ?: t::class.java.simpleName}")
+        val existing = membershipReady[farmCode]
+        if (existing != null) {
+            existing.await(); return
         }
+        val deferred = CompletableDeferred<Unit>()
+        membershipReady[farmCode] = deferred
+        scope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid == null) {
+                deferred.complete(Unit); return@launch
+            }
+            try {
+                FirebaseFirestore.getInstance()
+                    .collection("farms").document(farmCode)
+                    .collection("machineMembers").document(uid)
+                    .set(
+                        mapOf(
+                            "uid" to uid,
+                            "joinedAt" to FieldValue.serverTimestamp(),
+                        ),
+                        com.google.firebase.firestore.SetOptions.merge(),
+                    )
+                    .await()
+                deferred.complete(Unit)
+            } catch (t: Throwable) {
+                membershipReady.remove(farmCode)
+                reportFirestoreError("멤버 등록 실패: ${t.message ?: t::class.java.simpleName}")
+                deferred.complete(Unit)
+            }
+        }
+        deferred.await()
     }
 
     // ---- repository 캐시 ----------------------------------------------------
