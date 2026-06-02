@@ -30,6 +30,11 @@ class ConsumableCheckWorker(
         // AppContainer 초기화 보장 (백그라운드 실행 시 process 새로 시작될 수 있음)
         AppContainer.init(applicationContext)
 
+        // 농장 코드 미설정/LOCAL_ONLY 면 샘플 데이터로 매일 알림이 가는 nuisance 방지.
+        if (AppContainer.currentMode != AppContainer.SyncMode.FIRESTORE_SYNCED) {
+            return Result.success()
+        }
+
         return try {
             val machines = AppContainer.machineRepository.observeMachines().first()
             if (machines.isEmpty()) return Result.success()

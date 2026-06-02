@@ -63,8 +63,14 @@ class FirestoreMachineRepository(
     override fun observeMachines(): Flow<List<Machine>> = callbackFlow {
         // Rules 가 isMachineMember(farmCode) 게이트라 익명 로그인 + 멤버 등록이 끝난
         // 후에야 첫 snapshot 이 통과. listener 등록 전에 보장.
-        AppContainer.ensureAuthReady()
-        AppContainer.ensureMachineMembership(farmCode)
+        try {
+            AppContainer.ensureAuthReady()
+            AppContainer.ensureMachineMembership(farmCode)
+        } catch (t: Throwable) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
@@ -177,8 +183,14 @@ class FirestoreMaintenanceRepository(
         .collection("maintenance")
 
     override fun observeMaintenanceFor(machineId: String): Flow<List<MaintenanceRecord>> = callbackFlow {
-        AppContainer.ensureAuthReady()
-        AppContainer.ensureMachineMembership(farmCode)
+        try {
+            AppContainer.ensureAuthReady()
+            AppContainer.ensureMachineMembership(farmCode)
+        } catch (t: Throwable) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
         var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
@@ -205,8 +217,14 @@ class FirestoreMaintenanceRepository(
     }
 
     override fun observeAllMaintenance(): Flow<List<MaintenanceRecord>> = callbackFlow {
-        AppContainer.ensureAuthReady()
-        AppContainer.ensureMachineMembership(farmCode)
+        try {
+            AppContainer.ensureAuthReady()
+            AppContainer.ensureMachineMembership(farmCode)
+        } catch (t: Throwable) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
@@ -311,8 +329,14 @@ class FirestoreConsumableRepository(
         .collection("consumables")
 
     override fun observeConsumablesFor(machineId: String): Flow<List<com.example.farmmachinemanager.data.Consumable>> = callbackFlow {
-        AppContainer.ensureAuthReady()
-        AppContainer.ensureMachineMembership(farmCode)
+        try {
+            AppContainer.ensureAuthReady()
+            AppContainer.ensureMachineMembership(farmCode)
+        } catch (t: Throwable) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
         var receivedFirstSnapshot = false
         val registration = collection
             .whereEqualTo("machineId", machineId)
@@ -355,12 +379,16 @@ class FirestoreConsumableRepository(
     ) {
         AppContainer.ensureAuthReady()
         AppContainer.ensureMachineMembership(farmCode)
-        // 종류별 표준 소모품 템플릿 (Sample Repository와 동일한 데이터)
+        // 종류별 표준 소모품 템플릿 (Sample Repository와 동일한 데이터).
+        // 단일 batch 로 commit — 중간 네트워크 실패 시 모두 롤백되어 orphan doc 방지.
         val template = com.example.farmmachinemanager.data.MaintenanceTemplates
             .defaultConsumables(machineId, machineType)
+        if (template.isEmpty()) return
+        val batch = db.batch()
         template.forEach { consumable ->
-            collection.document(consumable.id).set(consumableToMap(consumable)).await()
+            batch.set(collection.document(consumable.id), consumableToMap(consumable))
         }
+        batch.commit().await()
     }
 
     private fun consumableToMap(c: com.example.farmmachinemanager.data.Consumable): Map<String, Any?> = mapOf(

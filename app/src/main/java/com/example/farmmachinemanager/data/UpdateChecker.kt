@@ -21,8 +21,10 @@ object UpdateChecker {
 
     data class UpdateInfo(val buildNumber: Int, val versionName: String, val apkUrl: String)
 
-    /** 새 버전이 있으면 UpdateInfo, 없거나 조회 실패면 null. */
+    /** 새 버전이 있으면 UpdateInfo, 없거나 조회 실패면 null.
+     *  로컬 빌드(VERSION_CODE<=1)는 매 빌드마다 'new version' 으로 인식되니 스킵. */
     suspend fun check(): UpdateInfo? = withContext(Dispatchers.IO) {
+        if (BuildConfig.VERSION_CODE <= 1) return@withContext null
         runCatching {
             val conn = (URL(LATEST_API).openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
@@ -35,8 +37,9 @@ object UpdateChecker {
             } finally {
                 conn.disconnect()
             }
-            // release 본문의 "빌드 번호: `57`" 에서 숫자 추출.
-            val latest = Regex("빌드 번호[^0-9]*([0-9]+)")
+            // release 본문의 "빌드 번호: `57`" — 백틱·콜론·공백 만 허용해 다른
+            // 숫자 토큰(다운로드 카운트 등)을 잘못 잡지 않도록 한다.
+            val latest = Regex("""빌드 번호[:\s`]*([0-9]+)""")
                 .find(text)?.groupValues?.get(1)?.toIntOrNull() ?: return@runCatching null
             if (latest <= BuildConfig.VERSION_CODE) return@runCatching null
             UpdateInfo(
