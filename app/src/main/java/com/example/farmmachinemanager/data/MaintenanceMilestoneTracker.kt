@@ -28,15 +28,18 @@ object MaintenanceMilestoneTracker {
     /**
      * 가동시간 갱신 후 호출. 새 50h 배수에 도달했으면 알림 발송 + 기준선 갱신.
      * 도달한 가장 큰 배수 1건만 알림(예: 48→210 으로 점프 시 200h 알림 1번).
+     *
+     * baseline 은 단조 증가만 허용 — 사용자가 오타로 가동시간을 줄여도(예: 1250→125)
+     * 기준선이 깎이지 않아 다음 정상 입력 시 거짓 알림이 안 뜬다.
      */
     fun checkAndNotify(context: Context, machineId: String, machineName: String, newHours: Double) {
         val sp = prefs(context)
         val last = sp.getInt(key(machineId), 0)
         val current = floorMultiple(newHours)
-        if (current > last) {
-            NotificationHelper.showMilestoneAlert(context, machineId, machineName, current)
-            sp.edit().putInt(key(machineId), current).apply()
-        }
+        // baseline 보다 작은 값이면(가동시간 감소·오타) 무시.
+        if (current <= last) return
+        NotificationHelper.showMilestoneAlert(context, machineId, machineName, current)
+        sp.edit().putInt(key(machineId), current).apply()
     }
 
     /** 머신 삭제 시 호출 (선택). */
