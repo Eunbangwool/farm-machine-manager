@@ -27,6 +27,11 @@ object NotificationHelper {
     const val CHANNEL_NAME_UPDATE = "앱 업데이트 알림"
     const val NOTIFICATION_ID_UPDATE = 1002
 
+    const val CHANNEL_ID_MILESTONE = "maintenance_milestone"
+    const val CHANNEL_NAME_MILESTONE = "정기 정비 시기 알림"
+    /** 머신마다 별도 알림 ID 가 필요해서 1100 + machineId.hashCode() 형태로 사용. */
+    const val NOTIFICATION_ID_MILESTONE_BASE = 1100
+
     /** 앱 시작 시 또는 첫 발송 전에 호출. 이미 만들어진 채널은 중복 등록 무시됨. */
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -47,6 +52,15 @@ object NotificationHelper {
                     NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
                     description = "새 앱 버전이 배포되면 알림"
+                }
+            )
+            nm?.createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID_MILESTONE,
+                    CHANNEL_NAME_MILESTONE,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description = "기계 가동시간이 50시간 단위(50/100/200/400h…)에 도달하면 알림"
                 }
             )
         }
@@ -115,5 +129,43 @@ object NotificationHelper {
 
         val nm = ContextCompat.getSystemService(context, NotificationManager::class.java)
         nm?.notify(NOTIFICATION_ID_UPDATE, notification)
+    }
+
+    /**
+     * 가동시간 50시간 단위 정기 정비 시기 알림.
+     * 탭하면 앱이 열림 — 사용자가 해당 머신 상세에서 정기 정비 일괄 입력 가능.
+     */
+    fun showMilestoneAlert(
+        context: Context,
+        machineId: String,
+        machineName: String,
+        milestoneHours: Int,
+    ) {
+        ensureChannel(context)
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, machineId.hashCode(), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val title = "$machineName · ${milestoneHours}시간 정비 시기"
+        val message = "가동시간이 ${milestoneHours}h 에 도달했습니다. " +
+            "50시간 정기 정비 항목을 확인하세요."
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_MILESTONE)
+            .setSmallIcon(android.R.drawable.ic_menu_recent_history)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        val nm = ContextCompat.getSystemService(context, NotificationManager::class.java)
+        // 머신별 고유 ID — 동시에 여러 머신 알림 노출 가능.
+        nm?.notify(NOTIFICATION_ID_MILESTONE_BASE + machineId.hashCode(), notification)
     }
 }
