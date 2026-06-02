@@ -211,6 +211,8 @@ fun EditMachineScreen(
                         )
                         try {
                             AppContainer.machineRepository.saveMachine(updated)
+                            com.example.farmmachinemanager.data.MaintenanceMilestoneTracker
+                                .checkAndNotify(context, updated.id, updated.name, updated.operatingHours)
                             onSaveComplete()
                         } catch (t: Throwable) {
                             isSaving = false

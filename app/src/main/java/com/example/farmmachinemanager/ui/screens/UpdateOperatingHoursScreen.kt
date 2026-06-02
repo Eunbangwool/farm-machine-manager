@@ -146,6 +146,8 @@ fun UpdateOperatingHoursScreen(
                     try {
                         val updated = current.copy(operatingHours = newHours)
                         AppContainer.machineRepository.saveMachine(updated)
+                        com.example.farmmachinemanager.data.MaintenanceMilestoneTracker
+                            .checkAndNotify(context, current.id, current.name, newHours)
                         onSaveComplete()
                     } catch (t: Throwable) {
                         isSaving = false

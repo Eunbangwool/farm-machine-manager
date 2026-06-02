@@ -226,6 +226,9 @@ fun AddMachineScreen(
                         try {
                             AppContainer.machineRepository.saveMachine(machine)
                             AppContainer.consumableRepository.applyStandardTemplate(newId, type!!)
+                            // 50h 알림 기준선 — 기존 가동시간 만큼은 알림 안 뜨게.
+                            com.example.farmmachinemanager.data.MaintenanceMilestoneTracker
+                                .seedBaseline(context, newId, machine.operatingHours)
                             onSaveComplete()
                         } catch (t: Throwable) {
                             isSaving = false
