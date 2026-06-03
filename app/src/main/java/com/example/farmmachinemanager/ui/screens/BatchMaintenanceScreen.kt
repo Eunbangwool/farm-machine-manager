@@ -324,13 +324,16 @@ private data class BatchItem(
 /**
  * 머신·인터벌 → 매뉴얼에서 해당 항목들 추출.
  * 이앙기와 트랙터 schema 가 달라 별도 처리.
+ *
+ * 50시간마다 인터벌은 매뉴얼 항목과 별개로 '그리스 주입' 항목을 항상 맨 앞에 추가.
+ * 농가 현장 표준 — 50h 단위로 모든 니플에 그리스 도포가 권장됨.
  */
 private suspend fun loadItemsFor(manualKey: ManualKey?, intervalKey: String): List<BatchItem> {
     val repo = AppContainer.manualRepository
-    return when (manualKey) {
+    val items: List<BatchItem> = when (manualKey) {
         ManualKey.PLANTER -> {
-            val data = runCatching { repo.loadInspectionSchedule() }.getOrNull() ?: return emptyList()
-            data.items.flatMap { item ->
+            val data = runCatching { repo.loadInspectionSchedule() }.getOrNull()
+            data?.items?.flatMap { item ->
                 item.actions.filter { it.intervalKo.startsWith(intervalKey) }.map { action ->
                     BatchItem(
                         id = "${item.id}-${action.type}",
@@ -339,21 +342,33 @@ private suspend fun loadItemsFor(manualKey: ManualKey?, intervalKey: String): Li
                         maintenanceType = mapActionToType(action.type),
                     )
                 }
-            }
+            } ?: emptyList()
         }
         ManualKey.TRACTOR_MR1050 -> {
-            val data = runCatching { repo.loadTractorInspectionSchedule() }.getOrNull() ?: return emptyList()
-            data.items.filter { it.intervalKo.startsWith(intervalKey) }.map { item ->
+            val data = runCatching { repo.loadTractorInspectionSchedule() }.getOrNull()
+            data?.items?.filter { it.intervalKo.startsWith(intervalKey) }?.map { item ->
                 BatchItem(
                     id = item.id,
                     title = item.nameKo,
                     actionLabel = item.actionKo,
                     maintenanceType = mapActionToType(item.actionJa ?: item.actionKo),
                 )
-            }
+            } ?: emptyList()
         }
         null -> emptyList()
     }
+
+    // 50시간마다 → 그리스 항목 강제 추가 (매뉴얼 유무·기종 무관).
+    return if (intervalKey.startsWith("50시간")) {
+        listOf(
+            BatchItem(
+                id = "grease_50h",
+                title = "그리스 주입",
+                actionLabel = "니플 전 부위 도포",
+                maintenanceType = MaintenanceType.REGULAR_CHECK,
+            )
+        ) + items
+    } else items
 }
 
 private fun mapActionToType(actionToken: String): MaintenanceType {
