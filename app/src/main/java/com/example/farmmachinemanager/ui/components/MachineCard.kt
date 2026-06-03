@@ -99,6 +99,8 @@ fun MachineCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onQuickAddHours: ((Int) -> Unit)? = null,
+    isFavorite: Boolean = false,
+    onToggleFavorite: (() -> Unit)? = null,
 ) {
     val (iconBg, iconTint, iconVector) = iconConfig(machine.type)
     val nextMilestone = ((machine.operatingHours.toInt() / 50) + 1) * 50
@@ -201,6 +203,23 @@ fun MachineCard(
                     QuickHourChip(label = "+1h", onClick = { onQuickAddHours(1) })
                     QuickHourChip(label = "+8h", onClick = { onQuickAddHours(8) })
                 }
+            }
+        }
+
+        // 즐겨찾기 별 (콜백 있을 때만)
+        if (onToggleFavorite != null) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onToggleFavorite),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = if (isFavorite) "★" else "☆",
+                    fontSize = 18.sp,
+                    color = if (isFavorite) StatusInspectionText else TextTertiary,
+                )
             }
         }
 
