@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.AppContainer
+import com.example.farmmachinemanager.data.FavoriteMachines
 import com.example.farmmachinemanager.data.Machine
 import com.example.farmmachinemanager.data.MaintenanceMilestoneTracker
 import com.example.farmmachinemanager.data.repository.describeFirestoreError
@@ -88,6 +89,7 @@ fun MachineListScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    var favoriteIds by remember { mutableStateOf(FavoriteMachines.load(context)) }
 
     // 가동시간 +1h/+8h 빠른 입력 → saveMachine + milestone 알림 + 토스트.
     val onQuickAddHours: (Machine, Int) -> Unit = { machine, delta ->
@@ -155,15 +157,17 @@ fun MachineListScreen(
     val selectedIndex = filterOptions.indexOfFirst { it.first == selectedFilter }
         .coerceAtLeast(0)
 
-    val visibleMachines = remember(selectedFilter, machines, searchQuery) {
+    val visibleMachines = remember(selectedFilter, machines, searchQuery, favoriteIds) {
         val typeFiltered = if (selectedFilter == null) machines
         else machines.filter { it.type == selectedFilter }
         // 검색어가 있으면 이름/제조사에서 contains 매칭
-        if (searchQuery.isBlank()) typeFiltered
+        val searched = if (searchQuery.isBlank()) typeFiltered
         else typeFiltered.filter { m ->
             m.name.contains(searchQuery, ignoreCase = true) ||
                     m.manufacturer.contains(searchQuery, ignoreCase = true)
         }
+        // 즐겨찾기 머신 먼저, 그 외 유지.
+        searched.sortedByDescending { it.id in favoriteIds }
     }
 
     Box(
@@ -261,6 +265,11 @@ fun MachineListScreen(
                                     machine = machine,
                                     onClick = { onMachineClick(machine) },
                                     onQuickAddHours = { delta -> onQuickAddHours(machine, delta) },
+                                    isFavorite = machine.id in favoriteIds,
+                                    onToggleFavorite = {
+                                        FavoriteMachines.toggle(context, machine.id)
+                                        favoriteIds = FavoriteMachines.load(context)
+                                    },
                                 )
                             }
                         }
@@ -271,6 +280,11 @@ fun MachineListScreen(
                             machine = machine,
                             onClick = { onMachineClick(machine) },
                             onQuickAddHours = { delta -> onQuickAddHours(machine, delta) },
+                            isFavorite = machine.id in favoriteIds,
+                            onToggleFavorite = {
+                                FavoriteMachines.toggle(context, machine.id)
+                                favoriteIds = FavoriteMachines.load(context)
+                            },
                         )
                     }
                 }
