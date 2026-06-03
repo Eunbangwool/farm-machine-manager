@@ -59,13 +59,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.BuildConfig
-import com.example.farmmachinemanager.data.UpdateChecker
-import com.example.farmmachinemanager.data.UpdateDownloader
+import com.example.farmmachinemanager.update.AppUpdateChecker
 import com.example.farmmachinemanager.ui.theme.ActionDanger
 import com.example.farmmachinemanager.ui.theme.ActionPrimary
 import com.example.farmmachinemanager.ui.theme.ActionPrimaryText
@@ -81,7 +79,6 @@ import com.example.farmmachinemanager.ui.theme.TextTertiary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlinx.coroutines.launch
 
 /**
  * 설정 화면.
@@ -111,12 +108,10 @@ fun SettingsScreen(
     val context = LocalContext.current
     val info = remember { collectAppInfo(context) }
 
-    val coroutineScope = rememberCoroutineScope()
     var showBusiness by remember { mutableStateOf(false) }
     var showAttributions by remember { mutableStateOf(false) }
     var planterManualExpanded by remember { mutableStateOf(false) }
     var tractorManualExpanded by remember { mutableStateOf(false) }
-    var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
 
     Column(
         modifier = Modifier
@@ -132,6 +127,10 @@ fun SettingsScreen(
                 .padding(PaddingValues(16.dp)),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // 업데이트 자동 확인 카드 — 진입 시 GitHub Releases 조회.
+            // UpToDate 면 렌더되지 않아 화면이 깔끔. 사용자 액션은 단일 '지금 업데이트' 버튼.
+            UpdateCheckCard()
+
             // 앱 정보 카드 (카드 자체가 그룹 — 외부 라벨 없음)
             Column(
                 modifier = Modifier
@@ -164,22 +163,6 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Update,
                     label = "패키지명",
                     value = info.packageName
-                )
-                Divider()
-                NavRow(
-                    label = when (updateState) {
-                        is UpdateState.Checking -> "확인 중…"
-                        else -> "최신 버전 확인"
-                    },
-                    enabled = updateState !is UpdateState.Checking,
-                    onClick = {
-                        updateState = UpdateState.Checking
-                        coroutineScope.launch {
-                            val result = UpdateChecker.check()
-                            updateState = result?.let { UpdateState.NewVersion(it) }
-                                ?: UpdateState.Latest
-                        }
-                    },
                 )
             }
 
@@ -453,48 +436,6 @@ fun SettingsScreen(
         )
     }
 
-    // 업데이트 확인 결과 → 최신이면 토스트, 새 버전이면 다이얼로그(다운로드/나중에)
-    LaunchedEffect(updateState) {
-        if (updateState is UpdateState.Latest) {
-            android.widget.Toast.makeText(
-                context, "이미 최신 버전입니다", android.widget.Toast.LENGTH_SHORT
-            ).show()
-            updateState = UpdateState.Idle
-        }
-    }
-    (updateState as? UpdateState.NewVersion)?.let { state ->
-        AlertDialog(
-            onDismissRequest = { updateState = UpdateState.Idle },
-            title = { Text("새 버전 ${state.info.versionName}") },
-            text = {
-                Text(
-                    "빌드 #${state.info.buildNumber} 이(가) 나왔습니다. " +
-                        "지금 다운로드하시겠어요?\n\n다운로드 후 시스템 알림에서 APK 를 탭하면 설치 화면이 열립니다."
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    UpdateDownloader.startDownload(context, state.info)
-                    android.widget.Toast.makeText(
-                        context, "다운로드를 시작했습니다. 알림에서 진행 상황을 확인하세요.",
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
-                    updateState = UpdateState.Idle
-                }) { Text("다운로드") }
-            },
-            dismissButton = {
-                TextButton(onClick = { updateState = UpdateState.Idle }) { Text("나중에") }
-            },
-        )
-    }
-}
-
-/** "최신 버전 확인" 행의 진행/결과 상태. */
-private sealed interface UpdateState {
-    data object Idle : UpdateState
-    data object Checking : UpdateState
-    data object Latest : UpdateState
-    data class NewVersion(val info: UpdateChecker.UpdateInfo) : UpdateState
 }
 
 /**
@@ -1329,3 +1270,108 @@ private fun openUrl(context: Context, url: String) {
         )
     }
 }
+
+/**
+ * 설정 진입 시 GitHub Releases 자동 조회 → 새 버전이면 카드 노출.
+ * 농작이 패턴(SettingsScreen.UpdateCheckCard) 과 동일 — 다이얼로그·시스템 알림 없이
+ * 설정 화면 안에서만 한 곳으로 통일된 경험.
+ */
+@Composable
+private fun UpdateCheckCard() {
+    val context = LocalContext.current
+    var result by remember { mutableStateOf<AppUpdateChecker.CheckResult?>(null) }
+
+    LaunchedEffect(Unit) {
+        result = AppUpdateChecker.checkForUpdate()
+    }
+
+    when (val r = result) {
+        is AppUpdateChecker.CheckResult.UpdateAvailable -> {
+            val info = r.info
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(ActionPrimary)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = "🎉 새 버전이 있습니다",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = ActionPrimaryText,
+                )
+                Text(
+                    text = "v${info.latestVersionCode}" +
+                        (info.latestVersionName?.let { " · $it" } ?: "") +
+                        (if (info.sizeBytes > 0) " · ${info.sizeBytes / 1024 / 1024}MB" else ""),
+                    fontSize = 12.sp,
+                    color = ActionPrimaryText,
+                )
+                info.buildTime?.let { Text(it, fontSize = 11.sp, color = ActionPrimaryText) }
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(SurfacePrimary)
+                        .clickable {
+                            AppUpdateChecker.downloadAndInstall(context, info)
+                        }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "지금 업데이트",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ActionPrimary,
+                    )
+                }
+                Text(
+                    text = "탭하면 다운로드 후 설치 화면이 자동으로 뜹니다. " +
+                        "첫 설치 시 '출처를 알 수 없는 앱' 허용이 필요합니다.",
+                    fontSize = 10.sp,
+                    color = ActionPrimaryText,
+                    lineHeight = 14.sp,
+                )
+            }
+        }
+        is AppUpdateChecker.CheckResult.Error -> {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                    .clickable { result = null /* 재시도 트리거 */ }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("⚠ 업데이트 확인 실패", fontSize = 13.sp, color = StatusRepairText, fontWeight = FontWeight.Medium)
+                    Text(r.message, fontSize = 11.sp, color = TextSecondary, lineHeight = 14.sp)
+                }
+                Text("다시 시도", fontSize = 12.sp, color = ActionPrimary, fontWeight = FontWeight.Medium)
+            }
+            // 재시도: result=null 이면 LaunchedEffect 가 다시 안 돌아가니 별도 LaunchedEffect.
+            LaunchedEffect(result) {
+                if (result == null) result = AppUpdateChecker.checkForUpdate()
+            }
+        }
+        null -> {
+            // 첫 조회 진행 중 — 미세한 row 만 표시 (UI 점프 방지)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("새 버전 확인 중…", fontSize = 11.sp, color = TextTertiary)
+            }
+        }
+        AppUpdateChecker.CheckResult.UpToDate -> {
+            // 렌더 X — 최신이면 카드 자체가 안 보임
+        }
+    }
+}
+
