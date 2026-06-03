@@ -89,21 +89,32 @@ import com.example.farmmachinemanager.ui.theme.LoaderIconTint
 /**
  * 기계 한 대를 표현하는 카드.
  * 현장에서 장갑 끼고도 누를 수 있도록 충분한 터치 영역(높이 ~84dp)을 확보.
+ *
+ * - 다음 50h 정비까지 5h 이하 남으면 카드 좌측 띠 + ⚠ 배지로 시급함 표시.
+ * - 가동시간 +1h / +8h 빠른 입력 칩 (onQuickAddHours 전달 시).
  */
 @Composable
 fun MachineCard(
     machine: Machine,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onQuickAddHours: ((Int) -> Unit)? = null,
 ) {
     val (iconBg, iconTint, iconVector) = iconConfig(machine.type)
+    val nextMilestone = ((machine.operatingHours.toInt() / 50) + 1) * 50
+    val hoursToNext = (nextMilestone - machine.operatingHours.toInt()).coerceAtLeast(0)
+    val maintenanceSoon = hoursToNext in 1..5
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(SurfacePrimary)
-            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+            .border(
+                width = if (maintenanceSoon) 1.dp else 0.5.dp,
+                color = if (maintenanceSoon) StatusRepairText else BorderColor,
+                shape = RoundedCornerShape(12.dp),
+            )
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -158,11 +169,37 @@ fun MachineCard(
                     icon = Icons.Outlined.Schedule,
                     text = "${machine.operatingHours.toInt()}시간"
                 )
+                if (maintenanceSoon) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(StatusRepairBg)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "⚠ ${nextMilestone}h 정비 ${hoursToNext}h 남음",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = StatusRepairText,
+                        )
+                    }
+                }
                 machine.statusNote?.let { note ->
                     InfoChip(
                         icon = noteIcon(machine.status),
                         text = note
                     )
+                }
+            }
+
+            if (onQuickAddHours != null) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    QuickHourChip(label = "+1h", onClick = { onQuickAddHours(1) })
+                    QuickHourChip(label = "+8h", onClick = { onQuickAddHours(8) })
                 }
             }
         }
@@ -196,6 +233,26 @@ private fun StatusBadge(status: MachineStatus) {
             fontSize = 10.sp,
             fontWeight = FontWeight.Medium,
             color = fg
+        )
+    }
+}
+
+/** 가동시간 빠른 입력 칩 — 카드 안에 두지만 자체 clickable 로 카드 click 차단. */
+@Composable
+private fun QuickHourChip(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(StatusInspectionBg)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            color = StatusInspectionText,
         )
     }
 }
