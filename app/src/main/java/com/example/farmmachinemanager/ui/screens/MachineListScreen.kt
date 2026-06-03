@@ -36,7 +36,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.farmmachinemanager.AppContainer
 import com.example.farmmachinemanager.data.Machine
+import com.example.farmmachinemanager.data.MaintenanceMilestoneTracker
+import com.example.farmmachinemanager.data.repository.describeFirestoreError
 import com.example.farmmachinemanager.data.MachineType
 import com.example.farmmachinemanager.ui.components.FilterChipGroup
 import com.example.farmmachinemanager.ui.components.FilterOption
@@ -79,6 +84,28 @@ fun MachineListScreen(
     onSettingsClick: () -> Unit = {},
     onStatisticsClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // 가동시간 +1h/+8h 빠른 입력 → saveMachine + milestone 알림 + 토스트.
+    val onQuickAddHours: (Machine, Int) -> Unit = { machine, delta ->
+        coroutineScope.launch {
+            val updated = machine.copy(operatingHours = machine.operatingHours + delta)
+            runCatching {
+                AppContainer.machineRepository.saveMachine(updated)
+                MaintenanceMilestoneTracker.checkAndNotify(
+                    context, machine.id, machine.name, updated.operatingHours
+                )
+            }.onFailure { t ->
+                android.widget.Toast.makeText(
+                    context,
+                    "저장 실패: ${describeFirestoreError(t)}",
+                    android.widget.Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
+
     // Repository에서 실시간으로 기계 목록 읽기.
     // 가동시간 업데이트 화면에서 저장한 새 값이 자동 반영됨.
     val machines by AppContainer.machineRepository
@@ -217,7 +244,8 @@ fun MachineListScreen(
                             items(list, key = { it.id }) { machine ->
                                 MachineCard(
                                     machine = machine,
-                                    onClick = { onMachineClick(machine) }
+                                    onClick = { onMachineClick(machine) },
+                                    onQuickAddHours = { delta -> onQuickAddHours(machine, delta) },
                                 )
                             }
                         }
@@ -226,7 +254,8 @@ fun MachineListScreen(
                     items(visibleMachines, key = { it.id }) { machine ->
                         MachineCard(
                             machine = machine,
-                            onClick = { onMachineClick(machine) }
+                            onClick = { onMachineClick(machine) },
+                            onQuickAddHours = { delta -> onQuickAddHours(machine, delta) },
                         )
                     }
                 }
