@@ -91,9 +91,9 @@ private fun ReceiptScanButton(onScanned: (com.example.farmmachinemanager.data.Re
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var scanning by remember { mutableStateOf(false) }
-    val picker = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
+
+    // OCR 공통 처리.
+    val handleUri: (android.net.Uri?) -> Unit = { uri ->
         if (uri != null) {
             scanning = true
             scope.launch {
@@ -117,39 +117,98 @@ private fun ReceiptScanButton(onScanned: (com.example.farmmachinemanager.data.Re
             }
         }
     }
-    Row(
+
+    val gallery = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri -> handleUri(uri) }
+
+    // 카메라용 임시 파일 + FileProvider URI (filepaths.xml 의 external-files-path/Download 매핑).
+    var cameraUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val camera = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { ok -> if (ok) handleUri(cameraUri) }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(SurfaceSecondary)
-            .clickable(enabled = !scanning) {
-                picker.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(
+                imageVector = Icons.Outlined.ReceiptLong,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(20.dp),
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (scanning) "인식 중…" else "영수증 스캔으로 자동 입력",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary,
+                )
+                Text(
+                    text = "사진에서 금액·업체·날짜·품목을 자동으로 채웁니다",
+                    fontSize = 11.sp,
+                    color = TextSecondary,
                 )
             }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.ReceiptLong,
-            contentDescription = null,
-            tint = TextPrimary,
-            modifier = Modifier.size(20.dp),
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = if (scanning) "인식 중…" else "영수증 스캔으로 자동 입력",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextPrimary,
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ScanActionChip(
+                label = "📷 촬영",
+                enabled = !scanning,
+                onClick = {
+                    val photoFile = java.io.File(
+                        context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS),
+                        "receipt_${System.currentTimeMillis()}.jpg"
+                    )
+                    val uri = androidx.core.content.FileProvider.getUriForFile(
+                        context, "${context.packageName}.fileprovider", photoFile
+                    )
+                    cameraUri = uri
+                    camera.launch(uri)
+                },
+                modifier = Modifier.weight(1f),
             )
-            Text(
-                text = "갤러리 사진에서 금액·업체·날짜를 자동으로 채웁니다",
-                fontSize = 11.sp,
-                color = TextSecondary,
+            ScanActionChip(
+                label = "🖼 갤러리",
+                enabled = !scanning,
+                onClick = {
+                    gallery.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+                modifier = Modifier.weight(1f),
             )
         }
+    }
+}
+
+@Composable
+private fun ScanActionChip(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(SurfacePrimary)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = if (enabled) TextPrimary else TextTertiary,
+        )
     }
 }
 
