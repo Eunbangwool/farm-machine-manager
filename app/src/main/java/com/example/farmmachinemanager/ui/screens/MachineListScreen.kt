@@ -610,11 +610,10 @@ private fun TodoTodayCard(
                 lineHeight = 14.sp,
             )
         }
-        androidx.compose.material3.Icon(
-            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = null,
-            tint = StatusRepairText,
-            modifier = Modifier.size(18.dp),
+        Text(
+            text = "›",
+            fontSize = 22.sp,
+            color = StatusRepairText,
         )
     }
 }
