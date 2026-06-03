@@ -157,6 +157,15 @@ fun MachineListScreen(
     val selectedIndex = filterOptions.indexOfFirst { it.first == selectedFilter }
         .coerceAtLeast(0)
 
+    // 정비 임박(다음 50h 까지 ≤5h) 머신 — '오늘 할 일' 카드용. Composable scope 에서 계산.
+    val dueSoon = remember(machines) {
+        machines.filter { m ->
+            val next = ((m.operatingHours.toInt() / 50) + 1) * 50
+            val left = next - m.operatingHours.toInt()
+            left in 1..5
+        }
+    }
+
     val visibleMachines = remember(selectedFilter, machines, searchQuery, favoriteIds) {
         val typeFiltered = if (selectedFilter == null) machines
         else machines.filter { it.type == selectedFilter }
@@ -214,13 +223,6 @@ fun MachineListScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 정비 임박(다음 50h 까지 ≤5h) 머신이 있으면 상단에 "오늘 할 일" 카드.
-                val dueSoon = remember(machines) {
-                    machines.filter { m ->
-                        val next = ((m.operatingHours.toInt() / 50) + 1) * 50
-                        val left = next - m.operatingHours.toInt()
-                        left in 1..5
-                    }
-                }
                 if (dueSoon.isNotEmpty()) {
                     item {
                         TodoTodayCard(machines = dueSoon, onMachineClick = onMachineClick)
@@ -609,7 +611,7 @@ private fun TodoTodayCard(
             )
         }
         androidx.compose.material3.Icon(
-            imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
+            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
             tint = StatusRepairText,
             modifier = Modifier.size(18.dp),
