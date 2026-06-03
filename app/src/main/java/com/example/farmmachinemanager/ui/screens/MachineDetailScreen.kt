@@ -771,20 +771,33 @@ private fun BatchMaintenanceEntryCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             intervals.forEach { interval ->
-                Row(
+                val hoursInterval = Regex("""(\d+)시간""").find(interval)
+                    ?.groupValues?.get(1)?.toIntOrNull()
+                val remaining = if (hoursInterval != null) {
+                    val next = ((machine.operatingHours.toInt() / hoursInterval) + 1) * hoursInterval
+                    (next - machine.operatingHours.toInt()).coerceAtLeast(0)
+                } else null
+                val due = remaining != null && remaining in 0..5
+                Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(SurfaceSecondary)
+                        .background(if (due) StatusRepairBg else SurfaceSecondary)
                         .clickable { onIntervalClick(interval) }
                         .padding(horizontal = 14.dp, vertical = 8.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 ) {
                     Text(
                         text = interval,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextPrimary,
+                        color = if (due) StatusRepairText else TextPrimary,
                     )
+                    if (remaining != null) {
+                        Text(
+                            text = "${remaining}h 남음",
+                            fontSize = 10.sp,
+                            color = if (due) StatusRepairText else TextSecondary,
+                        )
+                    }
                 }
             }
         }

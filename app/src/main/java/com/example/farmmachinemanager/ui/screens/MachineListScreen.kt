@@ -60,6 +60,8 @@ import com.example.farmmachinemanager.ui.theme.BorderColor
 import com.example.farmmachinemanager.ui.theme.FarmMachineTheme
 import com.example.farmmachinemanager.ui.theme.StatusInspectionBg
 import com.example.farmmachinemanager.ui.theme.StatusInspectionText
+import com.example.farmmachinemanager.ui.theme.StatusRepairBg
+import com.example.farmmachinemanager.ui.theme.StatusRepairText
 import com.example.farmmachinemanager.ui.theme.SurfacePrimary
 import com.example.farmmachinemanager.ui.theme.SurfaceSecondary
 import com.example.farmmachinemanager.ui.theme.TextPrimary
@@ -207,6 +209,19 @@ fun MachineListScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // 정비 임박(다음 50h 까지 ≤5h) 머신이 있으면 상단에 "오늘 할 일" 카드.
+                val dueSoon = remember(machines) {
+                    machines.filter { m ->
+                        val next = ((m.operatingHours.toInt() / 50) + 1) * 50
+                        val left = next - m.operatingHours.toInt()
+                        left in 1..5
+                    }
+                }
+                if (dueSoon.isNotEmpty()) {
+                    item {
+                        TodoTodayCard(machines = dueSoon, onMachineClick = onMachineClick)
+                    }
+                }
                 item {
                     UpdateHoursReminderCard(onClick = onUpdateHoursClick)
                 }
@@ -537,6 +552,54 @@ private fun SearchInputBar(
                 modifier = Modifier.size(18.dp)
             )
         }
+    }
+}
+
+/**
+ * 메인 상단 '오늘 할 일' 카드 — 정비 임박 머신 있을 때만 노출.
+ * 머신 이름 1~2개 + N건 표시. 카드 탭 시 첫 머신 상세로 이동.
+ */
+@Composable
+private fun TodoTodayCard(
+    machines: List<Machine>,
+    onMachineClick: (Machine) -> Unit,
+) {
+    val first = machines.first()
+    val previewNames = machines.take(2).joinToString(" · ") { it.name }
+    val moreLabel = if (machines.size > 2) " 외 ${machines.size - 2}건" else ""
+
+    androidx.compose.foundation.layout.Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+            .background(StatusRepairBg)
+            .border(0.5.dp, StatusRepairText, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+            .clickable { onMachineClick(first) }
+            .padding(14.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp),
+    ) {
+        Text("⚠", fontSize = 22.sp)
+        androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "정비 시기 도래 ${machines.size}건",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = StatusRepairText,
+            )
+            Text(
+                text = "$previewNames$moreLabel",
+                fontSize = 11.sp,
+                color = StatusRepairText,
+                lineHeight = 14.sp,
+            )
+        }
+        androidx.compose.material3.Icon(
+            imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = StatusRepairText,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
