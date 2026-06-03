@@ -131,46 +131,6 @@ fun SettingsScreen(
             // UpToDate 면 렌더되지 않아 화면이 깔끔. 사용자 액션은 단일 '지금 업데이트' 버튼.
             UpdateCheckCard()
 
-            // 앱 정보 카드 (카드 자체가 그룹 — 외부 라벨 없음)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfacePrimary)
-                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            ) {
-                CardHeader(title = "앱 정보")
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.Info,
-                    label = "앱 이름",
-                    value = if (BuildConfig.IS_DEBUG_APP) "농돌이 (디버그)" else "농돌이"
-                )
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.Code,
-                    label = "버전",
-                    value = "${info.versionName} (build ${info.versionCode})"
-                )
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.Schedule,
-                    label = "빌드 시간",
-                    value = formatBuildTime(BuildConfig.BUILD_TIME_MS)
-                )
-                Divider()
-                InfoRow(
-                    icon = Icons.Outlined.Update,
-                    label = "패키지명",
-                    value = info.packageName
-                )
-            }
-
-            // 디버그 빌드일 때만 노출되는 진단 카드.
-            if (BuildConfig.IS_DEBUG_APP) {
-                DebugDiagnosticsCard()
-            }
-
             // 동기화 카드 (FirebaseSyncSection 내부에 헤더 포함)
             FirebaseSyncSection()
 
@@ -318,45 +278,12 @@ fun SettingsScreen(
                 }
             }
 
-            // 준비 중 카드
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfacePrimary)
-                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            ) {
-                CardHeader(title = "준비 중")
-                Divider()
-                NavRow(label = "회사 이름 변경", enabled = false)
-                Divider()
-                NavRow(label = "데이터 백업·복원", enabled = false)
-                Divider()
-                NavRow(label = "다크 모드", enabled = false)
-            }
-
-            // 더 보기 카드 (농작이 패턴 매칭)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfacePrimary)
-                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
-            ) {
-                CardHeader(title = "더 보기")
-                Divider()
-                LegalRow("이용약관") {
-                    openExternalUrl(context, "https://www.sangwolnongsan.com/terms")
-                }
-                Divider()
-                LegalRow("개인정보처리방침") {
-                    openExternalUrl(context, "https://www.sangwolnongsan.com/privacy")
-                }
-                Divider()
-                LegalRow("사업자 정보") { showBusiness = true }
-                Divider()
-                LegalRow("오픈소스 · 데이터 출처") { showAttributions = true }
-            }
+            // 더 보기 — 약관·사업자정보·오픈소스·진단·앱 정보 (collapsible, 기본 접힘)
+            AdvancedSection(
+                showBusiness = { showBusiness = true },
+                showAttributions = { showAttributions = true },
+                appInfo = info,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -1268,6 +1195,105 @@ private fun openUrl(context: Context, url: String) {
             Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
+    }
+}
+
+/**
+ * 더 보기 — 약관·사업자정보·오픈소스·진단·앱 정보를 한 carded 컬랩스에 묶음.
+ * 농작이의 AdvancedSection 과 동등 패턴. 기본 접힘.
+ */
+@Composable
+private fun AdvancedSection(
+    showBusiness: () -> Unit,
+    showAttributions: () -> Unit,
+    appInfo: AppInfo,
+) {
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 90f else 0f,
+        label = "advanced_chevron",
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfacePrimary)
+            .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (expanded) "닫기" else "더 보기",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary,
+                )
+                Text(
+                    text = "약관 · 사업자정보 · 오픈소스 · 진단 · 앱 정보",
+                    fontSize = 11.sp,
+                    color = TextSecondary,
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = TextTertiary,
+                modifier = Modifier
+                    .size(18.dp)
+                    .rotate(rotation),
+            )
+        }
+        AnimatedVisibility(visible = expanded) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Divider()
+                LegalRow("이용약관") {
+                    openExternalUrl(context, "https://www.sangwolnongsan.com/terms")
+                }
+                Divider()
+                LegalRow("개인정보처리방침") {
+                    openExternalUrl(context, "https://www.sangwolnongsan.com/privacy")
+                }
+                Divider()
+                LegalRow("사업자 정보", onClick = showBusiness)
+                Divider()
+                LegalRow("오픈소스 · 데이터 출처", onClick = showAttributions)
+                if (BuildConfig.IS_DEBUG_APP) {
+                    Divider()
+                    DebugDiagnosticsCard()
+                }
+                Divider()
+                InfoRow(
+                    icon = Icons.Outlined.Info,
+                    label = "앱 이름",
+                    value = if (BuildConfig.IS_DEBUG_APP) "농돌이 (디버그)" else "농돌이"
+                )
+                Divider()
+                InfoRow(
+                    icon = Icons.Outlined.Code,
+                    label = "버전",
+                    value = "${appInfo.versionName} (build ${appInfo.versionCode})"
+                )
+                Divider()
+                InfoRow(
+                    icon = Icons.Outlined.Schedule,
+                    label = "빌드 시간",
+                    value = formatBuildTime(BuildConfig.BUILD_TIME_MS)
+                )
+                Divider()
+                InfoRow(
+                    icon = Icons.Outlined.Update,
+                    label = "패키지명",
+                    value = appInfo.packageName
+                )
+            }
+        }
     }
 }
 
