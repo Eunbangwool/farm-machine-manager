@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- AppUpdateChecker 가 다운로드한 APK 파일을 FileProvider 로 노출.
+         getExternalFilesDir(DIRECTORY_DOWNLOADS) 와 일치. -->
+    <external-files-path
+        name="downloads"
+        path="Download" />
+</paths>
