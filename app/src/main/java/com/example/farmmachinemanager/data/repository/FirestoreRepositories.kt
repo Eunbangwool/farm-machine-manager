@@ -21,8 +21,12 @@ private const val TAG = "FirestoreRepo"
  * Firestore observer 또는 catch 에서 받은 에러를 사람이 읽기 쉬운 한 줄로 변환.
  * 권한 규칙이 게시 안 됐거나 네트워크가 끊기는 등 흔한 케이스를 식별.
  * UI 의 catch 블록에서도 사용 가능 (public).
+ *
+ * @param path 옵션 — 어느 경로/op 가 실패했는지 식별자 (예: "machines", "maintenance",
+ *             "consumables/save"). 메시지 앞쪽에 붙어서 규칙 디버깅을 쉽게 함.
  */
-fun describeFirestoreError(e: Throwable): String {
+fun describeFirestoreError(e: Throwable, path: String? = null): String {
+    val prefix = path?.let { "[$it] " } ?: ""
     if (e is FirebaseFirestoreException) {
         val codeName = e.code.name
         val hint = when (e.code) {
@@ -34,9 +38,9 @@ fun describeFirestoreError(e: Throwable): String {
                 "인증되지 않은 요청입니다."
             else -> e.message ?: codeName
         }
-        return "$codeName · $hint"
+        return "$prefix$codeName · $hint"
     }
-    return e.message ?: e::class.java.simpleName
+    return prefix + (e.message ?: e::class.java.simpleName)
 }
 
 /**
@@ -74,7 +78,7 @@ class FirestoreMachineRepository(
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                val msg = describeFirestoreError(error)
+                val msg = describeFirestoreError(error, "farms/$farmCode/machines")
                 Log.w(TAG, "observeMachines error: $msg", error)
                 AppContainer.reportFirestoreError(msg)
                 // 첫 응답 전이라면 빈 리스트라도 emit 해서 UI 가 영구 로딩 상태에 갇히지 않게 한다.
@@ -196,7 +200,7 @@ class FirestoreMaintenanceRepository(
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    val msg = describeFirestoreError(error)
+                    val msg = describeFirestoreError(error, "farms/$farmCode/maintenance?machineId=$machineId")
                     Log.w(TAG, "observeMaintenanceFor($machineId) error: $msg", error)
                     AppContainer.reportFirestoreError(msg)
                     if (!receivedFirstSnapshot) {
@@ -228,7 +232,7 @@ class FirestoreMaintenanceRepository(
         var receivedFirstSnapshot = false
         val registration = collection.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             if (error != null) {
-                val msg = describeFirestoreError(error)
+                val msg = describeFirestoreError(error, "farms/$farmCode/maintenance")
                 Log.w(TAG, "observeAllMaintenance error: $msg", error)
                 AppContainer.reportFirestoreError(msg)
                 if (!receivedFirstSnapshot) {
@@ -342,7 +346,7 @@ class FirestoreConsumableRepository(
             .whereEqualTo("machineId", machineId)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    val msg = describeFirestoreError(error)
+                    val msg = describeFirestoreError(error, "farms/$farmCode/consumables?machineId=$machineId")
                     Log.w(TAG, "observeConsumablesFor($machineId) error: $msg", error)
                     AppContainer.reportFirestoreError(msg)
                     if (!receivedFirstSnapshot) {
