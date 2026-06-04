@@ -71,7 +71,12 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
+          DEBUG_FLAG=""
+          if [ "${{ steps.variant_meta.outputs.type }}" = "debug" ]; then
+            DEBUG_FLAG="-PdebugBuild=true"
+            echo "🧪 디버그 패키지 빌드: applicationId 에 .debug suffix 적용"
+          fi
+          ./gradlew assembleDebug --parallel -x lint $DEBUG_FLAG 2>&1 | tee build.log
           cp app/build/outputs/apk/debug/app-debug.apk "${{ steps.variant_meta.outputs.apk_name }}"
 
       - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
