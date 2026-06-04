@@ -1,18 +1,18 @@
 # ===================================================================
-# Farm Machine Manager - 자동 APK 빌드 (운영만)
+# Farm Machine Manager - 자동 APK 빌드
 # ===================================================================
-# 매 main push 마다:
-#  - FarmMachineManager.apk (운영) 빌드 → release latest 첨부
-#  - 빌드 실패 시 로그 마지막 200줄이 release body 와 artifact 로 노출
+# main push           → 운영 빌드: FarmMachineManager.apk, tag=latest
+# claude/** push      → 디버그 빌드: FarmMachineManager-debug.apk, tag=latest-debug
+# workflow_dispatch   → 위 규칙대로 (브랜치 따라 분기)
 #
-# 디버그 APK (FarmMachineManager-debug.apk) 는 Firebase 콘솔에 디버그 패키지
-# (com.example.farmmachinemanager.debug) 추가 후 다시 활성화.
+# AppUpdateChecker 는 releases/latest API 만 호출 → 운영 빌드만 받음.
+# 디버그 APK 는 운영 사용자에게 자동 업데이트 알림으로 흘러가지 않음.
 
 name: Build APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   workflow_dispatch:
 
 permissions:
@@ -31,6 +31,27 @@ jobs:
       - name: 소스 체크아웃
         uses: actions/checkout@v4
 
+      - name: 빌드 변형 결정
+        id: variant_meta
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "type=production" >> $GITHUB_OUTPUT
+            echo "apk_name=FarmMachineManager.apk" >> $GITHUB_OUTPUT
+            echo "release_tag=latest" >> $GITHUB_OUTPUT
+            echo "release_title=📱 최신 빌드 (운영)" >> $GITHUB_OUTPUT
+            echo "make_latest=true" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+            echo "🎯 운영 빌드: FarmMachineManager.apk → tag=latest"
+          else
+            echo "type=debug" >> $GITHUB_OUTPUT
+            echo "apk_name=FarmMachineManager-debug.apk" >> $GITHUB_OUTPUT
+            echo "release_tag=latest-debug" >> $GITHUB_OUTPUT
+            echo "release_title=🧪 최신 디버그 빌드" >> $GITHUB_OUTPUT
+            echo "make_latest=false" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "🧪 디버그 빌드: FarmMachineManager-debug.apk → tag=latest-debug"
+          fi
+
       - name: JDK 17 설정
         uses: actions/setup-java@v4
         with:
@@ -45,13 +66,13 @@ jobs:
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
 
-      - name: APK 빌드 (운영)
+      - name: APK 빌드
         id: build
         continue-on-error: true
         run: |
           set -o pipefail
           ./gradlew assembleDebug --parallel -x lint 2>&1 | tee build.log
-          cp app/build/outputs/apk/debug/app-debug.apk FarmMachineManager.apk
+          cp app/build/outputs/apk/debug/app-debug.apk "${{ steps.variant_meta.outputs.apk_name }}"
 
       - name: 빌드 로그 (tail 200) GITHUB_STEP_SUMMARY 에 출력
         if: always()
@@ -76,7 +97,9 @@ jobs:
             echo '**❌ 빌드 실패 — 컴파일 로그 (tail 200)**'
             echo
             echo '## 빌드 정보'
+            echo "- 빌드 유형: \`${{ steps.variant_meta.outputs.type }}\`"
             echo "- 커밋: \`${GITHUB_SHA::7}\`"
+            echo "- 브랜치: \`${{ github.ref_name }}\`"
             echo "- 빌드 번호: \`${{ github.run_number }}\`"
             echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
             echo
@@ -90,37 +113,42 @@ jobs:
         if: steps.build.outcome == 'success'
         run: |
           REPO="${{ github.repository }}"
+          APK="${{ steps.variant_meta.outputs.apk_name }}"
+          TAG="${{ steps.variant_meta.outputs.release_tag }}"
+          TYPE="${{ steps.variant_meta.outputs.type }}"
           {
-            echo '**자동 빌드된 농돌이 APK**'
+            echo "**자동 빌드된 농돌이 APK ($TYPE)**"
             echo
             echo '## 📲 폰에서 직접 설치'
-            echo "[FarmMachineManager.apk](https://github.com/$REPO/releases/latest/download/FarmMachineManager.apk) 탭하여 다운로드."
+            echo "[$APK](https://github.com/$REPO/releases/download/$TAG/$APK) 탭하여 다운로드."
             echo
             echo '## 🔖 빌드 정보'
+            echo "- 빌드 유형: \`$TYPE\`"
             echo "- 일시: \`$(date '+%Y-%m-%d %H:%M') UTC\`"
             echo "- 커밋: \`${GITHUB_SHA::7}\`"
+            echo "- 브랜치: \`${{ github.ref_name }}\`"
             echo "- 빌드 번호: \`${{ github.run_number }}\`"
             echo
             echo '## 🔗 폰 북마크용 직접 설치 URL'
-            echo "https://github.com/$REPO/releases/latest/download/FarmMachineManager.apk"
+            echo "https://github.com/$REPO/releases/download/$TAG/$APK"
           } > release_body.md
 
-      - name: 최신 빌드 Release 업데이트
+      - name: 빌드 Release 업데이트
         if: always()
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: "📱 최신 빌드"
+          tag_name: ${{ steps.variant_meta.outputs.release_tag }}
+          name: ${{ steps.variant_meta.outputs.release_title }}
           body_path: release_body.md
           files: |
-            FarmMachineManager.apk
+            ${{ steps.variant_meta.outputs.apk_name }}
             build.log
-          prerelease: false
-          make_latest: "true"
+          prerelease: ${{ steps.variant_meta.outputs.prerelease }}
+          make_latest: ${{ steps.variant_meta.outputs.make_latest }}
           fail_on_unmatched_files: false
 
-      - name: 옛 파일명 asset 정리 (FarmManager.apk / app-debug.apk)
-        if: steps.build.outcome == 'success'
+      - name: 옛 파일명 asset 정리 (FarmManager.apk / app-debug.apk) — 운영만
+        if: steps.build.outcome == 'success' && steps.variant_meta.outputs.type == 'production'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
