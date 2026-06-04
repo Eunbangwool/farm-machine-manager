@@ -150,38 +150,44 @@ object AppContainer {
     /**
      * 농장 코드 하위 본인 machineMembers 자기 doc 보장.
      * PERMISSION_DENIED 발생 시 옛 익명 UID 가 무효(폰 데이터 캐시 충돌 등)일 수
-     * 있어 1회 자가치유: signOut → 새 익명 로그인 → 멤버 등록 재시도.
+     * 있어 1회 자가치유: signOut → 새 익명 로그인 + 토큰 강제 갱신 → 멤버 등록 재시도.
      */
     suspend fun ensureMachineMembership(farmCode: String) {
         val deferred = membershipReady.compute(farmCode) { _, existing ->
             existing ?: CompletableDeferred<Unit>().also { d ->
                 scope.launch {
-                    // 1차 시도 — 실패해도 silent.
-                    if (tryMembershipSet(farmCode)) {
+                    val firstError = tryMembershipSet(farmCode)
+                    if (firstError == null) {
                         d.complete(Unit); return@launch
                     }
-                    // 자가치유 — 옛 UID 폐기 + 새 익명 로그인 + 1회 재시도.
+                    // 자가치유 — 옛 UID 폐기 + 새 익명 로그인 + 토큰 강제 갱신 + 재시도.
                     runCatching {
                         FirebaseAuth.getInstance().signOut()
                         synchronized(authLock) { authReady = null }
                         ensureAuthReady()
+                        // ID 토큰 강제 갱신 — Firestore SDK 가 새 토큰 사용하도록.
+                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()
                     }
-                    if (tryMembershipSet(farmCode)) {
+                    val secondError = tryMembershipSet(farmCode)
+                    if (secondError == null) {
                         d.complete(Unit); return@launch
                     }
-                    // 2차도 실패 — 사용자에게 노출.
                     membershipReady.remove(farmCode)
-                    reportFirestoreError("멤버 등록 실패 (재시도 후에도). Firestore 규칙 또는 익명 인증 설정을 확인하세요.")
-                    d.completeExceptionally(IllegalStateException("machineMembers set denied"))
+                    reportFirestoreError(
+                        "멤버 등록 실패 (재시도 후에도): $secondError. " +
+                            "Firestore 규칙(/farms/{code}/machineMembers/{uid}) 확인 필요."
+                    )
+                    d.completeExceptionally(IllegalStateException("machineMembers set denied: $secondError"))
                 }
             }
         }!!
         deferred.await()
     }
 
-    /** 멤버 doc set 1회 시도. 성공/실패만 반환 (사용자 노출은 호출자 책임). */
-    private suspend fun tryMembershipSet(farmCode: String): Boolean {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
+    /** 멤버 doc set 1회 시도. 성공 시 null, 실패 시 에러 메시지 반환. */
+    private suspend fun tryMembershipSet(farmCode: String): String? {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: return "익명 사용자 미준비"
         return runCatching {
             FirebaseFirestore.getInstance()
                 .collection("farms").document(farmCode)
@@ -194,8 +200,10 @@ object AppContainer {
                     com.google.firebase.firestore.SetOptions.merge(),
                 )
                 .await()
-            true
-        }.getOrElse { false }
+            null
+        }.getOrElse { t ->
+            "${t::class.java.simpleName}: ${t.message ?: "?"}"
+        }
     }
 
     // ---- repository 캐시 ----------------------------------------------------
