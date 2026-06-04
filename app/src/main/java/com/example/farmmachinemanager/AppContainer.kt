@@ -14,8 +14,6 @@ import com.example.farmmachinemanager.data.repository.SampleConsumableRepository
 import com.example.farmmachinemanager.data.repository.SampleMachineRepository
 import com.example.farmmachinemanager.data.repository.SampleMaintenanceRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -91,14 +89,14 @@ object AppContainer {
         cachedMaintenanceRepository = null
         cachedConsumableRepository = null
 
-        // Firestore 사용 가능하면 익명 인증 + 농장 멤버 등록을 백그라운드로 보장.
+        // Firestore 사용 가능하면 익명 인증을 백그라운드로 보장.
+        // 멤버 등록(machineMembers write) 은 더 이상 하지 않음 — 정보용 표식이라 앱 동작에
+        // 필수가 아니고, Firestore 규칙이 거부하면 사용자에게 가짜 오류처럼 보였음.
+        // 실제 권한은 reads/writes 가 통과하는지로만 판정.
         if (FirebaseAvailability.isAvailable) {
-            val code = farmCodeManager.farmCode?.takeIf { it.isNotBlank() }
             scope.launch {
-                runCatching {
-                    ensureAuthReady()
-                    if (code != null) ensureMachineMembership(code)
-                }  // 실패는 reportFirestoreError 로 이미 가시화됨. crash 방지.
+                runCatching { ensureAuthReady() }
+                // 실패는 reportFirestoreError 로 이미 가시화됨. crash 방지.
             }
         }
     }
@@ -110,9 +108,6 @@ object AppContainer {
      *  synchronized 로 보호. 실패 시 completeExceptionally 로 호출자에게 전파. */
     private var authReady: CompletableDeferred<Unit>? = null
     private val authLock = Any()
-
-    /** 농장 코드별 멤버 등록 deferred. ConcurrentHashMap 으로 thread-safe. */
-    private val membershipReady = java.util.concurrent.ConcurrentHashMap<String, CompletableDeferred<Unit>>()
 
     /**
      * 익명 Firebase Auth 가 준비될 때까지 대기. 실제 인증은 AppContainer.scope 에서
@@ -148,62 +143,17 @@ object AppContainer {
     }
 
     /**
-     * 농장 코드 하위 본인 machineMembers 자기 doc 보장.
-     * PERMISSION_DENIED 발생 시 옛 익명 UID 가 무효(폰 데이터 캐시 충돌 등)일 수
-     * 있어 1회 자가치유: signOut → 새 익명 로그인 + 토큰 강제 갱신 → 멤버 등록 재시도.
+     * (no-op) 과거에 농장 코드 하위 본인 machineMembers/{uid} doc 을 강제 생성해
+     * "이 폰이 이 농장 멤버다" 표식을 남겼으나, Firestore 규칙이 이 write 를 거부하면
+     * 사용자에게 가짜 오류로 보이는 문제가 반복적으로 발생.
+     *
+     * 결정: 멤버 등록 자체를 제거. 실제 사용 권한은 machines/maintenance/consumables
+     * read·write 가 통과하는지로 판단 — 그 경로가 거부되면 비로소 사용자에게 surface.
+     * 호출처(저장소들)는 API 호환을 위해 그대로 두고 함수만 즉시 반환.
      */
+    @Suppress("UNUSED_PARAMETER")
     suspend fun ensureMachineMembership(farmCode: String) {
-        val deferred = membershipReady.compute(farmCode) { _, existing ->
-            existing ?: CompletableDeferred<Unit>().also { d ->
-                scope.launch {
-                    val firstError = tryMembershipSet(farmCode)
-                    if (firstError == null) {
-                        d.complete(Unit); return@launch
-                    }
-                    // 자가치유 — 옛 UID 폐기 + 새 익명 로그인 + 토큰 강제 갱신 + 재시도.
-                    runCatching {
-                        FirebaseAuth.getInstance().signOut()
-                        synchronized(authLock) { authReady = null }
-                        ensureAuthReady()
-                        // ID 토큰 강제 갱신 — Firestore SDK 가 새 토큰 사용하도록.
-                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()
-                    }
-                    val secondError = tryMembershipSet(farmCode)
-                    if (secondError == null) {
-                        d.complete(Unit); return@launch
-                    }
-                    membershipReady.remove(farmCode)
-                    reportFirestoreError(
-                        "멤버 등록 실패 (재시도 후에도): $secondError. " +
-                            "Firestore 규칙(/farms/{code}/machineMembers/{uid}) 확인 필요."
-                    )
-                    d.completeExceptionally(IllegalStateException("machineMembers set denied: $secondError"))
-                }
-            }
-        }!!
-        deferred.await()
-    }
-
-    /** 멤버 doc set 1회 시도. 성공 시 null, 실패 시 에러 메시지 반환. */
-    private suspend fun tryMembershipSet(farmCode: String): String? {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-            ?: return "익명 사용자 미준비"
-        return runCatching {
-            FirebaseFirestore.getInstance()
-                .collection("farms").document(farmCode)
-                .collection("machineMembers").document(uid)
-                .set(
-                    mapOf(
-                        "uid" to uid,
-                        "joinedAt" to FieldValue.serverTimestamp(),
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge(),
-                )
-                .await()
-            null
-        }.getOrElse { t ->
-            "${t::class.java.simpleName}: ${t.message ?: "?"}"
-        }
+        // 의도적으로 비움.
     }
 
     // ---- repository 캐시 ----------------------------------------------------
