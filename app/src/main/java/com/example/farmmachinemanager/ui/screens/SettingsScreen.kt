@@ -70,6 +70,7 @@ import com.example.farmmachinemanager.ui.theme.ActionPrimaryText
 import com.example.farmmachinemanager.ui.theme.BorderColor
 import com.example.farmmachinemanager.ui.theme.StatusInspectionBg
 import com.example.farmmachinemanager.ui.theme.StatusInspectionText
+import com.example.farmmachinemanager.ui.theme.StatusNormalText
 import com.example.farmmachinemanager.ui.theme.StatusRepairText
 import com.example.farmmachinemanager.ui.theme.SurfacePrimary
 import com.example.farmmachinemanager.ui.theme.SurfaceSecondary
@@ -1396,7 +1397,41 @@ private fun UpdateCheckCard() {
             }
         }
         AppUpdateChecker.CheckResult.UpToDate -> {
-            // 렌더 X — 최신이면 카드 자체가 안 보임
+            // 최신 상태도 작게 표시 — 사용자가 '업데이트 버튼 사라졌다' 라고 느끼지 않게.
+            // 탭하면 강제 재확인.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfacePrimary)
+                    .border(0.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                    .clickable { result = null /* 재확인 트리거 */ }
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "✓ 최신 버전",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = StatusNormalText,
+                    )
+                    Text(
+                        text = "v${BuildConfig.VERSION_CODE} · ${BuildConfig.VERSION_NAME}",
+                        fontSize = 11.sp,
+                        color = TextSecondary,
+                    )
+                }
+                Text(
+                    text = "다시 확인",
+                    fontSize = 12.sp,
+                    color = ActionPrimary,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+            LaunchedEffect(result) {
+                if (result == null) result = AppUpdateChecker.checkForUpdate()
+            }
         }
     }
 }
