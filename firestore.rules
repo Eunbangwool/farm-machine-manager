@@ -1,16 +1,468 @@
-// Firestore 보안 규칙 — Firebase 콘솔 → Firestore Database → 규칙 탭에 그대로 게시.
-//
-// 정책: 6자리 숫자 농장 코드를 알면 누구나 그 농장 데이터를 읽고 쓸 수 있다.
-// 더 강한 보안이 필요하면 Authentication 도입 후 request.auth 검사를 추가.
-//
-// 주의: `firebase.console` 의 "규칙" 탭에서 한 번 게시해야 적용됨.
-// google-services.json 만 갖고 자동 적용되지 않는다.
 rules_version = '2';
+
+// ⚠️ 이 파일은 farm-work-manager/firestore.rules 의 mirror 입니다.
+// 두 앱이 같은 Firebase 프로젝트(farm-machine-manager-prod) 를 공유하고,
+// 실제 deploy 는 farm-work-manager 의 .github/workflows/deploy-firestore-rules.yml
+// 가 담당. 농돌이 paths(machines/maintenance/consumables) 는 그 파일 안에 영구 포함.
+//
+// 변경 절차:
+//   1. farm-work-manager/firestore.rules 수정 + main push → 자동 deploy
+//   2. 이 파일도 같은 내용으로 sync (단순 mirror, deploy 영향 X)
+//
+// 직접 게시 금지 — 충돌 원인됨.
+
+// Last touched: 2026-05-23T02:50 — IAM Firebase Rules Admin 권한 부여 후 재시도.
+// Phase B.4 Firestore Security Rules — 업자코드 기반 접근 모델
+//
+// 핵심 원칙:
+//  1. 모든 작업 Firebase Auth 로그인 필수
+//  2. /farms/{code}/members/{uid} 멤버 doc 가 있어야 farmlands/works/crops 접근 가능
+//  3. 멤버 생성 경로 (4가지):
+//     a) 새 농장 생성: farm doc.ownerUid 가 본인 → owner 멤버 자기 생성
+//     b) 운영자 농장(836433) admin 자기 생성 (dbstjdwo28@gmail.com 한정)
+//     c) 농장의 기존 멤버가 다른 사용자를 멤버로 추가 (참여 요청 승인 OR 업자코드 부여)
+//     d) (제거) 누구나 self-join 불가
+//  4. 영농대행업자 접근은 contractor 가 active=true 일 때만 (Rules 게이트)
+//  5. 참여 요청·공유코드는 기존대로 (참여 요청은 가족·직원 공유용)
+//  6. 농돌이(farm-machine-manager) machines/maintenance/consumables 는
+//     익명 인증만 통과하면 OK (멤버십 체크 없음 — 코드 기반 접근).
+//
+// 배포: Firebase Console → Firestore Database → Rules
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /farms/{farmCode}/{document=**} {
-      allow read, write: if farmCode.matches('[0-9]{6}');
+
+    // ─────── collection group ───────
+    // 본인이 멤버인 농장 자동 발견을 위한 collectionGroup("members") query 허용.
+    // 본인 uid 와 일치하는 member doc 만 읽기 가능 — 다른 농장의 다른 멤버는 못 봄.
+    // Android `FarmMembership.findMyMemberFarms()` 가 호출 — 앱 재설치 후
+    // 자동 농장 진입.
+    match /{path=**}/members/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─────── helpers ───────
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function isMember(farmCode) {
+      return isAuthed() && exists(
+        /databases/$(database)/documents/farms/$(farmCode)/members/$(request.auth.uid)
+      );
+    }
+
+    function memberRole(farmCode) {
+      return get(/databases/$(database)/documents/farms/$(farmCode)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isOwner(farmCode) {
+      return isMember(farmCode) && memberRole(farmCode) == "owner";
+    }
+
+    function isOwnerOrAdmin(farmCode) {
+      return isMember(farmCode)
+        && (memberRole(farmCode) == "owner" || memberRole(farmCode) == "admin");
+    }
+
+    /** 임의 대상 멤버의 role. 멤버 doc 가 없으면 호출 측이 책임. */
+    function memberRoleOf(farmCode, uid) {
+      return get(/databases/$(database)/documents/farms/$(farmCode)/members/$(uid)).data.role;
+    }
+
+    function farmExists(farmCode) {
+      return exists(/databases/$(database)/documents/farms/$(farmCode));
+    }
+
+    function farmOwnerUid(farmCode) {
+      return get(/databases/$(database)/documents/farms/$(farmCode)).data.ownerUid;
+    }
+
+    function isOwnerFarm(farmCode) {
+      return farmCode == "836433";
+    }
+
+    function isAdmin() {
+      return isAuthed() && request.auth.token.email == "dbstjdwo28@gmail.com";
+    }
+
+    /**
+     * 업자가 active 상태인지. contractor 가 아닌 일반 사용자는 항상 true.
+     * contractor 라면 /contractors/{uid}.active == true 여야 통과.
+     * 구독 만료 시 admin 이 active=false → 모든 농장 접근 즉시 차단.
+     */
+    function isContractorActiveIfApplicable() {
+      return !exists(/databases/$(database)/documents/contractors/$(request.auth.uid))
+        || get(/databases/$(database)/documents/contractors/$(request.auth.uid)).data.active == true;
+    }
+
+    // ─────── /farms/{farmCode} ───────
+    match /farms/{farmCode} {
+      allow read: if isAuthed();
+
+      // 새 농장 생성: 본인을 ownerUid 로 명시
+      allow create: if isAuthed()
+                    && request.resource.data.ownerUid == request.auth.uid;
+
+      // 업데이트 허용:
+      //  (1) OWNER 의 소유권 위임 (ownerUid 만 변경)
+      //  (2) OWNER + ADMIN 의 멤버 디렉터리 비공개 토글 (memberDirectoryHidden 만)
+      //  (3) OWNER 의 삭제 예약/취소 (scheduledDeletionAt 만)
+      allow update: if isAuthed() && (
+        (isOwner(farmCode)
+         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerUid'])
+         && exists(/databases/$(database)/documents/farms/$(farmCode)/members/$(request.resource.data.ownerUid)))
+        ||
+        (isOwnerOrAdmin(farmCode)
+         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberDirectoryHidden']))
+        ||
+        (isOwner(farmCode)
+         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scheduledDeletionAt']))
+      );
+
+      allow delete: if false;
+
+      // ─────── members/{uid} ───────
+      match /members/{uid} {
+        // 본인 doc 은 멤버 아니어도 읽기 가능 (orphan owner 복구 / 멤버십 자기 확인)
+        allow read: if isMember(farmCode) || (isAuthed() && request.auth.uid == uid);
+
+        allow create: if isAuthed() && (
+          // (a) 새 농장 첫 owner
+          (request.auth.uid == uid
+           && farmExists(farmCode)
+           && farmOwnerUid(farmCode) == uid
+           && request.resource.data.role == "owner")
+          ||
+          // (b) 운영자 농장 admin 자기 부트스트랩
+          (isOwnerFarm(farmCode)
+           && isAdmin()
+           && request.auth.uid == uid
+           && request.resource.data.role == "owner")
+          ||
+          // (c) 기존 멤버가 다른 사용자를 멤버로 추가 (참여 요청 승인 또는 업자 추가)
+          (isMember(farmCode) && request.auth.uid != uid)
+          ||
+          // (d) 본인이 자기 자신을 멤버로 추가 - 사전 초대 doc 가 존재해야 함 (이메일 초대 자동 수락)
+          //     초대 doc ID = request.auth.token.email.lower() 와 일치할 때만 통과.
+          (request.auth.uid == uid
+           && request.resource.data.role == "member"
+           && exists(/databases/$(database)/documents/farms/$(farmCode)/invitations/$(request.auth.token.email.lower())))
+        );
+
+        // 삭제 허용:
+        //  (1) 본인 탈퇴
+        //  (2) OWNER 가 본인 외 임의 멤버 제거
+        //  (3) ADMIN 이 본인 외 일반 MEMBER 만 제거 (다른 ADMIN/OWNER 는 못 건드림)
+        allow delete: if isAuthed() && (
+          request.auth.uid == uid
+          ||
+          (isOwner(farmCode) && request.auth.uid != uid)
+          ||
+          (isOwnerOrAdmin(farmCode) && request.auth.uid != uid
+           && memberRoleOf(farmCode, uid) == "member")
+        );
+
+        // 업데이트 허용: OWNER 가 role 만 변경 (admin/member 지정/해제 + 위임 batch).
+        // 클라이언트가 role 외 필드를 함께 바꾸려 하면 거부.
+        allow update: if isAuthed() && isOwner(farmCode)
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+                      && (request.resource.data.role == "owner"
+                          || request.resource.data.role == "admin"
+                          || request.resource.data.role == "member");
+      }
+
+      // ─────── joinRequests/{uid} ───────
+      // 가족·직원이 농장코드 직접 입력으로 참여 요청 시 사용. 업자는 별도 흐름(ContractorCode).
+      match /joinRequests/{uid} {
+        allow read: if isAuthed()
+                    && (request.auth.uid == uid || isMember(farmCode));
+
+        allow create: if isAuthed()
+                      && request.auth.uid == uid
+                      && request.resource.data.uid == uid
+                      && request.resource.data.farmCode == farmCode;
+
+        allow delete: if isAuthed()
+                      && (request.auth.uid == uid || isMember(farmCode));
+
+        allow update: if false;
+      }
+
+      // ─────── invitations/{normalizedEmail} ───────
+      // 멤버가 다른 사람을 이메일로 초대. doc ID 는 lowercase email.
+      // FarmMembership.inviteByEmail 이 여기에 write.
+      //
+      // 권한:
+      //  - read: 농장 멤버 + 초대 받은 본인 (이메일 일치) → B 가 자신의 초대 확인 가능
+      //  - create: 농장 멤버만
+      //  - delete: 농장 멤버 OR 초대 받은 본인 (수락/거절 후 정리)
+      //  - update 차단 (한 번 만들면 변경 불가)
+      match /invitations/{normalizedEmail} {
+        allow read: if isMember(farmCode)
+                    || (isAuthed() && normalizedEmail == request.auth.token.email.lower());
+        // OWNER + ADMIN 만 초대 생성 가능 (멤버 관리 권한).
+        allow create: if isOwnerOrAdmin(farmCode);
+        // 취소도 OWNER + ADMIN, 또는 초대 받은 본인이 정리.
+        allow delete: if isOwnerOrAdmin(farmCode)
+                      || (isAuthed() && normalizedEmail == request.auth.token.email.lower());
+        allow update: if false;
+      }
+
+      // ─────── farmlands / works / crops / customCrops ───────
+      // 멤버 + (업자라면 active) 두 조건 모두 통과해야 R/W
+      match /farmlands/{landId} {
+        allow read, create, update, delete: if isMember(farmCode)
+                                            && isContractorActiveIfApplicable();
+      }
+      match /works/{workId} {
+        allow read, create, update, delete: if isMember(farmCode)
+                                            && isContractorActiveIfApplicable();
+      }
+      // 작업 묶음 (Project). 같은 멤버십·active 조건.
+      match /projects/{projectId} {
+        allow read, create, update, delete: if isMember(farmCode)
+                                            && isContractorActiveIfApplicable();
+      }
+      match /crops/{cropId} {
+        allow read, create, update, delete: if isMember(farmCode)
+                                            && isContractorActiveIfApplicable();
+      }
+      // 사용자가 추가한 커스텀 작물 이름 목록 (CropRepository.addCustomCrop).
+      // 경로: farms/{code}/customCrops/list → { names: [...] }
+      match /customCrops/{docId} {
+        allow read, create, update, delete: if isMember(farmCode)
+                                            && isContractorActiveIfApplicable();
+      }
+
+      // ─────── liveLocations/{uid} ───────
+      // 작업자 라이브 위치 (LocationSharePreferences 토글로 사용자 명시 ON 시에만 업로드).
+      //
+      // 필드: uid, displayName, email, lat, lng, accuracy, updatedAt, visibleTo: [uid...]
+      //
+      // 권한:
+      //  - write: 같은 농장 멤버 + 본인 doc 만 (visibleTo 도 본인이 정함)
+      //  - read: visibleTo 에 본인 uid 포함된 doc + 본인 doc
+      //  - 화이트리스트 (visibleTo) 비어있으면 doc 자체가 안 만들어짐 (writer 가 clear 호출)
+      match /liveLocations/{uid} {
+        allow read: if isMember(farmCode) && (
+          request.auth.uid == uid
+          || request.auth.uid in resource.data.visibleTo
+        );
+        allow create, update: if isMember(farmCode)
+                              && request.auth.uid == uid
+                              && request.resource.data.uid == uid
+                              && request.resource.data.visibleTo is list;
+        allow delete: if isAuthed() && request.auth.uid == uid;
+      }
+
+      // ─────── locationShareNudges/{recipientUid} ───────
+      // owner 가 stale 멤버에게 "위치 공유 다시 켜 주세요" 요청. 멤버 앱이 listen 중이면
+      // in-app dialog 띄움. FCM 푸시는 별도. recipient 본인만 read/delete, 같은 농장 멤버는
+      // 누구나 send (보통은 owner/admin 이 보내지만 권한 제한 안 둠 — 멤버끼리 위치 협업).
+      match /locationShareNudges/{recipientUid} {
+        allow read, delete: if isAuthed() && request.auth.uid == recipientUid;
+        allow create, update: if isMember(farmCode)
+                              && request.resource.data.recipientUid == recipientUid
+                              && request.resource.data.fromUid == request.auth.uid;
+      }
+
+      // ─────── dayPasses/{token} ───────
+      // 1일 노동자 공유 — PRO+ owner/admin 이 발급하는 24시간 유효 web URL 토큰.
+      //
+      // 필드: token, farmCode, createdAt, expiresAt, createdByUid, createdByName
+      //
+      // Phase 1a: 농장 owner/admin 만 read/create/delete (앱 측). Web 의 anonymous
+      //   user 가 토큰으로 farmlands/works read 하는 부분은 Phase 1b 에서 rule 확장.
+      // 만료 검증은 클라이언트 (expiresAt > now) — server-side TTL 은 Cloud Function 따로.
+      match /dayPasses/{token} {
+        allow read: if isOwnerOrAdmin(farmCode);
+        allow create: if isOwnerOrAdmin(farmCode)
+                      && request.resource.data.token == token
+                      && request.resource.data.farmCode == farmCode
+                      && request.resource.data.createdByUid == request.auth.uid;
+        allow delete: if isOwnerOrAdmin(farmCode);
+        allow update: if false;
+      }
+    }
+
+    // ─────── /contractors/{uid} ───────
+    // 업자코드 canonical 저장소. 본인이 자기 doc 만 생성·읽기 가능.
+    // ─────── /app_meta/{docId} ───────
+    // 앱 release 메타 (versionCode / downloadUrl 등). GitHub API rate limit 회피용.
+    //  - read: 누구나 (로그인 안 한 사용자도 update check 가능해야 자연스러움)
+    //  - create: 인증 사용자 (admin 부재 시 첫 사용자가 부트스트랩)
+    //  - update: 인증 사용자 + 새 versionCode 가 기존보다 큼 (forward-only)
+    //            + downloadUrl 이 공식 release URL 형식이어야 함 (악의적 변조 차단)
+    //  - admin 은 어떤 값이든 강제 가능 (긴급 rollback 등)
+    //
+    // 결과: admin 이 매 빌드마다 앱 안 열어도 — 새 빌드 설치한 첫 사용자가
+    //   GitHub API 1회 호출 후 meta 갱신 → 다른 사용자는 Firestore read 만으로 인식.
+    match /app_meta/{docId} {
+      allow read: if true;
+      allow create: if isAuthed()
+        && request.resource.data.downloadUrl is string
+        && request.resource.data.downloadUrl.matches('https://github.com/Eunbangwool/farm-work-manager/releases/download/.*');
+      allow update: if isAdmin() || (
+        isAuthed()
+        && request.resource.data.versionCode is int
+        && request.resource.data.versionCode > resource.data.versionCode
+        && request.resource.data.downloadUrl is string
+        && request.resource.data.downloadUrl.matches('https://github.com/Eunbangwool/farm-work-manager/releases/download/.*')
+      );
+    }
+
+    // active 필드는 admin 만 변경 가능 (Cloud Function 또는 Firebase Console 수동).
+    match /contractors/{uid} {
+      // 누구나 read 가능 — 농가가 업자코드 입력 시 active 확인 필요
+      allow read: if isAuthed();
+
+      // 본인만 자기 doc 최초 생성. active=false 로만 시작 가능.
+      allow create: if isAuthed()
+                    && request.auth.uid == uid
+                    && request.resource.data.uid == uid
+                    && request.resource.data.active == false;
+
+      // 본인이 displayName·email 만 수정 가능. active/activeUntil 은 admin 만.
+      allow update: if isAuthed() && (
+        (request.auth.uid == uid
+         && request.resource.data.active == resource.data.active
+         && request.resource.data.activeUntil == resource.data.activeUntil)
+        || isAdmin()
+      );
+
+      // 삭제는 본인 또는 admin
+      allow delete: if isAuthed() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // ─────── /contractorCodeIndex/{code} ───────
+    // code → uid 빠른 lookup. 본인 코드 발급 시에만 생성.
+    match /contractorCodeIndex/{code} {
+      allow read: if isAuthed();
+      allow create: if isAuthed()
+                    && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();  // 코드 회수는 admin 만
+    }
+
+    // ─────── /entitlements/{uid} ───────
+    // 사용자별 활성 구독·체험 정보. UI 가 tier 게이트로 사용.
+    //
+    // Phase 1: 클라이언트가 자기 자신에게 PROMO_FIRST_YEAR + PRO + 1년 한정으로
+    //          최초 생성 가능. 갱신/변경은 Cloud Function (Phase 3 PG 연동) 에서만.
+    match /entitlements/{uid} {
+      // 본인은 자기 doc 만 읽기 가능. 운영자(admin) 는 모든 entitlement 읽기
+      // — 회원 관리 화면이 등급별 사용자 목록을 보기 위해 필요.
+      allow read: if isAuthed()
+                  && (request.auth.uid == uid || isAdmin());
+      // 컬렉션 list 도 운영자만 허용 (개인정보 보호).
+      allow list: if isAdmin();
+
+      // 본인이 자기 doc 최초 생성. PROMO 한정 (한 번만 받을 수 있는 1년 무료).
+      allow create: if isAuthed()
+                    && (
+                         (request.auth.uid == uid
+                          && request.resource.data.source == "PROMO_FIRST_YEAR"
+                          && request.resource.data.tier == "PRO"
+                          && request.resource.data.expires_at is int
+                          && request.resource.data.granted_at is int
+                          && (request.resource.data.expires_at - request.resource.data.granted_at)
+                             <= (366 * 24 * 60 * 60 * 1000))  // 1년 + 1일 여유
+                         // 운영자가 임의 사용자에게 수동 부여 (회원 관리 화면). tier/만료 자유.
+                         || isAdmin()
+                       );
+
+      // 운영자만 갱신/삭제. 본인 클라이언트는 갱신 불가 (PG 연동은 Cloud Function 에서).
+      allow update, delete: if isAdmin();
+    }
+
+    // ─────── /userInvitations/{normEmail}/farms/{farmCode} ───────
+    // 이메일 초대를 받은 사람이 자신에게 온 초대를 빠르게 찾기 위한 인덱스.
+    // FarmMembership.inviteByEmail 이 farms/{code}/invitations 와 함께 듀얼 쓰기.
+    //
+    // 이 인덱스 덕분에 B 가 로그인 시 자기 normEmail 하위 'farms' 컬렉션만 listen 하면
+    // 어떤 농장이 초대했는지 즉시 알 수 있음 (cross-farm 스캔 불필요).
+    match /userInvitations/{normEmail}/farms/{farmCode} {
+      // 본인 이메일이 doc 경로와 일치해야 read 가능 (다른 사람 초대 못 봄)
+      allow read: if isAuthed() && normEmail == request.auth.token.email.lower();
+      // 농장 멤버만 자기 농장 초대 인덱스 생성/삭제
+      // OR 초대 받은 본인이 수락/거절 후 정리 가능
+      allow create, delete: if isMember(farmCode)
+                            || (isAuthed() && normEmail == request.auth.token.email.lower());
+      allow update: if false;
+    }
+
+    // ─────── /promo_grants/{email} ───────
+    // 이메일당 1년 무료 promo 받은 적 있는지 영구 기록.
+    // 계정 삭제 → 재가입 으로 무한 promo 받는 것 방지.
+    //
+    // doc ID 는 lowercase 이메일. 본인 이메일에만 생성 가능 (preempt 방지).
+    match /promo_grants/{email} {
+      // 모든 인증 사용자가 읽기 가능 - grant 여부 확인 필요
+      allow read: if isAuthed();
+
+      // 본인 이메일에만 생성 가능. uid 본인 일치 + email 본인 일치 검사.
+      allow create: if isAuthed()
+                    && request.resource.data.uid == request.auth.uid
+                    && email == request.auth.token.email.lower();
+
+      // 영구 기록 - 절대 수정·삭제 불가
+      allow update, delete: if false;
+    }
+
+    // ─────── /beta_testers/{normalizedEmail} ───────
+    // 베타 테스터 등록부. 운영자(admin)가 직접 추가/제거.
+    // 등록된 이메일로 로그인한 사용자는 자동 PREMIUM 등급 (Premium.Source.BETA_TESTER).
+    //
+    // 권한:
+    //  - read: 본인 이메일 doc 만 (자기 status 확인용), 또는 admin (목록 조회용)
+    //  - create / delete: admin 만
+    //  - update: 불가
+    match /beta_testers/{normalizedEmail} {
+      allow read: if isAuthed() && (
+        normalizedEmail == request.auth.token.email.lower() || isAdmin()
+      );
+      allow create, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // ─────── /farms-debug/{farmCode}/** ───────
+    // 디버그 앱 (com.sangwolnongsan.farmwork.debug) 전용 데이터 트리.
+    // 운영 데이터(farms/) 와 완전 분리 — 새 기능 테스트 중 운영 데이터 손상 방지.
+    //
+    // 권한: 인증된 사용자만 R/W 가능. 운영 rules 같은 멤버 게이트 적용 안 함
+    // (테스트 목적이라 자유로운 접근 허용). 실제 고객 데이터 없으므로 위험도 낮음.
+    match /farms-debug/{farmCode} {
+      allow read, write: if request.auth != null;
+      match /{document=**} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // ─────── 농돌이 (farm-machine-manager) paths ───────
+    // 별도 앱 (`farm-machine-manager`) 이 같은 Firebase 프로젝트를 공유해서 쓰는 collections.
+    //
+    // ⚠ 농작이(이 repo) 의 firestore.rules 를 deploy 하면 농돌이 rules 도 같이 덮어쓰임
+    //   (Firestore rules 는 파일 전체 단위 deploy). 농돌이 가 동기화 풀리는 사례 방지 위해
+    //   이 블록을 영구히 포함 — 농작이 rules 작업 시 이 부분은 절대 건드리지 말 것.
+    //
+    // 접근 모델: 익명 인증 + 6자리 농장 코드 기반 (멤버십 doc 체크 없음, 농작이 모델과 다름).
+    //   인증된 모든 사용자가 R/W 가능. 농장 코드는 client 측에서 filter.
+    //
+    // 농돌이 측 변경 발생 시 — 농돌이 repo 의 rules 와 이 블록 sync 유지.
+    match /machines/{machineId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /maintenance/{recordId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /consumables/{consumableId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+
+    // 그 외 경로는 모두 차단
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
