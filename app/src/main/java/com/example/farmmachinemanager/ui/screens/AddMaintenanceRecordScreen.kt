@@ -401,7 +401,10 @@ fun AddMaintenanceRecordScreen(
                         onClick = { datePickerOpen = true }
                     )
                 }
-                FormSection(label = "가동시간 (h)", modifier = Modifier.weight(1f)) {
+                FormSection(
+                    label = if (machine.isDistanceBased) "주행거리 (km)" else "가동시간 (h)",
+                    modifier = Modifier.weight(1f),
+                ) {
                     OutlinedTextField(
                         value = operatingHoursText,
                         onValueChange = { newValue ->

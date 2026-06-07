@@ -169,9 +169,12 @@ fun MachineCard(
             ) {
                 InfoChip(
                     icon = Icons.Outlined.Schedule,
-                    text = "${machine.operatingHours.toInt()}시간"
+                    text = if (machine.isDistanceBased)
+                        "${machine.operatingHours.toInt()}km"
+                    else
+                        "${machine.operatingHours.toInt()}시간"
                 )
-                if (maintenanceSoon) {
+                if (maintenanceSoon && !machine.isDistanceBased) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -200,8 +203,13 @@ fun MachineCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    QuickHourChip(label = "+1h", onClick = { onQuickAddHours(1) })
-                    QuickHourChip(label = "+8h", onClick = { onQuickAddHours(8) })
+                    if (machine.isDistanceBased) {
+                        QuickHourChip(label = "+50km", onClick = { onQuickAddHours(50) })
+                        QuickHourChip(label = "+100km", onClick = { onQuickAddHours(100) })
+                    } else {
+                        QuickHourChip(label = "+1h", onClick = { onQuickAddHours(1) })
+                        QuickHourChip(label = "+8h", onClick = { onQuickAddHours(8) })
+                    }
                 }
             }
         }

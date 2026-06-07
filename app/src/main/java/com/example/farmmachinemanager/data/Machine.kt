@@ -71,4 +71,35 @@ data class Machine(
     /** 화면에 표시할 종류 라벨. customTypeName이 있으면 우선 사용. */
     val typeDisplay: String
         get() = customTypeName ?: type.displayName
+
+    /**
+     * 차량(VEHICLE) 은 가동시간 대신 주행거리(km) 를 입력·표시.
+     * operatingHours 필드를 그대로 재사용 (km 값을 Double 로 저장).
+     */
+    val isDistanceBased: Boolean
+        get() = type == MachineType.VEHICLE
 }
+
+/** "가동시간" / "주행거리" — 입력 폼 라벨 */
+val Machine.usageFieldLabel: String
+    get() = if (isDistanceBased) "주행거리" else "가동시간"
+
+/** "현재 가동시간" / "현재 주행거리" — 헤더용 */
+val Machine.usageCurrentLabel: String
+    get() = if (isDistanceBased) "현재 주행거리" else "현재 가동시간"
+
+/** "시간" / "km" — 사람이 읽기 쉬운 단위 (긴 형식) */
+val Machine.usageUnitLong: String
+    get() = if (isDistanceBased) "km" else "시간"
+
+/** "h" / "km" — 짧은 단위 (라벨 옆 괄호 등) */
+val Machine.usageUnitShort: String
+    get() = if (isDistanceBased) "km" else "h"
+
+/** MachineType 만 알고 Machine 인스턴스가 없을 때 사용. */
+val MachineType.isDistanceBased: Boolean
+    get() = this == MachineType.VEHICLE
+
+fun MachineType.usageFieldLabel(): String = if (isDistanceBased) "주행거리" else "가동시간"
+fun MachineType.usageUnitShort(): String = if (isDistanceBased) "km" else "h"
+fun MachineType.usageUnitLong(): String = if (isDistanceBased) "km" else "시간"

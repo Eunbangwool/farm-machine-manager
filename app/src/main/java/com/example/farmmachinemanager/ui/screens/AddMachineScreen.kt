@@ -171,18 +171,26 @@ fun AddMachineScreen(
                 )
             }
 
-            // 가동시간
+            // 가동시간 / 차량이면 주행거리
+            val isVehicle = type == MachineType.VEHICLE
             FormField(
-                label = "현재 가동시간",
+                label = if (isVehicle) "현재 주행거리" else "현재 가동시간",
                 required = false,
-                hint = "중고 기계라면 현재 시간 입력. 새 기계는 0."
+                hint = if (isVehicle) "중고 차량이면 현재 주행거리 입력. 새 차량은 0."
+                       else "중고 기계라면 현재 시간 입력. 새 기계는 0."
             ) {
                 OutlinedTextField(
                     value = hoursText,
                     onValueChange = { v ->
                         if (v.isEmpty() || v.all { it.isDigit() }) hoursText = v
                     },
-                    suffix = { Text("h", fontSize = 13.sp, color = TextSecondary) },
+                    suffix = {
+                        Text(
+                            if (isVehicle) "km" else "h",
+                            fontSize = 13.sp,
+                            color = TextSecondary,
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

@@ -170,14 +170,28 @@ fun EditMachineScreen(
                 )
             }
 
-            EditFormField(label = "가동시간", required = false) {
+            EditFormField(
+                label = if (machine.isDistanceBased) "주행거리" else "가동시간",
+                required = false,
+            ) {
                 OutlinedTextField(
                     value = operatingHoursText,
                     onValueChange = { v ->
                         if (v.isEmpty() || v.all { it.isDigit() }) operatingHoursText = v
                     },
-                    suffix = { Text("h", fontSize = 13.sp, color = TextSecondary) },
-                    placeholder = { Text("예: 850", color = TextTertiary) },
+                    suffix = {
+                        Text(
+                            if (machine.isDistanceBased) "km" else "h",
+                            fontSize = 13.sp,
+                            color = TextSecondary,
+                        )
+                    },
+                    placeholder = {
+                        Text(
+                            if (machine.isDistanceBased) "예: 32000" else "예: 850",
+                            color = TextTertiary,
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

@@ -544,9 +544,9 @@ private fun StatsRow(machine: Machine) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StatTile(
-            label = "가동시간",
+            label = if (machine.isDistanceBased) "주행거리" else "가동시간",
             value = "%,d".format(machine.operatingHours.toInt()),
-            unit = "h",
+            unit = if (machine.isDistanceBased) "km" else "h",
             modifier = Modifier.weight(1f)
         )
         StatTile(

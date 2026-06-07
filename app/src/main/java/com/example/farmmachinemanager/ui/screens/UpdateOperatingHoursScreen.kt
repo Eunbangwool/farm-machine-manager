@@ -256,7 +256,7 @@ private fun PickableMachineCard(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "현재 ${formatter.format(machine.operatingHours.toInt())} h",
+                text = "현재 ${formatter.format(machine.operatingHours.toInt())} ${if (machine.isDistanceBased) "km" else "h"}",
                 fontSize = 12.sp,
                 color = TextSecondary
             )
@@ -293,8 +293,12 @@ private fun HoursInputView(
             .fillMaxSize()
             .background(SurfaceSecondary)
     ) {
+        val isDistance = machine.isDistanceBased
+        val fieldLabel = if (isDistance) "주행거리" else "가동시간"
+        val unitShort = if (isDistance) "km" else "h"
+
         TopBar(
-            title = "${machine.name} 가동시간",
+            title = "${machine.name} $fieldLabel",
             subtitle = "${machine.manufacturer} · ${machine.type.displayName}",
             onBack = onBack
         )
@@ -310,13 +314,17 @@ private fun HoursInputView(
             // Hero (큰 기계 아이콘)
             MachineHero(machine = machine)
 
-            // 현재 가동시간 표시
-            CurrentHoursDisplay(currentHours = machine.operatingHours)
+            // 현재 가동시간/주행거리 표시
+            CurrentHoursDisplay(
+                currentHours = machine.operatingHours,
+                fieldLabel = "현재 $fieldLabel",
+                unitShort = unitShort,
+            )
 
-            // 새 가동시간 입력
+            // 새 가동시간/주행거리 입력
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "새 가동시간",
+                    text = "새 $fieldLabel",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = TextPrimary
@@ -329,7 +337,7 @@ private fun HoursInputView(
                         }
                     },
                     suffix = {
-                        Text("h", fontSize = 14.sp, color = TextSecondary)
+                        Text(unitShort, fontSize = 14.sp, color = TextSecondary)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -340,7 +348,9 @@ private fun HoursInputView(
                 FeedbackText(
                     currentHours = machine.operatingHours,
                     newHours = newHours,
-                    diff = diff
+                    diff = diff,
+                    fieldLabel = fieldLabel,
+                    unitShort = unitShort,
                 )
             }
         }
@@ -379,7 +389,11 @@ private fun MachineHero(machine: Machine) {
 }
 
 @Composable
-private fun CurrentHoursDisplay(currentHours: Double) {
+private fun CurrentHoursDisplay(
+    currentHours: Double,
+    fieldLabel: String = "현재 가동시간",
+    unitShort: String = "h",
+) {
     val formatter = NumberFormat.getNumberInstance(Locale.KOREA)
 
     Row(
@@ -393,12 +407,12 @@ private fun CurrentHoursDisplay(currentHours: Double) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "현재 가동시간",
+            text = fieldLabel,
             fontSize = 13.sp,
             color = TextSecondary
         )
         Text(
-            text = "${formatter.format(currentHours.toInt())} h",
+            text = "${formatter.format(currentHours.toInt())} $unitShort",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = TextPrimary
@@ -410,21 +424,21 @@ private fun CurrentHoursDisplay(currentHours: Double) {
 private fun FeedbackText(
     currentHours: Double,
     newHours: Double?,
-    diff: Double?
+    diff: Double?,
+    fieldLabel: String = "가동시간",
+    unitShort: String = "h",
 ) {
     val formatter = NumberFormat.getNumberInstance(Locale.KOREA)
 
     when {
         newHours == null || diff == null -> {
-            // 입력값 없음 - 안내 텍스트
             Text(
-                text = "가동시간은 누적값입니다. 현재(${formatter.format(currentHours.toInt())}h)보다 큰 값을 입력해주세요.",
+                text = "${fieldLabel}은 누적값입니다. 현재(${formatter.format(currentHours.toInt())}$unitShort)보다 큰 값을 입력해주세요.",
                 fontSize = 12.sp,
                 color = TextTertiary
             )
         }
         diff < 0 -> {
-            // 입력값이 현재보다 작음 - 에러
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -433,14 +447,13 @@ private fun FeedbackText(
                     .padding(horizontal = 12.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = "현재보다 ${formatter.format((-diff).toInt())}h 적습니다. 가동시간은 줄어들 수 없어요.",
+                    text = "현재보다 ${formatter.format((-diff).toInt())}$unitShort 적습니다. ${fieldLabel}은 줄어들 수 없어요.",
                     fontSize = 12.sp,
                     color = StatusRepairText
                 )
             }
         }
         diff == 0.0 -> {
-            // 입력값이 현재와 같음
             Text(
                 text = "현재와 동일합니다.",
                 fontSize = 12.sp,
@@ -448,7 +461,6 @@ private fun FeedbackText(
             )
         }
         else -> {
-            // 정상 - 증가분 표시
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -465,7 +477,7 @@ private fun FeedbackText(
                     color = TextSecondary
                 )
                 Text(
-                    text = "+${formatter.format(diff.toInt())} h",
+                    text = "+${formatter.format(diff.toInt())} $unitShort",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = TextPrimary
