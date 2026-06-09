@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** 메인 화면 상단 탭. 농작이의 '작업 / 농지 / 설정' 처럼 농돌이는 '기계 관리 / 설정'. */
+/** 메인 화면 상단 탭. 농작이의 '작업 / 농지 / 설정' 처럼 농식이는 '기계 관리 / 설정'. */
 private enum class MainTab(val label: String) {
     Machines("기계 관리"),
     Settings("설정"),

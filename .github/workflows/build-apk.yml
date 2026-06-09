@@ -138,7 +138,7 @@ jobs:
           TAG="${{ steps.variant_meta.outputs.release_tag }}"
           TYPE="${{ steps.variant_meta.outputs.type }}"
           {
-            echo "**자동 빌드된 농돌이 APK ($TYPE)**"
+            echo "**자동 빌드된 농식이 APK ($TYPE)**"
             echo
             echo '## 📲 폰에서 직접 설치'
             echo "[$APK](https://github.com/$REPO/releases/download/$TAG/$APK) 탭하여 다운로드."

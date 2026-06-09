@@ -119,7 +119,7 @@ object NotificationHelper {
         val message = "새 버전 $versionName 이(가) 나왔습니다. 탭하여 설치하세요."
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_UPDATE)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle("농돌이 업데이트")
+            .setContentTitle("농식이 업데이트")
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .setContentIntent(pendingIntent)
