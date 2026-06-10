@@ -541,6 +541,13 @@ service cloud.firestore {
         allow create, update: if dlrMember(code);
         allow delete: if dlrManager(code);
       }
+
+      // ── 기종별 부품 카탈로그 (참고용, 재고와 별개) ──
+      match /partCatalog/{entryId} {
+        allow read: if dlrMember(code);
+        allow create, update: if dlrMember(code);
+        allow delete: if dlrManager(code);
+      }
     }
 
     // 그 외 경로는 모두 차단
