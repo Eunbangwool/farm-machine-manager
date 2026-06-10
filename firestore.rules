@@ -483,7 +483,10 @@ service cloud.firestore {
     //    즉시 PERMISSION_DENIED 로 멈춘다. 농돌이(farmmachine-agency-manager) 와 sync.
     //    farms 구조와 독립이며 농식이 보호 블록과 분리됨.
     match /dealerships/{code} {
-      allow read: if dlrMember(code);
+      // 대리점 doc 자체는 인증 사용자면 읽기 허용 — 생성 전 '이미 존재?' 확인 +
+      // 가입 흐름에서 비멤버가 코드 유효성 확인 가능해야 함 (farms 와 동일 패턴).
+      // 하위 컬렉션(members/customers/workOrders/...)은 dlrMember 로 계속 게이트.
+      allow read: if isAuthed();
       allow create: if isAuthed() && request.resource.data.ownerUid == request.auth.uid;
       allow update: if dlrOwner(code);
       allow delete: if dlrOwner(code);
