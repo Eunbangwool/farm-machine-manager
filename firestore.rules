@@ -96,6 +96,24 @@ service cloud.firestore {
         || get(/databases/$(database)/documents/contractors/$(request.auth.uid)).data.active == true;
     }
 
+    // ─────── 농돌이 대리점 앱 전용 헬퍼 (이름 충돌 방지 위해 dlr* 접두) ───────
+    // ⚠️ dealerships 블록 보존 필수 — 공유 프로젝트(farm-machine-manager-prod).
+    function dlrMemberPath(code) {
+      return /databases/$(database)/documents/dealerships/$(code)/members/$(request.auth.uid);
+    }
+    function dlrMember(code) {
+      return isAuthed() && exists(dlrMemberPath(code));
+    }
+    function dlrRole(code) {
+      return get(dlrMemberPath(code)).data.role;
+    }
+    function dlrManager(code) {
+      return dlrMember(code) && (dlrRole(code) == "OWNER" || dlrRole(code) == "ADMIN");
+    }
+    function dlrOwner(code) {
+      return dlrMember(code) && dlrRole(code) == "OWNER";
+    }
+
     // ─────── /farms/{farmCode} ───────
     match /farms/{farmCode} {
       allow read: if isAuthed();
@@ -458,6 +476,68 @@ service cloud.firestore {
     }
     match /consumables/{consumableId} {
       allow read, create, update, delete: if request.auth != null;
+    }
+
+    // ═══════════ /dealerships/{code} ═══════════ (농돌이 대리점 앱 — 보존 필수)
+    // ⚠️ 같은 프로젝트(farm-machine-manager-prod)를 공유. 이 블록을 지우면 농돌이가
+    //    즉시 PERMISSION_DENIED 로 멈춘다. 농돌이(farmmachine-agency-manager) 와 sync.
+    //    farms 구조와 독립이며 농식이 보호 블록과 분리됨.
+    match /dealerships/{code} {
+      allow read: if dlrMember(code);
+      allow create: if isAuthed() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if dlrOwner(code);
+      allow delete: if dlrOwner(code);
+
+      match /members/{uid} {
+        allow read: if dlrMember(code);
+        allow create: if isAuthed() && (
+          (uid == request.auth.uid && get(/databases/$(database)/documents/dealerships/$(code)).data.ownerUid == request.auth.uid) ||
+          (uid == request.auth.uid && exists(/databases/$(database)/documents/dealerships/$(code)/invitations/$(request.auth.token.email))) ||
+          dlrManager(code)
+        );
+        allow update: if dlrManager(code) || (uid == request.auth.uid);
+        allow delete: if dlrManager(code) || (uid == request.auth.uid);
+      }
+
+      match /joinRequests/{uid} {
+        allow read: if dlrManager(code) || uid == request.auth.uid;
+        allow create: if isAuthed() && uid == request.auth.uid;
+        allow update, delete: if dlrManager(code) || uid == request.auth.uid;
+      }
+
+      match /invitations/{email} {
+        allow read: if dlrMember(code) || (isAuthed() && email == request.auth.token.email);
+        allow create, update, delete: if dlrManager(code);
+      }
+
+      match /customers/{customerId} {
+        allow read: if dlrMember(code);
+        allow create, update: if dlrMember(code);
+        allow delete: if dlrManager(code);
+      }
+
+      match /machines/{machineId} {
+        allow read: if dlrMember(code);
+        allow create, update: if dlrMember(code);
+        allow delete: if dlrManager(code);
+      }
+
+      match /workOrders/{workOrderId} {
+        allow read: if dlrMember(code);
+        allow create, update: if dlrMember(code);
+        allow delete: if dlrManager(code);
+      }
+
+      match /liveLocations/{uid} {
+        allow read: if dlrMember(code);
+        allow write: if isAuthed() && uid == request.auth.uid;
+      }
+
+      match /parts/{partId} {
+        allow read: if dlrMember(code);
+        allow create, update: if dlrMember(code);
+        allow delete: if dlrManager(code);
+      }
     }
 
     // 그 외 경로는 모두 차단
