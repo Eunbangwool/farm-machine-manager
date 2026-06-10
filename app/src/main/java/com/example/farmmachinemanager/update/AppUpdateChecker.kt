@@ -24,7 +24,7 @@ import java.net.URL
  *
  * 동작:
  * 1. GET https://api.github.com/repos/Eunbangwool/farm-machine-manager/releases/latest
- * 2. body 에서 "빌드 번호: N" 파싱 (농돌이 workflow 가 release body 에 적는 형식)
+ * 2. body 에서 "빌드 번호: N" 파싱 (농식이 workflow 가 release body 에 적는 형식)
  * 3. BuildConfig.VERSION_CODE 보다 크면 새 버전 있음
  * 4. assets 중 "FarmMachineManager.apk" 다운로드 → 완료 시 설치 화면 자동 띄움
  */
@@ -92,7 +92,7 @@ object AppUpdateChecker {
                 .firstOrNull { it.optString("name", "").endsWith(".apk") }
                 ?: return@withContext CheckResult.Error("APK 파일을 찾을 수 없습니다")
 
-            // 농돌이 release body 형식: "빌드 번호: `73`"
+            // 농식이 release body 형식: "빌드 번호: `73`"
             val versionCode = Regex("""빌드 번호[:\s`]*([0-9]+)""")
                 .find(releaseBody)?.groupValues?.get(1)?.toIntOrNull()
                 ?: return@withContext CheckResult.Error("Release body 에 빌드 번호 정보가 없습니다")
@@ -143,7 +143,7 @@ object AppUpdateChecker {
 
         val downloadId = try {
             val request = DownloadManager.Request(Uri.parse(info.downloadUrl)).apply {
-                setTitle("농돌이 업데이트")
+                setTitle("농식이 업데이트")
                 setDescription("v${info.latestVersionCode} 다운로드 중")
                 setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 setDestinationUri(Uri.fromFile(apkFile))

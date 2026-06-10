@@ -340,7 +340,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     AttributionItem(
                         title = "쿠보타 매뉴얼 데이터",
-                        body = "이앙기·트랙터 점검·소모품·트러블슈팅 데이터. © Kubota Corporation. 농돌이는 사용자의 정비 기록 보조 목적으로 일부 발췌 재구성.",
+                        body = "이앙기·트랙터 점검·소모품·트러블슈팅 데이터. © Kubota Corporation. 농식이는 사용자의 정비 기록 보조 목적으로 일부 발췌 재구성.",
                     )
                     AttributionItem(
                         title = "Firebase / Google Play Services",
@@ -1273,7 +1273,7 @@ private fun AdvancedSection(
                 InfoRow(
                     icon = Icons.Outlined.Info,
                     label = "앱 이름",
-                    value = if (BuildConfig.IS_DEBUG_APP) "농돌이 (디버그)" else "농돌이"
+                    value = if (BuildConfig.IS_DEBUG_APP) "농식이 (디버그)" else "농식이"
                 )
                 Divider()
                 InfoRow(
